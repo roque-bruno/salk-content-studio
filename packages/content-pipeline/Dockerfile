@@ -30,9 +30,10 @@ RUN mkdir -p /app/output/studio /app/output/video /app/output/logs && \
 # Switch to non-root user
 USER appuser
 
-EXPOSE 8080
+ENV PORT=8080
+EXPOSE ${PORT}
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8080/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/api/health || exit 1
 
-CMD ["uvicorn", "content_pipeline.web.app:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD uvicorn content_pipeline.web.app:app --host 0.0.0.0 --port ${PORT}
