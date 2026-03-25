@@ -1,11 +1,9 @@
-"""Render startup — minimal server that passes health check immediately,
-then loads the full app in a background thread."""
+"""Render startup — diagnostic mode that captures errors via HTTP."""
+import json
 import logging
 import os
 import signal
 import sys
-import threading
-import time
 import traceback
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -18,41 +16,34 @@ log = logging.getLogger("start")
 
 PORT = int(os.environ.get("PORT", "10000"))
 
+# Global error capture
+_startup_error = None
+_startup_status = "starting"
 
-class HealthHandler(BaseHTTPRequestHandler):
-    """Responde 200 imediatamente para passar o health check do Render."""
+
+class DiagHandler(BaseHTTPRequestHandler):
+    """Serves health + diagnostic info."""
 
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
-        self.wfile.write(b'{"status":"starting","version":"2.0.0"}')
+        body = {
+            "status": _startup_status,
+            "version": "2.0.0",
+            "error": _startup_error,
+            "python": sys.version,
+            "cwd": os.getcwd(),
+            "port": PORT,
+        }
+        self.wfile.write(json.dumps(body).encode())
 
-    def log_message(self, format, *args):
-        log.info("temp-health: %s", format % args)
-
-
-def run_full_app():
-    """Carrega e inicia o app completo, substituindo o health server."""
-    try:
-        import uvicorn
-
-        log.info("Loading full application...")
-        from content_pipeline.web.app import app
-
-        log.info("App loaded — starting uvicorn on port %d", PORT)
-        uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="info")
-    except Exception:
-        log.error("Fatal error loading app:")
-        traceback.print_exc()
-        # Keep process alive to avoid restart loop — serve health only
-        log.info("Falling back to health-only mode")
-        server = HTTPServer(("0.0.0.0", PORT), HealthHandler)
-        server.serve_forever()
+    def log_message(self, fmt, *args):
+        pass  # suppress access logs
 
 
 def handle_signal(signum, frame):
-    log.info("Signal %s received — exiting", signum)
+    log.info("Signal %s — exit", signum)
     sys.exit(0)
 
 
@@ -60,17 +51,42 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, handle_signal)
     signal.signal(signal.SIGINT, handle_signal)
 
-    log.info("Starting on port %d", PORT)
+    log.info("Diagnostic mode — port %d", PORT)
 
-    # Start temporary health server to pass Render's health check
-    temp_server = HTTPServer(("0.0.0.0", PORT), HealthHandler)
-    temp_thread = threading.Thread(target=temp_server.serve_forever, daemon=True)
-    temp_thread.start()
-    log.info("Temp health server listening — loading full app...")
+    # Step 1: Test basic imports
+    try:
+        log.info("Step 1: importing uvicorn...")
+        import uvicorn
+        log.info("Step 1: OK")
+    except Exception as e:
+        _startup_error = f"uvicorn import: {traceback.format_exc()}"
+        _startup_status = "error"
+        log.error(_startup_error)
+        server = HTTPServer(("0.0.0.0", PORT), DiagHandler)
+        server.serve_forever()
+        sys.exit(0)
 
-    # Give the health server a moment, then load the real app
-    time.sleep(2)
-    temp_server.shutdown()
-    log.info("Temp server stopped — switching to full uvicorn")
+    # Step 2: Test app import
+    try:
+        log.info("Step 2: importing app...")
+        from content_pipeline.web.app import app
+        log.info("Step 2: OK")
+    except Exception as e:
+        _startup_error = f"app import: {traceback.format_exc()}"
+        _startup_status = "error"
+        log.error(_startup_error)
+        server = HTTPServer(("0.0.0.0", PORT), DiagHandler)
+        server.serve_forever()
+        sys.exit(0)
 
-    run_full_app()
+    # Step 3: Run uvicorn
+    _startup_status = "running"
+    log.info("Step 3: starting uvicorn...")
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="info")
+    except Exception:
+        _startup_error = f"uvicorn run: {traceback.format_exc()}"
+        _startup_status = "error"
+        log.error(_startup_error)
+        server = HTTPServer(("0.0.0.0", PORT), DiagHandler)
+        server.serve_forever()
