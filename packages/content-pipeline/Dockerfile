@@ -23,6 +23,10 @@ COPY src/ ./src/
 # Install dependencies
 RUN pip install --no-cache-dir -e .
 
+# Create output directories with correct permissions
+RUN mkdir -p /app/output/studio /app/output/video /app/output/logs && \
+    chown -R appuser:appuser /app/output
+
 # Switch to non-root user
 USER appuser
 
