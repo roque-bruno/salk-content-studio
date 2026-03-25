@@ -1,0 +1,152 @@
+# Buyer Personas — Manager Grupo (B2B Healthcare)
+# Fonte: docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md (linhas 337-371)
+# Fonte: docs/MAPEAMENTO_ORGANIZACIONAL.md
+
+version: "1.0"
+last_updated: "2026-03-16"
+
+personas:
+
+  # ═══════════════════════════════════════════════════════════
+  # PERSONA 1: Compras/Suprimentos
+  # ═══════════════════════════════════════════════════════════
+
+  compras:
+    title: "Gerente/Analista de Compras/Suprimentos"
+    also_known_as: ["Setor de Compras", "Comissão de Licitação", "Pregoeiro"]
+    decision_role: "Decisor financeiro / Gate de aprovação"
+    funnel_stage: "Meio-Fundo (Avaliação → Decisão)"
+
+    tone: "Direto, objetivo, focado em números e compliance"
+    keywords:
+      - "TCO"
+      - "custo-benefício"
+      - "registro ANVISA"
+      - "pregão eletrônico"
+      - "garantia"
+      - "assistência técnica"
+      - "pronta entrega"
+      - "menor preço"
+      - "termo de referência"
+
+    pain_points:
+      - "Fornecedores sem documentação completa para licitação"
+      - "Preços altos de equipamentos importados"
+      - "Dependência de importação para manutenção"
+      - "Prazos longos de entrega"
+
+    copy_example: "A KRATUS atende integralmente as especificações do Termo de Referência. Registro ANVISA vigente. Menor custo de aquisição da categoria."
+
+    best_claims: ["KR-08", "KR-09", "CMP-02", "LEV-12"]
+    best_platforms: ["LinkedIn", "Email"]
+    best_ctas:
+      - "Receba a documentação completa para licitação"
+      - "Solicite cotação para pregão"
+      - "Solicite uma proposta personalizada"
+
+  # ═══════════════════════════════════════════════════════════
+  # PERSONA 2: Engenharia Clínica
+  # ═══════════════════════════════════════════════════════════
+
+  engenharia_clinica:
+    title: "Engenheiro(a) Clínico(a)"
+    also_known_as: ["Engenharia Biomédica", "Departamento de Eng. Clínica"]
+    decision_role: "Influenciador técnico / Especificador"
+    funnel_stage: "Topo-Meio (Awareness → Consideração)"
+
+    tone: "Altamente técnico, preciso, detalhista"
+    keywords:
+      - "Ra/R9"
+      - "NBR IEC 60601"
+      - "vida útil LEDs"
+      - "intervalo de manutenção"
+      - "peças de reposição"
+      - "compatibilidade"
+      - "diluição de sombra"
+      - "iluminância"
+      - "specs técnicas"
+
+    pain_points:
+      - "Falta de dados técnicos detalhados de fabricantes nacionais"
+      - "Dificuldade de comparar specs entre produtos"
+      - "Preocupação com vida útil e manutenção"
+      - "Normas técnicas desatualizadas nos catálogos"
+
+    copy_example: "LEV: Ra/R9=99. LED >300.000h. Conforme NBR IEC 60601-2-41. Sistema COMMAND com integração ao campo estéril."
+
+    best_claims: ["LEV-01", "LEV-04", "LEV-06", "LEV-07", "LEV-10"]
+    best_platforms: ["LinkedIn", "YouTube Long", "Email"]
+    best_ctas:
+      - "Solicite a ficha técnica completa"
+      - "Compare especificações: LEV vs média de mercado"
+      - "Agende uma demonstração técnica gratuita"
+
+  # ═══════════════════════════════════════════════════════════
+  # PERSONA 3: Equipe Médica / Cirurgiões
+  # ═══════════════════════════════════════════════════════════
+
+  equipe_medica:
+    title: "Cirurgião(ã) / Equipe Médica"
+    also_known_as: ["Corpo Clínico", "Equipe Cirúrgica"]
+    decision_role: "Influenciador de uso / Usuário final"
+    funnel_stage: "Topo (Awareness)"
+
+    tone: "Profissional, centrado na experiência de uso"
+    keywords:
+      - "fidelidade cromática"
+      - "ergonomia"
+      - "fadiga visual"
+      - "campo estéril"
+      - "posicionamento preciso"
+      - "conforto cirúrgico"
+      - "visibilidade"
+
+    pain_points:
+      - "Fadiga visual em cirurgias longas"
+      - "Dificuldade de distinção de tecidos com iluminação ruim"
+      - "Falta de controle de luz sem sair do campo estéril"
+      - "Sombras no campo operatório"
+
+    copy_example: "Iluminação que reproduz fielmente a cor dos tecidos. Controle de intensidade sem sair do campo estéril."
+
+    best_claims: ["LEV-01", "LEV-02", "LEV-06", "LEV-08"]
+    best_platforms: ["Instagram Reels", "YouTube Shorts", "LinkedIn"]
+    best_ctas:
+      - "Assista a demonstração completa"
+      - "Salve este post para consultar depois"
+      - "Envie para seu engenheiro clínico"
+
+  # ═══════════════════════════════════════════════════════════
+  # PERSONA 4: Administradores Hospitalares
+  # ═══════════════════════════════════════════════════════════
+
+  administradores:
+    title: "Diretor(a) / Administrador(a) Hospitalar"
+    also_known_as: ["Superintendência", "Gestão Hospitalar", "Diretoria Administrativa"]
+    decision_role: "Decisor estratégico / Aprovador final"
+    funnel_stage: "Meio-Fundo (Consideração → Decisão)"
+
+    tone: "Estratégico, orientado a ROI e gestão"
+    keywords:
+      - "ROI"
+      - "redução de custos"
+      - "conformidade regulatória"
+      - "capacidade de atendimento"
+      - "fabricação nacional"
+      - "investimento"
+      - "eficiência operacional"
+
+    pain_points:
+      - "Pressão por redução de custos"
+      - "Necessidade de compliance regulatório"
+      - "Dependência de importação"
+      - "Dificuldade de justificar investimento em CC"
+
+    copy_example: "Investimento que se paga em X meses. Menor custo total de propriedade. Assistência técnica sem depender de importação."
+
+    best_claims: ["CMP-02", "KR-09", "LEV-11", "INST-01"]
+    best_platforms: ["LinkedIn", "Email"]
+    best_ctas:
+      - "Solicite uma proposta personalizada"
+      - "Fale com um consultor técnico"
+      - "Baixe o guia: Como especificar focos cirúrgicos"

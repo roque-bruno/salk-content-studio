@@ -1,0 +1,407 @@
+# Banco de Claims Pré-Aprovados — Manager Grupo
+# Fonte: docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md (linhas 387-430)
+# Fonte: docs/MAPEAMENTO_ORGANIZACIONAL.md (specs técnicos dos manuais)
+# REGRA: Todo conteúdo técnico DEVE usar EXCLUSIVAMENTE claims deste banco.
+# Nenhum claim pode ser inventado (Constitution Article IV — No Invention).
+
+version: "2.0"
+last_updated: "2026-03-25"
+review_cycle: "trimestral"
+owner: "Shield (compliance-guardian)"
+
+# ═══════════════════════════════════════════════════════════════
+# REGRAS DE PUBLICACAO (PRD v2.0)
+# ═══════════════════════════════════════════════════════════════
+publication_rules:
+  publishable_products: ["LEV", "KRATUS", "OSTUS", "KRONUS"]
+  blocked_products:
+    - product: "ETRUS"
+      reason: "NAO lancado — PROIBIDO publicar qualquer conteudo"
+      unblock_condition: "Usuario confirma lancamento oficial"
+  restricted_products:
+    - product: "COMMAND"
+      reason: "Integrado ao ETRUS — verificar se pode ser divulgado independentemente"
+      restriction: "Usar SOMENTE claims CMD-01 e CMD-02. NAO associar ao ETRUS"
+
+# ═══════════════════════════════════════════════════════════════
+# FOCOS CIRÚRGICOS — Linha LEV (Produto Atual)
+# ═══════════════════════════════════════════════════════════════
+
+focos_cirurgicos:
+  # ── Reprodução de Cor ──
+  - id: LEV-01
+    claim: "Índice de Reprodução de Cor Ra 99 (linha LEV)"
+    accessible: "A luz mais próxima da realidade"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "3LEV: Ra=99, R9=91. 4LEV: Ra=99, R9=97. Linha LE: Ra/R9=97"
+
+  - id: LEV-02
+    claim: "R9 até 97 na cúpula 4LEV — fidelidade na faixa do vermelho saturado"
+    accessible: "Precisão onde mais importa: na distinção de tecidos"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "3LEV: R9=91. 4LEV: R9=97. R9 mede fidelidade do vermelho saturado — crítico para distinguir tecidos e vasos"
+
+  # ── Iluminância ──
+  - id: LEV-03
+    claim: "Iluminância central máxima de até 160.000 lux"
+    accessible: "Iluminação cirúrgica de alta intensidade"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "1L=60klx, 3LE=130klx, 3LEV=148klx, 4LE/4LEV/M1LE/M1LEC=160klx"
+
+  # ── Temperatura de Cor ──
+  - id: LEV-04
+    claim: "Temperatura de cor ajustável de 3.000 a 6.500K em 9 níveis"
+    accessible: "Luz personalizada para cada procedimento"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Disponível nos modelos 3LEV, 4LEV, 3LE, 4LE, M1LE, M1LEC. Modelo 1L tem temperatura fixa ~4597K"
+
+  # ── Proteção e Segurança ──
+  - id: LEV-05
+    claim: "Proteção IP54 nas cúpulas LEV"
+    accessible: "Vedado contra poeira e água"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "IP54 nos modelos 3LEV e 4LEV"
+
+  - id: LEV-06
+    claim: "Cúpulas LEV sem ventiladores — sem risco de contaminação por ventilação forçada"
+    accessible: "Higiene máxima no ambiente cirúrgico"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Sem ventiladores nos modelos 3LEV e 4LEV — reduz risco de contaminação e é compatível com fluxo laminar"
+
+  # ── Durabilidade ──
+  - id: LEV-07
+    claim: "LEDs com vida útil superior a 226.000 horas"
+    accessible: "Mais de 25 anos de iluminação em uso típico"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: ">226.000 horas em todos os modelos da linha LEV e LE"
+
+  # ── Emergência ──
+  - id: LEV-08
+    claim: "Até 8 horas de autonomia em emergência (cúpula 3LEV)"
+    accessible: "Segurança mesmo sem energia"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "3LEV=8h, 4LEV=6h, 1L=4:30h, 3LE=4h, 4LE=3h, M1LE/M1LEC=2h"
+
+  # ── Campo e Ajustes ──
+  - id: LEV-09
+    claim: "Campo de luz ajustável de 150 a 360mm"
+    accessible: "Foco preciso para cada tipo de procedimento"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Disponível nos modelos 3LEV e 4LEV"
+
+  - id: LEV-10
+    claim: "Sistema ENDO disponível nos modelos LE e LEV"
+    accessible: "Iluminação especializada para endoscopia"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Luz verde difusa para procedimentos endoscópicos"
+
+  - id: LEV-11
+    claim: "Dimmer de 20% a 100% para ajuste fino de intensidade"
+    accessible: "Controle preciso da intensidade luminosa"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+
+  # ── Certificação e Fabricação ──
+  - id: LEV-12
+    claim: "Fabricado no Brasil pela Mendel Medical com registro ANVISA 81205910005"
+    accessible: "Tecnologia nacional certificada"
+    status: APROVADO
+    source: "Registro ANVISA 81205910005"
+    allowed_formats: all
+
+  - id: LEV-13
+    claim: "Conforme NBR IEC 60601-2-41"
+    accessible: "Conformidade com norma internacional de segurança"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Norma específica para focos cirúrgicos e luminárias de diagnóstico"
+
+  # ── Integração COMMAND ──
+  - id: LEV-14
+    claim: "Compatível com Sistema COMMAND para controle integrado de sala cirúrgica"
+    accessible: "Controle total sem sair do campo estéril"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "IHM touch screen, controle centralizado de sala cirúrgica"
+
+  # ── Acessórios e Manutenção ──
+  - id: LEV-15
+    claim: "Manopla destacável e autoclavável em todos os modelos"
+    accessible: "Esterilização fácil e segura"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+
+  # ── Design ──
+  - id: LEV-16
+    claim: "Design aerodinâmico compatível com fluxo laminar"
+    accessible: "Integração com sistema de ventilação da sala"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Derivado da ausência de ventiladores (LEV-06) + IP54 (LEV-05). Design sem protuberâncias que perturbem fluxo laminar"
+
+  # ── Configurações ──
+  - id: LEV-17
+    claim: "Configurações Simplex, Duplex e Triplex para montagem em teto"
+    accessible: "Configuração sob medida para cada sala cirúrgica"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Também disponível em versões Parede e Auxiliar"
+
+  # ── Eficiência Energética ──
+  - id: LEV-18
+    claim: "Potência de apenas 64W na cúpula 4LEV para 160.000 lux"
+    accessible: "Eficiência energética superior"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "3LEV=56,4W para 148klx, 4LEV=64W para 160klx"
+
+  # ── Diluição de Sombra ──
+  - id: LEV-19
+    claim: "Diluição de sombra: até 40% com 2 máscaras (cúpula 4LEV)"
+    accessible: "Visão sem obstáculos durante o procedimento"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "3LEV: 1 máscara 15%, 2 máscaras 34%. 4LEV: 1 máscara 14%, 2 máscaras 40%"
+
+  # ── Câmera ──
+  - id: LEV-20
+    claim: "Câmera integrada opcional (modelo M1LEC)"
+    accessible: "Registro visual do procedimento"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+    notes: "Modelo M1LEC possui câmera integrada de fábrica"
+
+# ═══════════════════════════════════════════════════════════════
+# KRATUS — Mesa Cirúrgica
+# ═══════════════════════════════════════════════════════════════
+
+kratus:
+  - id: KR-01
+    claim: "Capacidade de carga de trabalho de 460 kg"
+    accessible: "Para todos os pacientes, sem limitação"
+    status: APROVADO
+    source: "Manual KRATUS EH 460K"
+    allowed_formats: all
+
+  - id: KR-02
+    claim: "Carga de teste de 1.012 kg"
+    accessible: "Engenharia que inspira confiança"
+    status: APROVADO
+    source: "Manual KRATUS"
+    allowed_formats: all
+    notes: "Fator de segurança elevado"
+
+  - id: KR-03
+    claim: "Versão bariátrica dedicada"
+    accessible: "Para todos os pacientes, sem importação"
+    status: APROVADO
+    source: "Manual KRATUS"
+    allowed_formats: all
+
+  - id: KR-04
+    claim: "Conforme Portaria 492/2007 para bariátrica"
+    accessible: "Certificada para cirurgias bariátricas"
+    status: APROVADO
+    source: "Documentação regulatória"
+    allowed_formats: all
+
+  - id: KR-05
+    claim: "Sistema eletro-hidráulico de movimentação"
+    accessible: "Movimentação suave e precisa"
+    status: APROVADO
+    source: "Manual KRATUS"
+    allowed_formats: all
+
+  - id: KR-06
+    claim: "Bateria com 7 dias de autonomia (3×12V/9Ah VRLA)"
+    accessible: "Autonomia que não falha"
+    status: APROVADO
+    source: "Manual KRATUS"
+    allowed_formats: all
+
+  - id: KR-07
+    claim: "Vida útil do equipamento: 10 anos"
+    accessible: "Investimento de longa duração"
+    status: APROVADO
+    source: "Manual KRATUS"
+    allowed_formats: all
+
+  - id: KR-08
+    claim: "Registro ANVISA vigente nº 81205910007"
+    accessible: "Certificação nacional completa"
+    status: APROVADO
+    source: "Registro ANVISA"
+    allowed_formats: all
+
+  - id: KR-09
+    claim: "Fabricação nacional com assistência técnica própria"
+    accessible: "Suporte no seu fuso horário"
+    status: APROVADO
+    source: "Documentação institucional"
+    allowed_formats: all
+
+  - id: KR-10
+    claim: "Compatível com todas as especialidades cirúrgicas"
+    accessible: "Versatilidade para qualquer procedimento"
+    status: APROVADO
+    source: "Manual KRATUS"
+    allowed_formats: all
+
+# ═══════════════════════════════════════════════════════════════
+# OSTUS — Serra Cirúrgica
+# ═══════════════════════════════════════════════════════════════
+
+ostus:
+  - id: OS-01
+    claim: "Kit completo: motor + 3 cabeçotes + pedal"
+    accessible: "Tudo o que você precisa em um kit"
+    status: APROVADO
+    source: "Documentação de produto Salk Medical"
+    allowed_formats: all
+
+  - id: OS-02
+    claim: "Versatilidade: sagital, reciprocante e perfurador"
+    accessible: "Três funções em um equipamento"
+    status: APROVADO
+    source: "Documentação de produto Salk Medical"
+    allowed_formats: all
+
+  - id: OS-03
+    claim: "Fabricação nacional"
+    accessible: "Tecnologia brasileira"
+    status: APROVADO
+    source: "Documentação institucional"
+    allowed_formats: all
+
+# ═══════════════════════════════════════════════════════════════
+# KRONUS — Suporte para Equipamentos
+# ═══════════════════════════════════════════════════════════════
+
+kronus:
+  - id: KN-01
+    claim: "10+ configurações disponíveis (mono, bi, torre)"
+    accessible: "Configuração personalizada para cada necessidade"
+    status: APROVADO
+    source: "Catálogo Salk Medical"
+    allowed_formats: all
+
+  - id: KN-02
+    claim: "Kits específicos: UTI, RPA, Anestesia, Vídeo HDMI"
+    accessible: "Soluções dedicadas por especialidade"
+    status: APROVADO
+    source: "Catálogo Salk Medical"
+    allowed_formats: all
+
+  - id: KN-03
+    claim: "Fabricação nacional com assistência técnica própria"
+    accessible: "Suporte rápido e acessível"
+    status: APROVADO
+    source: "Documentação institucional"
+    allowed_formats: all
+
+# ═══════════════════════════════════════════════════════════════
+# COMMAND — Sistema Integrado
+# ═══════════════════════════════════════════════════════════════
+
+command:
+  # RESTRITO: COMMAND integrado ao ETRUS. Verificar independencia antes de publicar.
+  - id: CMD-01
+    claim: "Sistema de sala cirurgica integrada com controle centralizado"
+    accessible: "A unica sala cirurgica inteligente nacional"
+    status: RESTRITO
+    source: "Manual MM013-090070-R04 (Teto/Parede) — Sistema COMMAND"
+    allowed_formats: all
+    notes: "Compativel com focos cirurgicos LEV. RESTRITO: vinculado ao ETRUS — verificar independencia"
+    restriction: "NAO associar ao ETRUS em conteudo publico ate lancamento"
+
+  - id: CMD-02
+    claim: "IHM touch screen para controle de funcoes dos focos cirurgicos LEV"
+    accessible: "Painel de controle por toque"
+    status: RESTRITO
+    source: "Manual MM013-090070-R04 (Teto/Parede) — Sistema COMMAND"
+    allowed_formats: all
+    restriction: "NAO associar ao ETRUS em conteudo publico ate lancamento"
+
+# ═══════════════════════════════════════════════════════════════
+# CLAIMS COMPARATIVOS (com média de mercado)
+# ═══════════════════════════════════════════════════════════════
+
+comparativos:
+  - id: CMP-01
+    claim: "Foco cirúrgico LEV com Ra=99 e R9 até 97 vs média de mercado Ra=85-92"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 + dados públicos de fichas técnicas"
+    restriction: "Incluir nota: *Baseado em dados públicos de fichas técnicas"
+
+  - id: CMP-02
+    claim: "Menor custo de aquisição na categoria EH"
+    accessible: "Investimento que cabe no orçamento"
+    status: APROVADO
+    source: "Análise competitiva documentada"
+    restriction: "NÃO citar concorrentes por nome"
+    notes: "R$48.313 vs R$52.378-66.950 dos concorrentes"
+
+  - id: CMP-03
+    claim: "Único fabricante nacional com mesa bariátrica dedicada"
+    status: APROVADO
+    source: "Benchmarking de mercado"
+    restriction: "Verificar periodicamente — pode mudar"
+
+# ═══════════════════════════════════════════════════════════════
+# CLAIMS INSTITUCIONAIS
+# ═══════════════════════════════════════════════════════════════
+
+institucional:
+  - id: INST-01
+    claim: "Cadeia de valor verticalizada: fabricação → montagem → comercialização"
+    status: APROVADO
+    source: "docs/MAPEAMENTO_ORGANIZACIONAL.md"
+    allowed_formats: all
+
+  - id: INST-02
+    claim: "Sede em São José dos Pinhais/PR — todas as empresas no mesmo endereço"
+    status: APROVADO
+    source: "docs/MAPEAMENTO_ORGANIZACIONAL.md"
+    allowed_formats: all
+
+  - id: INST-03
+    claim: "Dayho existe desde 1996 — mais de 29 anos de experiência"
+    status: APROVADO
+    source: "docs/MAPEAMENTO_ORGANIZACIONAL.md"
+    allowed_formats: all
+    notes: "Atualizar ano conforme data atual"
+
+  - id: INST-04
+    claim: "Grupo fundado em 2014"
+    status: APROVADO
+    source: "docs/MAPEAMENTO_ORGANIZACIONAL.md"
+    allowed_formats: all

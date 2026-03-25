@@ -1,0 +1,2553 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synkra Content Studio v2.0 — Manager Grupo</title>
+<script src="config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+/* === RESET & VARIABLES === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0c0c14;
+  --bg-secondary: #13131f;
+  --bg-card: #1a1a2a;
+  --bg-card-hover: #22223a;
+  --bg-input: #16162a;
+  --text-primary: #e4e4ec;
+  --text-secondary: #7a7a96;
+  --text-muted: #50506a;
+  --accent: #4a7dff;
+  --accent-hover: #6090ff;
+  --accent-dim: rgba(74,125,255,0.15);
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.12);
+  --amber: #f59e0b;
+  --amber-bg: rgba(245,158,11,0.12);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,0.12);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.12);
+  --cyan: #22d3ee;
+  --cyan-bg: rgba(34,211,238,0.12);
+  --blue-bg: rgba(74,125,255,0.12);
+  --border: #2a2a3e;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --sidebar-w: 220px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+html { font-size: 14px; }
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* === SIDEBAR === */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-brand h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.sidebar-brand .version {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.sidebar-section {
+  padding: 12px 0 4px;
+}
+
+.sidebar-section-title {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 0 16px 6px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border-left: 3px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.sidebar-item.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+.sidebar-badge {
+  margin-left: auto;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.preview-badge {
+  display: inline-block;
+  background: var(--amber-bg);
+  color: var(--amber);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* === MAIN === */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.main-header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.main-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.main-header .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.main-content {
+  padding: 24px 28px;
+}
+
+/* === CARDS & GRID === */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.stat-card .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.stat-card .value {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.stat-card .detail {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* === BUTTONS === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+
+.btn:hover { background: var(--bg-card-hover); border-color: var(--accent); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-danger { border-color: var(--red); color: var(--red); }
+.btn-danger:hover { background: var(--red-bg); }
+.btn-success { border-color: var(--green); color: var(--green); }
+.btn-success:hover { background: var(--green-bg); }
+.btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* === FORMS === */
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-textarea { resize: vertical; min-height: 80px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+/* === TABLES === */
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
+
+/* === BADGES === */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-blue { background: var(--blue-bg); color: var(--accent); }
+.badge-purple { background: var(--purple-bg); color: var(--purple); }
+.badge-cyan { background: var(--cyan-bg); color: var(--cyan); }
+.badge-muted { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+.badge-salk { background: #1e3a5f; color: #60a5fa; }
+.badge-mendel { background: #1e3f2a; color: #34d399; }
+.badge-manager { background: #3f2a1e; color: #f59e0b; }
+.badge-dayho { background: #2a1e3f; color: #a78bfa; }
+
+/* === KANBAN === */
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(200px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.kanban-column {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 300px;
+}
+
+.kanban-header {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kanban-header .count {
+  font-size: 0.7rem;
+  background: rgba(255,255,255,0.08);
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.kanban-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kanban-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.kanban-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.kanban-card .kc-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.kanban-card .kc-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* === MODAL === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 1;
+}
+
+.modal-header h3 { font-size: 1rem; }
+.modal-body { padding: 20px; }
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* === TABS === */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* === COMPLIANCE RESULT === */
+.compliance-ok { border-left: 3px solid var(--green); }
+.compliance-fail { border-left: 3px solid var(--red); }
+.violation-item {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.violation-critical { background: var(--red-bg); border-left: 3px solid var(--red); }
+.violation-warning { background: var(--amber-bg); border-left: 3px solid var(--amber); }
+
+/* === CALENDAR GRID === */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.cal-day {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 200px;
+}
+
+.cal-day-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.cal-day-body {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cal-slot {
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.cal-slot:hover { border-color: var(--accent); }
+.cal-slot .slot-platform { font-weight: 600; }
+.cal-slot .slot-time { color: var(--text-muted); }
+
+/* === IMAGE GRID === */
+.img-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.img-thumb {
+  aspect-ratio: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.img-thumb:hover { border-color: var(--accent); transform: scale(1.02); }
+.img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.img-thumb .img-label {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  padding: 16px 8px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* === PROMPT PREVIEW === */
+.prompt-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* === EMPTY STATE === */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state .icon { font-size: 2rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.85rem; }
+
+/* === HASHTAG CHIPS === */
+.chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  margin: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chip:hover { border-color: var(--accent); }
+.chip.selected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .kanban { grid-template-columns: repeat(3, minmax(200px, 1fr)); }
+  .cal-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* === LOGIN SCREEN === */
+.login-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-primary);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  width: 100%; max-width: 380px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.login-card h1 { font-size: 1.4rem; margin-bottom: 6px; }
+.login-card .subtitle { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 28px; }
+.login-card input {
+  width: 100%; padding: 10px 14px; margin-bottom: 12px;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-primary);
+  font-size: 0.9rem;
+}
+.login-card input:focus { outline: none; border-color: var(--accent); }
+.login-card .btn-login {
+  width: 100%; padding: 10px; margin-top: 8px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: var(--radius-sm); font-size: 0.9rem;
+  cursor: pointer; font-weight: 600;
+}
+.login-card .btn-login:hover { background: var(--accent-hover); }
+.login-card .error { color: var(--red); font-size: 0.8rem; margin-top: 10px; }
+</style>
+</head>
+<body x-data="studioApp()" x-init="init()">
+
+<!-- ============================================= -->
+<!-- LOGIN SCREEN -->
+<!-- ============================================= -->
+<div class="login-overlay" x-show="!authenticated" x-cloak>
+  <div class="login-card">
+    <h1>Content Studio</h1>
+    <div class="subtitle">Synkra v2.0 — Manager Grupo</div>
+    <form @submit.prevent="doLogin()">
+      <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username">
+      <input type="password" x-model="loginPass" placeholder="Senha" autocomplete="current-password">
+      <button type="submit" class="btn-login">Entrar</button>
+    </form>
+    <div class="error" x-show="loginError" x-text="loginError"></div>
+  </div>
+</div>
+
+<!-- ============================================= -->
+<!-- SIDEBAR -->
+<!-- ============================================= -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>Content Studio</h1>
+    <div class="version">Synkra v2.0 — Manager Grupo</div>
+    <div style="margin-top:8px">
+      <button @click="logout()" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.7rem;">Sair</button>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Principal</div>
+    <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" @click="tab='dashboard'">
+      <span class="icon">&#9632;</span> Dashboard
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'">
+      <span class="icon">&#9638;</span> Production Board
+      <span class="sidebar-badge badge-blue" x-show="stats.pieces_in_production > 0" x-text="stats.pieces_in_production"></span>
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'">
+      <span class="icon">&#9783;</span> Calendario Editorial
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Producao</div>
+    <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'">
+      <span class="icon">&#9998;</span> Copy Editor
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'">
+      <span class="icon">&#9881;</span> VDPs
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'">
+      <span class="icon">&#10070;</span> NB2 Studio
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Qualidade</div>
+    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'">
+      <span class="icon">&#9888;</span> Compliance
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'">
+      <span class="icon">&#10003;</span> Review Queue
+      <span class="sidebar-badge badge-amber" x-show="pendingReviews > 0" x-text="pendingReviews"></span>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Recursos</div>
+    <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'">
+      <span class="icon">&#9733;</span> Biblioteca
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'">
+      <span class="icon">&#9875;</span> Claims Bank
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'">
+      <span class="icon">#</span> Hashtags
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'">
+      <span class="icon">&#9673;</span> Personas
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Analise</div>
+    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'">
+      <span class="icon">&#9650;</span> Performance
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Sistema</div>
+    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; loadSettings()">
+      <span class="icon">&#9881;</span> Configurações
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <template x-if="stats.preview_mode">
+      <span class="preview-badge">PREVIEW MODE</span>
+    </template>
+    <template x-if="!stats.preview_mode">
+      <span class="badge badge-green">PRODUCAO</span>
+    </template>
+  </div>
+</aside>
+
+<!-- ============================================= -->
+<!-- MAIN CONTENT -->
+<!-- ============================================= -->
+<div class="main">
+
+<!-- ===== HEADER ===== -->
+<div class="main-header">
+  <div>
+    <h2 x-text="tabTitles[tab]"></h2>
+    <div class="subtitle" x-text="tabSubtitles[tab]"></div>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'">+ Nova Peca</button>
+    <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Novo VDP</button>
+    <button class="btn" @click="refreshData()">Atualizar</button>
+  </div>
+</div>
+
+<div class="main-content">
+
+<!-- ===================================================== -->
+<!-- TAB: DASHBOARD -->
+<!-- ===================================================== -->
+<div x-show="tab === 'dashboard'">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">VDPs Criados</div>
+      <div class="value" x-text="stats.total_vdps"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Imagens NB2</div>
+      <div class="value" x-text="stats.images_generated"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Produtos</div>
+      <div class="value" x-text="stats.products_available"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Logos</div>
+      <div class="value" x-text="stats.logos_available"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Claims</div>
+      <div class="value" x-text="stats.claims_available"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Em Producao</div>
+      <div class="value" style="color: var(--amber)" x-text="stats.pieces_in_production"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Aguardando Review</div>
+      <div class="value" style="color: var(--purple)" x-text="stats.pieces_pending_review"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Tamanho Output</div>
+      <div class="value" x-text="stats.total_size_mb + ' MB'"></div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card">
+    <div class="card-title">Acoes Rapidas</div>
+    <div class="btn-group">
+      <button class="btn" @click="tab='board'; showNewPiece=true">+ Nova Peca</button>
+      <button class="btn" @click="tab='vdp'; showNewVDP=true">+ Novo VDP</button>
+      <button class="btn" @click="tab='compliance'">Verificar Compliance</button>
+      <button class="btn" @click="tab='calendar'">Calendario</button>
+      <button class="btn" @click="tab='copy'">Editor de Copy</button>
+    </div>
+  </div>
+
+  <!-- Brand Overview -->
+  <div class="card">
+    <div class="card-title">Marcas</div>
+    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <template x-for="b in ['salk', 'mendel', 'manager', 'dayho']">
+        <div class="stat-card" style="cursor: pointer;" @click="boardBrandFilter = b; tab = 'board';">
+          <div class="label" x-text="b.toUpperCase()"></div>
+          <div class="value" x-text="pieces.filter(p => p.brand === b).length"></div>
+          <div class="detail">pecas no board</div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Recent Log -->
+  <div class="card" x-show="recentLog.length > 0">
+    <div class="card-title">Log Recente</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Produto</th><th>Status</th><th>Data</th></tr></thead>
+        <tbody>
+          <template x-for="entry in recentLog">
+            <tr>
+              <td x-text="entry.vdp?.produto || entry.produto || '-'"></td>
+              <td><span class="badge" :class="entry.success ? 'badge-green' : 'badge-red'" x-text="entry.success ? 'OK' : 'FALHA'"></span></td>
+              <td x-text="entry.timestamp || entry.created_at || '-'"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: PRODUCTION BOARD (Tempo) -->
+<!-- ===================================================== -->
+<div x-show="tab === 'board'">
+  <!-- Filters -->
+  <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+    <select class="form-select" style="width: 150px;" x-model="boardBrandFilter" @change="loadPieces()">
+      <option value="">Todas Marcas</option>
+      <option value="salk">Salk</option>
+      <option value="mendel">Mendel</option>
+      <option value="manager">Manager</option>
+      <option value="dayho">Dayho</option>
+    </select>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban">
+    <template x-for="stage in stages">
+      <div class="kanban-column">
+        <div class="kanban-header" :style="'border-top: 3px solid ' + stageColors[stage]">
+          <span x-text="stageLabels[stage]"></span>
+          <span class="count" x-text="piecesInStage(stage).length"></span>
+        </div>
+        <div class="kanban-body">
+          <template x-for="piece in piecesInStage(stage)" :key="piece.id">
+            <div class="kanban-card" @click="selectedPiece = piece; showPieceDetail = true">
+              <div class="kc-title" x-text="piece.title"></div>
+              <div class="kc-meta">
+                <span class="badge" :class="'badge-' + piece.brand" x-text="piece.brand"></span>
+                <span x-show="piece.product" x-text="piece.product"></span>
+                <span x-show="piece.platform" x-text="piece.platform"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: CALENDAR -->
+<!-- ===================================================== -->
+<div x-show="tab === 'calendar'">
+  <div style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center;">
+    <input class="form-input" style="width: 160px;" x-model="calWeekId" placeholder="2026-W14">
+    <select class="form-select" style="width: 150px;" x-model="calBrand">
+      <option value="salk">Salk</option>
+      <option value="mendel">Mendel</option>
+      <option value="manager">Manager</option>
+      <option value="dayho">Dayho</option>
+    </select>
+    <button class="btn" @click="loadCalendar()">Carregar</button>
+    <button class="btn btn-primary" @click="generateCalendar()">Gerar do Template</button>
+    <button class="btn btn-success" @click="saveCalendar()" x-show="calSlots.length > 0">Salvar</button>
+  </div>
+
+  <template x-if="calSlots.length > 0">
+    <div class="cal-grid">
+      <template x-for="day in ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta']">
+        <div class="cal-day">
+          <div class="cal-day-header" x-text="day"></div>
+          <div class="cal-day-body">
+            <template x-for="slot in calSlots.filter(s => s.day === day || s.day === day.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))">
+              <div class="cal-slot" @click="selectedCalSlot = slot; showCalSlotModal = true">
+                <div class="slot-platform" x-text="slot.platform"></div>
+                <div class="slot-time" x-text="(slot.time || '') + ' ' + (slot.format || '')"></div>
+                <div x-show="slot.product" style="font-size: 0.68rem; color: var(--accent);" x-text="slot.product"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <template x-if="calSlots.length === 0">
+    <div class="empty-state">
+      <div class="icon">&#9783;</div>
+      <p>Nenhum calendario carregado. Informe a semana e clique "Gerar do Template".</p>
+    </div>
+  </template>
+
+  <!-- Seasonal Dates -->
+  <div class="card" style="margin-top: 20px;">
+    <div class="card-title">Datas Sazonais</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <template x-for="d in seasonalDates">
+        <span class="badge badge-cyan" x-text="d"></span>
+      </template>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: COPY EDITOR (Helix) -->
+<!-- ===================================================== -->
+<div x-show="tab === 'copy'">
+  <div class="form-row">
+    <div>
+      <div class="card">
+        <div class="card-title">Editor de Copy</div>
+        <div class="form-group">
+          <label>Headline</label>
+          <input class="form-input" x-model="copyHeadline" placeholder="Headline da peca...">
+        </div>
+        <div class="form-group">
+          <label>Texto Principal</label>
+          <textarea class="form-textarea" style="min-height: 160px;" x-model="copyText" placeholder="Escreva o texto da peca..." @input="copyCharCount = copyText.length"></textarea>
+          <div style="text-align: right; font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
+            <span x-text="copyCharCount"></span> caracteres
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Plataforma</label>
+            <select class="form-select" x-model="copyPlatform">
+              <option value="instagram">Instagram Feed</option>
+              <option value="instagram_reels">Instagram Reels</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="youtube_shorts">YouTube Shorts</option>
+              <option value="facebook">Facebook</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>CTA</label>
+            <input class="form-input" x-model="copyCTA" placeholder="Call-to-action...">
+          </div>
+        </div>
+        <div class="btn-group" style="margin-top: 8px;">
+          <button class="btn btn-primary" @click="checkCopyCompliance()">Verificar Compliance</button>
+          <button class="btn" @click="copyText = ''; copyHeadline = ''; copyCTA = ''; copyCharCount = 0;">Limpar</button>
+        </div>
+      </div>
+
+      <!-- Compliance Result inline -->
+      <div class="card" x-show="copyComplianceResult" :class="copyComplianceResult?.passed ? 'compliance-ok' : 'compliance-fail'">
+        <div class="card-title" x-text="copyComplianceResult?.passed ? 'Compliance OK' : 'Problemas Encontrados'"></div>
+        <template x-for="v in (copyComplianceResult?.violations || [])">
+          <div class="violation-item violation-critical">
+            <strong x-text="v.term"></strong> — <span x-text="v.reason"></span>
+            <div x-show="v.alternative" style="margin-top: 4px; color: var(--green); font-size: 0.75rem;">
+              Alternativa: <span x-text="v.alternative"></span>
+            </div>
+          </div>
+        </template>
+        <template x-for="w in (copyComplianceResult?.warnings || [])">
+          <div class="violation-item violation-warning">
+            <strong x-text="w.term"></strong> — <span x-text="w.reason"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div>
+      <!-- Claims Sugestao -->
+      <div class="card">
+        <div class="card-title">Claims Disponiveis</div>
+        <div class="form-group">
+          <label>Filtrar Produto</label>
+          <select class="form-select" x-model="copyClaimFilter">
+            <option value="">Todos</option>
+            <template x-for="p in claimProducts">
+              <option :value="p" x-text="p"></option>
+            </template>
+          </select>
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;">
+          <template x-for="c in filteredClaims()">
+            <div style="padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 0.78rem; cursor: pointer;" @click="insertClaim(c)">
+              <span class="badge badge-blue" style="font-size: 0.65rem;" x-text="c.claim_id"></span>
+              <span x-text="c.texto" style="margin-left: 6px;"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Limites por Plataforma -->
+      <div class="card">
+        <div class="card-title">Limites de Copy</div>
+        <div style="font-size: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+            <span>Instagram Feed</span><span>300-500 chars</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+            <span>Instagram Reels</span><span>15-60s script</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+            <span>LinkedIn</span><span>1500-3000 chars</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+            <span>YouTube Shorts</span><span>15-60s script</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+            <span>Facebook</span><span>200-400 chars</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: VDPs -->
+<!-- ===================================================== -->
+<div x-show="tab === 'vdp'">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Arquivo</th>
+          <th>Produto</th>
+          <th>Marca</th>
+          <th>Conceito</th>
+          <th>Claims</th>
+          <th>Prompt</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <template x-for="v in vdps">
+          <tr>
+            <td x-text="v.file_name"></td>
+            <td><strong x-text="v.produto"></strong></td>
+            <td>
+              <span class="badge" :class="v.is_salk ? 'badge-salk' : 'badge-mendel'" x-text="v.is_salk ? 'Salk' : 'Mendel'"></span>
+            </td>
+            <td x-text="v.conceito"></td>
+            <td x-text="v.claims_count"></td>
+            <td x-text="v.prompt_length + ' chars'"></td>
+            <td><button class="btn btn-sm" @click="loadVDPDetail(v)">Ver</button></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+
+  <template x-if="vdps.length === 0">
+    <div class="empty-state">
+      <div class="icon">&#9881;</div>
+      <p>Nenhum VDP encontrado. Crie um novo VDP.</p>
+    </div>
+  </template>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: NB2 STUDIO -->
+<!-- ===================================================== -->
+<div x-show="tab === 'studio'">
+  <div class="form-row">
+    <div>
+      <div class="card">
+        <div class="card-title">Prompt Builder</div>
+        <div class="form-group">
+          <label>Tipo de Produto</label>
+          <input class="form-input" x-model="studioProductType" placeholder="ex: foco cirurgico LED">
+        </div>
+        <div class="form-group">
+          <label>Descricao da Cena</label>
+          <textarea class="form-textarea" x-model="studioScene" placeholder="Descreva APENAS o cenario (nunca o produto)..."></textarea>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Camera</label>
+            <select class="form-select" x-model="studioCamera">
+              <template x-for="(v, k) in presets.camera || {}">
+                <option :value="k" x-text="k.replace(/_/g, ' ')"></option>
+              </template>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Iluminacao</label>
+            <select class="form-select" x-model="studioLighting">
+              <template x-for="(v, k) in presets.lighting || {}">
+                <option :value="k" x-text="k.replace(/_/g, ' ')"></option>
+              </template>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Superficie</label>
+            <select class="form-select" x-model="studioSurface">
+              <template x-for="(v, k) in presets.surface || {}">
+                <option :value="k" x-text="k.replace(/_/g, ' ')"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Estilo</label>
+            <input class="form-input" x-model="studioStyle" placeholder="ex: premium advertising">
+          </div>
+          <div class="form-group">
+            <label>Mood</label>
+            <input class="form-input" x-model="studioMood" placeholder="ex: professional authority">
+          </div>
+        </div>
+        <div class="form-group">
+          <label><input type="checkbox" x-model="studioIsLEV"> Produto LEV (anti-dispersao)</label>
+        </div>
+        <button class="btn btn-primary" @click="previewPrompt()">Preview Prompt</button>
+      </div>
+    </div>
+    <div>
+      <div class="card" x-show="studioPromptResult">
+        <div class="card-title">Prompt Gerado <span class="badge badge-blue" x-text="(studioPromptResult?.char_count || 0) + ' chars'"></span></div>
+        <div class="prompt-box" x-text="studioPromptResult?.prompt || ''"></div>
+        <div style="margin-top: 10px;">
+          <button class="btn btn-sm" @click="navigator.clipboard.writeText(studioPromptResult?.prompt || '')">Copiar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Regras NB2</div>
+        <ul style="font-size: 0.8rem; color: var(--text-secondary); list-style: none;">
+          <li style="padding: 4px 0;">&#9679; Upload do produto REAL como referencia</li>
+          <li style="padding: 4px 0;">&#9679; IA renderiza o produto DENTRO do cenario</li>
+          <li style="padding: 4px 0;">&#9679; NUNCA descrever o produto no prompt</li>
+          <li style="padding: 4px 0;">&#9679; NUNCA texto ou logo na imagem IA</li>
+          <li style="padding: 4px 0;">&#9679; NUNCA equipamentos medicos concorrentes</li>
+          <li style="padding: 4px 0;">&#9679; LEV: luz FOCADA para baixo, sem dispersao</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: COMPLIANCE (Shield) -->
+<!-- ===================================================== -->
+<div x-show="tab === 'compliance'">
+  <div class="form-row">
+    <div>
+      <div class="card">
+        <div class="card-title">Verificador de Compliance</div>
+        <div class="form-group">
+          <label>Texto para Verificar</label>
+          <textarea class="form-textarea" style="min-height: 200px;" x-model="complianceText" placeholder="Cole aqui o texto completo da peca (copy, headline, CTA, hashtags)..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Marca</label>
+            <select class="form-select" x-model="complianceBrand">
+              <option value="salk">Salk</option>
+              <option value="mendel">Mendel</option>
+              <option value="manager">Manager</option>
+              <option value="dayho">Dayho</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Produto</label>
+            <input class="form-input" x-model="complianceProduct" placeholder="ex: LEV">
+          </div>
+        </div>
+        <button class="btn btn-primary" @click="runComplianceCheck()">Verificar</button>
+      </div>
+
+      <div class="card" x-show="complianceResult" :class="complianceResult?.passed ? 'compliance-ok' : 'compliance-fail'">
+        <div class="card-title">
+          <template x-if="complianceResult?.passed"><span style="color: var(--green);">APROVADO — Nenhuma violacao</span></template>
+          <template x-if="!complianceResult?.passed"><span style="color: var(--red);">REPROVADO — Violacoes encontradas</span></template>
+        </div>
+
+        <template x-if="complianceResult?.etrus_blocked">
+          <div class="violation-item violation-critical" style="margin-bottom: 10px;">
+            <strong>BLOQUEIO ETRUS</strong> — Produto nao lancado, publicacao PROIBIDA. Use LEV.
+          </div>
+        </template>
+
+        <template x-for="v in (complianceResult?.violations || [])">
+          <div class="violation-item violation-critical">
+            <strong x-text="'\"' + v.term + '\"'"></strong>
+            <span style="margin-left: 6px;" x-text="v.reason"></span>
+            <span class="badge badge-red" style="margin-left: 8px;" x-text="v.severity"></span>
+            <div x-show="v.alternative" style="margin-top: 4px; color: var(--green); font-size: 0.75rem;">
+              Sugestao: <span x-text="v.alternative"></span>
+            </div>
+          </div>
+        </template>
+
+        <template x-for="w in (complianceResult?.warnings || [])">
+          <div class="violation-item violation-warning">
+            <strong x-text="'\"' + w.term + '\"'"></strong>
+            <span style="margin-left: 6px;" x-text="w.reason"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">Checklist de Compliance (4 Camadas)</div>
+        <div style="font-size: 0.8rem;">
+          <div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <strong style="color: var(--green);">1. Automatizado (Shield)</strong>
+            <ul style="margin-top: 4px; padding-left: 16px; color: var(--text-secondary);">
+              <li>Termos proibidos</li>
+              <li>ETRUS bloqueado</li>
+              <li>Superlativos</li>
+              <li>Promessas/garantias</li>
+            </ul>
+          </div>
+          <div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <strong style="color: var(--accent);">2. Editorial (Lens)</strong>
+            <ul style="margin-top: 4px; padding-left: 16px; color: var(--text-secondary);">
+              <li>Clareza da mensagem</li>
+              <li>Tom da marca</li>
+              <li>Ortografia e gramatica</li>
+            </ul>
+          </div>
+          <div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <strong style="color: var(--amber);">3. Tecnico/Medico</strong>
+            <ul style="margin-top: 4px; padding-left: 16px; color: var(--text-secondary);">
+              <li>Precisao tecnica</li>
+              <li>Claims com fonte</li>
+              <li>Dados verificaveis</li>
+            </ul>
+          </div>
+          <div style="padding: 8px 0;">
+            <strong style="color: var(--red);">4. Legal/Regulatorio</strong>
+            <ul style="margin-top: 4px; padding-left: 16px; color: var(--text-secondary);">
+              <li>ANVISA compliance</li>
+              <li>CFM regulamentacoes</li>
+              <li>Badge ANVISA presente</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Glossario Seguro</div>
+        <div style="font-size: 0.78rem;">
+          <div style="padding: 4px 0;"><strong>Ra/R9=99</strong> &rarr; "Luz que reproduz cores exatamente como sao"</div>
+          <div style="padding: 4px 0;"><strong>NBR IEC 60601</strong> &rarr; "Certificado por normas brasileiras de seguranca"</div>
+          <div style="padding: 4px 0;"><strong>Capacidade bariatrica</strong> &rarr; "Projetado para pacientes de todos os biotipos"</div>
+          <div style="padding: 4px 0;"><strong>Campo esteril</strong> &rarr; "Sem comprometer a higiene do procedimento"</div>
+          <div style="padding: 4px 0;"><strong>>300.000h LED</strong> &rarr; "Mais de 30 anos de iluminacao em uso tipico"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: REVIEW QUEUE (Lens) -->
+<!-- ===================================================== -->
+<div x-show="tab === 'review'">
+  <div class="tabs">
+    <button class="tab-btn" :class="{ active: reviewFilter === '' }" @click="reviewFilter = ''">Todos</button>
+    <button class="tab-btn" :class="{ active: reviewFilter === 'pending' }" @click="reviewFilter = 'pending'">Pendentes</button>
+    <button class="tab-btn" :class="{ active: reviewFilter === 'approved' }" @click="reviewFilter = 'approved'">Aprovados</button>
+    <button class="tab-btn" :class="{ active: reviewFilter === 'rejected' }" @click="reviewFilter = 'rejected'">Rejeitados</button>
+  </div>
+
+  <template x-if="filteredReviews().length > 0">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Peca</th><th>Tipo</th><th>Veredicto</th><th>Reviewer</th><th>Data</th><th></th></tr></thead>
+        <tbody>
+          <template x-for="r in filteredReviews()">
+            <tr>
+              <td x-text="getPieceTitle(r.piece_id)"></td>
+              <td x-text="r.review_type"></td>
+              <td>
+                <span class="badge" :class="{
+                  'badge-amber': r.verdict === 'pending',
+                  'badge-green': r.verdict === 'approved',
+                  'badge-red': r.verdict === 'rejected',
+                  'badge-purple': r.verdict === 'revision'
+                }" x-text="r.verdict"></span>
+              </td>
+              <td x-text="r.reviewer || '-'"></td>
+              <td x-text="(r.created_at || '').substring(0, 10)"></td>
+              <td>
+                <div class="btn-group" x-show="r.verdict === 'pending'">
+                  <button class="btn btn-sm btn-success" @click="submitReview(r.id, 'approved')">Aprovar</button>
+                  <button class="btn btn-sm btn-danger" @click="submitReview(r.id, 'rejected', prompt('Motivo:') || '')">Rejeitar</button>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </template>
+
+  <template x-if="filteredReviews().length === 0">
+    <div class="empty-state">
+      <div class="icon">&#10003;</div>
+      <p>Nenhum review <span x-text="reviewFilter || ''"></span> encontrado.</p>
+    </div>
+  </template>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: ASSETS (Biblioteca) -->
+<!-- ===================================================== -->
+<div x-show="tab === 'assets'">
+  <div class="tabs">
+    <button class="tab-btn" :class="{ active: assetTab === 'products' }" @click="assetTab = 'products'">Produtos</button>
+    <button class="tab-btn" :class="{ active: assetTab === 'logos' }" @click="assetTab = 'logos'">Logos</button>
+  </div>
+
+  <!-- Products -->
+  <div x-show="assetTab === 'products'">
+    <template x-for="(items, cat) in productImages">
+      <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 0.9rem; margin-bottom: 10px; text-transform: capitalize;" x-text="cat + ' (' + items.length + ')'"></h3>
+        <div class="img-grid">
+          <template x-for="img in items">
+            <div class="img-thumb" @click="selectedImage = img; showImageModal = true">
+              <img :src="img.url" :alt="img.name" loading="lazy">
+              <div class="img-label" x-text="img.name"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Logos -->
+  <div x-show="assetTab === 'logos'">
+    <div class="img-grid">
+      <template x-for="logo in logos">
+        <div class="img-thumb" @click="selectedImage = logo; showImageModal = true">
+          <img :src="logo.url" :alt="logo.name" loading="lazy" style="object-fit: contain; padding: 12px;">
+          <div class="img-label" x-text="logo.name"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: CLAIMS BANK -->
+<!-- ===================================================== -->
+<div x-show="tab === 'claims'">
+  <div style="margin-bottom: 14px;">
+    <select class="form-select" style="width: 200px;" x-model="claimsFilter">
+      <option value="">Todos os Produtos</option>
+      <template x-for="p in claimProducts">
+        <option :value="p" x-text="p"></option>
+      </template>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Claim</th><th>Fonte</th><th>Produto</th><th>Status</th></tr></thead>
+      <tbody>
+        <template x-for="c in filteredClaimsAll()">
+          <tr>
+            <td><span class="badge badge-blue" x-text="c.claim_id"></span></td>
+            <td x-text="c.texto" style="max-width: 400px;"></td>
+            <td style="font-size: 0.75rem;" x-text="c.fonte"></td>
+            <td x-text="c.produto"></td>
+            <td><span class="badge badge-green" x-text="c.status"></span></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: HASHTAGS -->
+<!-- ===================================================== -->
+<div x-show="tab === 'hashtags'">
+  <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+    <select class="form-select" style="width: 150px;" x-model="hashtagBrand" @change="loadHashtags()">
+      <option value="salk">Salk</option>
+      <option value="mendel">Mendel</option>
+      <option value="manager">Manager</option>
+      <option value="dayho">Dayho</option>
+    </select>
+    <select class="form-select" style="width: 150px;" x-model="hashtagPlatform" @change="loadHashtags()">
+      <option value="instagram">Instagram</option>
+      <option value="linkedin">LinkedIn</option>
+      <option value="facebook">Facebook</option>
+    </select>
+    <button class="btn" @click="copySelectedHashtags()">Copiar Selecionadas</button>
+  </div>
+
+  <div class="form-row">
+    <div>
+      <div class="card">
+        <div class="card-title">Core (sempre usar)</div>
+        <div>
+          <template x-for="h in hashtagData.core || []">
+            <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h"></span>
+          </template>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Produto (rotacionar)</div>
+        <div>
+          <template x-for="h in hashtagData.product || []">
+            <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h"></span>
+          </template>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Nicho (complementar)</div>
+        <div>
+          <template x-for="h in hashtagData.niche || []">
+            <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h"></span>
+          </template>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Selecionadas (<span x-text="selectedHashtags.length"></span>)</div>
+        <div class="prompt-box" style="min-height: 60px; font-size: 0.8rem;" x-text="selectedHashtags.join(' ')"></div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 6px;">
+          Limite: Instagram max 11 | LinkedIn max 5 | Facebook max 3
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: PERSONAS -->
+<!-- ===================================================== -->
+<div x-show="tab === 'personas'">
+  <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+    <template x-for="persona in personas">
+      <div class="card">
+        <div class="card-title" x-text="persona.name || persona.title || persona.role || 'Persona'"></div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">
+          <div x-show="persona.decision_role"><strong>Papel:</strong> <span x-text="persona.decision_role"></span></div>
+          <div x-show="persona.funnel"><strong>Funil:</strong> <span x-text="persona.funnel"></span></div>
+        </div>
+        <div x-show="persona.pain_points" style="margin-bottom: 8px;">
+          <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">DORES</div>
+          <template x-for="pain in (persona.pain_points || [])">
+            <div style="font-size: 0.75rem; color: var(--red); padding: 2px 0;">- <span x-text="pain"></span></div>
+          </template>
+        </div>
+        <div x-show="persona.keywords" style="margin-bottom: 8px;">
+          <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">KEYWORDS</div>
+          <div>
+            <template x-for="kw in (persona.keywords || [])">
+              <span class="badge badge-muted" style="margin: 2px;" x-text="kw"></span>
+            </template>
+          </div>
+        </div>
+        <div x-show="persona.best_claims">
+          <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">BEST CLAIMS</div>
+          <div>
+            <template x-for="cl in (persona.best_claims || [])">
+              <span class="badge badge-blue" style="margin: 2px;" x-text="cl"></span>
+            </template>
+          </div>
+        </div>
+        <div x-show="persona.best_platforms" style="margin-top: 8px;">
+          <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">PLATAFORMAS</div>
+          <template x-for="pl in (persona.best_platforms || [])">
+            <span class="badge badge-cyan" style="margin: 2px;" x-text="pl"></span>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <template x-if="personas.length === 0">
+    <div class="empty-state">
+      <div class="icon">&#9673;</div>
+      <p>Personas nao carregadas.</p>
+    </div>
+  </template>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: PERFORMANCE (Pulse) -->
+<!-- ===================================================== -->
+<div x-show="tab === 'performance'">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Posts Publicados</div>
+      <div class="value" x-text="perfSummary.total_posts || 0"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Impressoes</div>
+      <div class="value" x-text="formatNumber(perfSummary.total_impressions || 0)"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Alcance</div>
+      <div class="value" x-text="formatNumber(perfSummary.total_reach || 0)"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Engajamento</div>
+      <div class="value" x-text="formatNumber(perfSummary.total_engagement || 0)"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Taxa Engajamento</div>
+      <div class="value" style="color: var(--green);" x-text="(perfSummary.avg_engagement_rate || 0) + '%'"></div>
+    </div>
+  </div>
+
+  <!-- Add Metric -->
+  <div class="card">
+    <div class="card-title">Registrar Metrica</div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>Peca (ID)</label>
+        <input class="form-input" x-model="metricPieceId" placeholder="ID da peca">
+      </div>
+      <div class="form-group">
+        <label>Plataforma</label>
+        <select class="form-select" x-model="metricPlatform">
+          <option value="instagram">Instagram</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="youtube">YouTube</option>
+          <option value="facebook">Facebook</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Data Publicacao</label>
+        <input class="form-input" type="date" x-model="metricDate">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>Impressoes</label>
+        <input class="form-input" type="number" x-model.number="metricImpressions">
+      </div>
+      <div class="form-group">
+        <label>Alcance</label>
+        <input class="form-input" type="number" x-model.number="metricReach">
+      </div>
+      <div class="form-group">
+        <label>Engajamento</label>
+        <input class="form-input" type="number" x-model.number="metricEngagement">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>Clicks</label>
+        <input class="form-input" type="number" x-model.number="metricClicks">
+      </div>
+      <div class="form-group">
+        <label>Saves</label>
+        <input class="form-input" type="number" x-model.number="metricSaves">
+      </div>
+      <div class="form-group">
+        <label>Shares</label>
+        <input class="form-input" type="number" x-model.number="metricShares">
+      </div>
+    </div>
+    <button class="btn btn-primary" @click="saveMetric()">Salvar Metrica</button>
+  </div>
+
+  <!-- Metrics Table -->
+  <div class="card" x-show="metrics.length > 0">
+    <div class="card-title">Historico</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Peca</th><th>Plataforma</th><th>Data</th><th>Impressoes</th><th>Alcance</th><th>Engajamento</th><th>Clicks</th></tr></thead>
+        <tbody>
+          <template x-for="m in metrics">
+            <tr>
+              <td x-text="m.piece_id"></td>
+              <td x-text="m.platform"></td>
+              <td x-text="m.published_at"></td>
+              <td x-text="formatNumber(m.impressions)"></td>
+              <td x-text="formatNumber(m.reach)"></td>
+              <td x-text="formatNumber(m.engagement)"></td>
+              <td x-text="formatNumber(m.clicks)"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== SETTINGS ===== -->
+<div x-show="tab === 'settings'">
+  <template x-if="settingsData">
+    <div>
+      <!-- Status bar -->
+      <div class="card" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+        <div style="flex:1;">
+          <span x-show="stats.preview_mode" class="preview-badge" style="font-size:0.85rem;">PREVIEW MODE — Configure as chaves abaixo para ativar</span>
+          <span x-show="!stats.preview_mode" class="badge badge-green" style="font-size:0.85rem; padding:4px 12px;">MODO PRODUCAO ATIVO</span>
+        </div>
+        <button class="btn btn-secondary" @click="testConnections()" style="margin-right:8px;">Testar Conexoes</button>
+        <button class="btn btn-primary" :disabled="settingsSaving" @click="saveSettings()">
+          <span x-show="!settingsSaving">Salvar Configuracoes</span>
+          <span x-show="settingsSaving">Salvando...</span>
+        </button>
+        <span x-show="settingsSaved" style="color:var(--green); font-weight:600;">Salvo!</span>
+      </div>
+
+      <!-- Test results -->
+      <div class="card" x-show="settingsTestResults" style="margin-top:12px;">
+        <div class="card-title">Status dos Servicos</div>
+        <div class="stats-grid">
+          <template x-for="[name, info] in Object.entries(settingsTestResults?.services || {})">
+            <div class="stat-card">
+              <div class="label" x-text="name" style="text-transform:capitalize;"></div>
+              <div class="value" style="font-size:1.2rem;" :style="{ color: info.configured ? 'var(--green)' : 'var(--text-muted)' }">
+                <span x-text="info.configured ? 'Ativo' : 'Pendente'"></span>
+              </div>
+              <div class="detail" x-text="info.status"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Settings Groups -->
+      <template x-for="[groupKey, groupInfo] in Object.entries(settingsData.groups || {})">
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">
+            <span x-text="groupInfo.icon"></span> <span x-text="groupInfo.label"></span>
+          </div>
+          <template x-for="defn in settingsGroupDefs(groupKey)">
+            <div style="margin-bottom:14px;">
+              <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="font-weight:600; font-size:0.85rem;" x-text="defn.label"></span>
+                <span x-show="settingsKeyStatus(defn.key).configured"
+                      style="font-size:0.65rem; padding:1px 6px; border-radius:8px; font-weight:600; background:var(--green-bg); color:var(--green);"
+                      x-text="settingsKeyStatus(defn.key).source === 'env' ? 'ENV' : 'SALVO'">
+                </span>
+                <span x-show="!settingsKeyStatus(defn.key).configured"
+                      style="font-size:0.65rem; padding:1px 6px; border-radius:8px; font-weight:600; background:var(--bg-input); color:var(--text-muted);">
+                  NAO CONFIGURADO
+                </span>
+              </label>
+              <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:4px;" x-text="defn.description"></div>
+              <input class="form-input"
+                     :type="defn.key.includes('PASS') || defn.key.includes('SECRET') ? 'password' : 'text'"
+                     :placeholder="defn.placeholder"
+                     x-model="settingsForm[defn.key]"
+                     @input="settingsSaved = false"
+                     style="font-family: var(--mono); font-size:0.8rem;">
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- Info box -->
+      <div class="card" style="margin-top:16px; border-color: var(--accent); background: var(--accent-dim);">
+        <div style="font-size:0.85rem; line-height:1.6;">
+          <strong>Como funciona:</strong><br>
+          As chaves sao salvas localmente e criptografadas. Elas tem prioridade sobre variaveis de ambiente (.env).<br>
+          Apos salvar, todos os clientes (LLM, video, publishers) sao reinicializados automaticamente.<br>
+          Campos com valor mascarado (••••) ja estao configurados — deixe como esta para manter o valor atual.
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Loading state -->
+  <template x-if="!settingsData">
+    <div class="card" style="text-align:center; padding:40px;">
+      <div style="color: var(--text-muted);">Carregando configuracoes...</div>
+    </div>
+  </template>
+</div>
+
+</div> <!-- /main-content -->
+</div> <!-- /main -->
+
+<!-- ============================================= -->
+<!-- MODALS -->
+<!-- ============================================= -->
+
+<!-- New Piece Modal -->
+<div class="modal-overlay" x-show="showNewPiece" @click.self="showNewPiece = false" x-cloak>
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nova Peca de Conteudo</h3>
+      <button class="modal-close" @click="showNewPiece = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Titulo</label>
+        <input class="form-input" x-model="newPiece.title" placeholder="ex: Hero Shot LEV 4LEV - Instagram">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Marca</label>
+          <select class="form-select" x-model="newPiece.brand">
+            <option value="salk">Salk</option>
+            <option value="mendel">Mendel</option>
+            <option value="manager">Manager</option>
+            <option value="dayho">Dayho</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Produto</label>
+          <select class="form-select" x-model="newPiece.product">
+            <option value="">Nenhum</option>
+            <option value="LEV">LEV</option>
+            <option value="KRATUS">KRATUS</option>
+            <option value="OSTUS">OSTUS</option>
+            <option value="KRONUS">KRONUS</option>
+            <option value="COMMAND">COMMAND</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Plataforma</label>
+          <select class="form-select" x-model="newPiece.platform">
+            <option value="instagram">Instagram Feed</option>
+            <option value="instagram_reels">Instagram Reels</option>
+            <option value="instagram_stories">Instagram Stories</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="youtube_shorts">YouTube Shorts</option>
+            <option value="facebook">Facebook</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Formato</label>
+          <select class="form-select" x-model="newPiece.format">
+            <option value="imagem">Imagem</option>
+            <option value="carousel">Carousel</option>
+            <option value="reels">Reels/Video</option>
+            <option value="texto">Texto + Imagem</option>
+            <option value="pdf_carousel">PDF Carousel</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Pilar</label>
+          <select class="form-select" x-model="newPiece.pillar">
+            <option value="produto">Produto (30%)</option>
+            <option value="educacional">Educacional (25%)</option>
+            <option value="cases">Cases (20%)</option>
+            <option value="command">COMMAND (15%)</option>
+            <option value="licitacoes">Licitacoes (10%)</option>
+            <option value="institucional">Institucional</option>
+            <option value="employer_branding">Employer Branding</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Persona Alvo</label>
+          <select class="form-select" x-model="newPiece.persona_target">
+            <option value="">Geral</option>
+            <option value="compras">Compras/Suprimentos</option>
+            <option value="eng_clinica">Eng. Clinica</option>
+            <option value="equipe_medica">Equipe Medica</option>
+            <option value="administradores">Administradores</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notas</label>
+        <textarea class="form-textarea" x-model="newPiece.notes" placeholder="Observacoes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" @click="showNewPiece = false">Cancelar</button>
+      <button class="btn btn-primary" @click="createNewPiece()">Criar Peca</button>
+    </div>
+  </div>
+</div>
+
+<!-- Piece Detail Modal -->
+<div class="modal-overlay" x-show="showPieceDetail" @click.self="showPieceDetail = false" x-cloak>
+  <div class="modal">
+    <div class="modal-header">
+      <h3 x-text="selectedPiece?.title || 'Peca'"></h3>
+      <button class="modal-close" @click="showPieceDetail = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <span class="badge" :class="'badge-' + (selectedPiece?.brand || '')" x-text="selectedPiece?.brand"></span>
+        <span class="badge badge-blue" x-text="selectedPiece?.product"></span>
+        <span class="badge badge-muted" x-text="selectedPiece?.platform"></span>
+        <span class="badge badge-purple" x-text="selectedPiece?.stage"></span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
+        <div x-show="selectedPiece?.pillar"><strong>Pilar:</strong> <span x-text="selectedPiece?.pillar"></span></div>
+        <div x-show="selectedPiece?.persona_target"><strong>Persona:</strong> <span x-text="selectedPiece?.persona_target"></span></div>
+        <div x-show="selectedPiece?.notes"><strong>Notas:</strong> <span x-text="selectedPiece?.notes"></span></div>
+        <div><strong>Criado:</strong> <span x-text="(selectedPiece?.created_at || '').substring(0, 16)"></span></div>
+      </div>
+      <div class="card-title">Mover para Estagio</div>
+      <div class="btn-group">
+        <template x-for="s in stages">
+          <button class="btn btn-sm" :class="{ 'btn-primary': selectedPiece?.stage === s }" @click="movePieceStage(selectedPiece?.id, s)" x-text="stageLabels[s]"></button>
+        </template>
+      </div>
+      <div style="margin-top: 16px;">
+        <button class="btn btn-sm" @click="sendToReview(selectedPiece?.id)">Enviar para Review</button>
+        <button class="btn btn-sm btn-danger" style="margin-left: 8px;" @click="if(confirm('Excluir peca?')) { deletePiece(selectedPiece?.id); }">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New VDP Modal -->
+<div class="modal-overlay" x-show="showNewVDP" @click.self="showNewVDP = false" x-cloak>
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Criar Novo VDP</h3>
+      <button class="modal-close" @click="showNewVDP = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Produto</label>
+        <input class="form-input" x-model="newVDP.produto" placeholder="ex: LEV 4LEV">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Marca</label>
+          <select class="form-select" x-model="newVDP.marca">
+            <option value="salk">Salk (Comercial)</option>
+            <option value="mendel">Mendel (Tecnico)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Conceito</label>
+          <input class="form-input" x-model="newVDP.conceito" placeholder="ex: Dramatic Studio">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Formato</label>
+          <select class="form-select" x-model="newVDP.formato">
+            <option value="1080x1350">1080x1350 (Feed 4:5)</option>
+            <option value="1080x1080">1080x1080 (Feed 1:1)</option>
+            <option value="1080x1920">1080x1920 (Stories/Reels)</option>
+            <option value="1920x1080">1920x1080 (YouTube)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>PNG Referencia</label>
+          <input class="form-input" x-model="newVDP.png_referencia" placeholder="ex: focos-cirurgicos/LEV-4LEV.png">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Prompt NB2</label>
+        <textarea class="form-textarea" style="min-height: 140px; font-family: var(--mono);" x-model="newVDP.prompt_nb2" placeholder="Descreva APENAS o cenario..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Headline Canva</label>
+          <input class="form-input" x-model="newVDP.canva_headline" placeholder="Headline do post">
+        </div>
+        <div class="form-group">
+          <label>Spec Line</label>
+          <input class="form-input" x-model="newVDP.canva_spec_line" placeholder="ex: Ra/R9 = 99 | 160.000 lux">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>ANVISA</label>
+        <input class="form-input" x-model="newVDP.canva_anvisa" placeholder="ex: ANVISA Reg. 80517800002">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" @click="showNewVDP = false">Cancelar</button>
+      <button class="btn btn-primary" @click="createVDP()">Criar VDP</button>
+    </div>
+  </div>
+</div>
+
+<!-- VDP Detail Modal -->
+<div class="modal-overlay" x-show="showVDPDetail" @click.self="showVDPDetail = false" x-cloak>
+  <div class="modal">
+    <div class="modal-header">
+      <h3 x-text="vdpDetail?.produto || 'VDP'"></h3>
+      <button class="modal-close" @click="showVDPDetail = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <span class="badge" :class="vdpDetail?.is_salk ? 'badge-salk' : 'badge-mendel'" x-text="vdpDetail?.is_salk ? 'Salk' : 'Mendel'"></span>
+        <span class="badge badge-muted" x-text="vdpDetail?.conceito"></span>
+        <span class="badge badge-blue" x-text="vdpDetail?.formato"></span>
+      </div>
+      <div class="card-title">Prompt NB2</div>
+      <div class="prompt-box" x-text="vdpDetail?.prompt_nb2 || ''"></div>
+      <div class="card-title" style="margin-top: 16px;">Composicao Canva</div>
+      <div style="font-size: 0.82rem; color: var(--text-secondary);">
+        <div><strong>Headline:</strong> <span x-text="vdpDetail?.canva_headline"></span></div>
+        <div><strong>Logo:</strong> <span x-text="vdpDetail?.canva_logo"></span></div>
+        <div><strong>Spec Line:</strong> <span x-text="vdpDetail?.canva_spec_line"></span></div>
+        <div><strong>ANVISA:</strong> <span x-text="vdpDetail?.canva_anvisa"></span></div>
+      </div>
+      <div class="card-title" style="margin-top: 16px;">Claims (<span x-text="(vdpDetail?.claims || []).length"></span>)</div>
+      <template x-for="c in (vdpDetail?.claims || [])">
+        <div style="padding: 4px 0; font-size: 0.8rem;">
+          <span class="badge badge-blue" x-text="c.claim_id"></span>
+          <span x-text="c.texto" style="margin-left: 6px;"></span>
+        </div>
+      </template>
+      <div class="card-title" style="margin-top: 16px;">Criterios de Aprovacao</div>
+      <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+        <template x-for="cr in (vdpDetail?.criterios || [])">
+          <li x-text="cr" style="padding: 2px 0;"></li>
+        </template>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Calendar Slot Modal -->
+<div class="modal-overlay" x-show="showCalSlotModal" @click.self="showCalSlotModal = false" x-cloak>
+  <div class="modal" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3>Editar Slot</h3>
+      <button class="modal-close" @click="showCalSlotModal = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Plataforma</label>
+        <input class="form-input" x-model="selectedCalSlot.platform" readonly>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Produto</label>
+          <select class="form-select" x-model="selectedCalSlot.product">
+            <option value="">Nenhum</option>
+            <option value="LEV">LEV</option>
+            <option value="KRATUS">KRATUS</option>
+            <option value="OSTUS">OSTUS</option>
+            <option value="KRONUS">KRONUS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pilar</label>
+          <select class="form-select" x-model="selectedCalSlot.pillar">
+            <option value="produto">Produto</option>
+            <option value="educacional">Educacional</option>
+            <option value="cases">Cases</option>
+            <option value="command">COMMAND</option>
+            <option value="licitacoes">Licitacoes</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Persona Alvo</label>
+        <select class="form-select" x-model="selectedCalSlot.persona_target">
+          <option value="">Geral</option>
+          <option value="compras">Compras</option>
+          <option value="eng_clinica">Eng. Clinica</option>
+          <option value="equipe_medica">Equipe Medica</option>
+          <option value="administradores">Administradores</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notas</label>
+        <textarea class="form-textarea" x-model="selectedCalSlot.notes"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" @click="showCalSlotModal = false">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" x-cloak>
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3 x-text="selectedImage?.name || ''"></h3>
+      <button class="modal-close" @click="showImageModal = false">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align: center;">
+      <img :src="selectedImage?.url" :alt="selectedImage?.name" style="max-width: 100%; max-height: 60vh; border-radius: var(--radius-sm);">
+      <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary);">
+        <span x-text="selectedImage?.category"></span> |
+        <span x-text="selectedImage?.size_kb + ' KB'"></span> |
+        <span x-text="selectedImage?.path"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div> <!-- /body wrapper -->
+
+<script>
+function studioApp() {
+  return {
+    // Auth
+    authenticated: !!localStorage.getItem('studio_token'),
+    loginUser: '',
+    loginPass: '',
+    loginError: '',
+
+    tab: 'dashboard',
+    tabTitles: {
+      dashboard: 'Dashboard',
+      board: 'Production Board',
+      calendar: 'Calendario Editorial',
+      copy: 'Copy Editor',
+      vdp: 'Visual Design Packs',
+      studio: 'NB2 Studio',
+      compliance: 'Compliance Check',
+      review: 'Review Queue',
+      assets: 'Biblioteca de Assets',
+      claims: 'Claims Bank',
+      hashtags: 'Hashtag Bank',
+      personas: 'Buyer Personas',
+      performance: 'Performance',
+      settings: 'Configurações'
+    },
+    tabSubtitles: {
+      dashboard: 'Visao geral do sistema de producao',
+      board: 'Kanban de pecas em producao — Tempo',
+      calendar: 'Planejamento semanal por marca — Atlas',
+      copy: 'Editor de copy com claims e compliance — Helix',
+      vdp: 'Visual Design Packs para geracao NB2 — Apex',
+      studio: 'Construtor de prompts NB2 — Apex',
+      compliance: 'Verificacao de termos proibidos — Shield',
+      review: 'Fila de revisao editorial — Lens',
+      assets: 'Imagens de produto e logos',
+      claims: 'Claims regulatorios aprovados',
+      hashtags: 'Banco de hashtags por marca',
+      personas: 'Buyer personas do Manager Grupo',
+      performance: 'Metricas pos-publicacao — Pulse',
+      settings: 'Chaves API e configurações do sistema'
+    },
+
+    // Data
+    stats: {},
+    recentLog: [],
+    pieces: [],
+    vdps: [],
+    claims: [],
+    logos: [],
+    productImages: {},
+    presets: {},
+    reviews: [],
+    metrics: [],
+    perfSummary: {},
+    personas: [],
+    hashtagData: {},
+    selectedHashtags: [],
+
+    // Settings
+    settingsData: null,
+    settingsForm: {},
+    settingsSaving: false,
+    settingsSaved: false,
+    settingsTestResults: null,
+
+    // Board
+    stages: ['briefing', 'copy', 'visual', 'review', 'approved', 'published'],
+    stageLabels: { briefing: 'Briefing', copy: 'Copy', visual: 'Visual', review: 'Review', approved: 'Aprovado', published: 'Publicado' },
+    stageColors: { briefing: '#7a7a96', copy: '#4a7dff', visual: '#a78bfa', review: '#f59e0b', approved: '#34d399', published: '#22d3ee' },
+    boardBrandFilter: '',
+
+    // Modals
+    showNewPiece: false,
+    showPieceDetail: false,
+    showNewVDP: false,
+    showVDPDetail: false,
+    showCalSlotModal: false,
+    showImageModal: false,
+    selectedPiece: null,
+    selectedImage: null,
+    selectedCalSlot: {},
+    vdpDetail: null,
+
+    // New Piece form
+    newPiece: { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'imagem', persona_target: '', notes: '' },
+
+    // New VDP form
+    newVDP: { produto: '', marca: 'salk', conceito: '', formato: '1080x1350', png_referencia: '', prompt_nb2: '', canva_headline: '', canva_spec_line: '', canva_anvisa: '' },
+
+    // Copy Editor
+    copyText: '',
+    copyHeadline: '',
+    copyCTA: '',
+    copyPlatform: 'instagram',
+    copyCharCount: 0,
+    copyClaimFilter: '',
+    copyComplianceResult: null,
+
+    // Compliance
+    complianceText: '',
+    complianceBrand: 'salk',
+    complianceProduct: '',
+    complianceResult: null,
+
+    // Review
+    reviewFilter: '',
+
+    // Assets
+    assetTab: 'products',
+
+    // Claims
+    claimsFilter: '',
+
+    // Calendar
+    calWeekId: '2026-W14',
+    calBrand: 'salk',
+    calSlots: [],
+    seasonalDates: ['7 Abr - Dia da Saude', '1 Mai - Trabalho', '12 Mai - Enfermagem', '12 Jun - Cirurgiao', '11 Jul - Engenheiro', '18 Ago - Medico', 'Nov - Hospitalar', 'Dez - Retrospectiva'],
+
+    // Hashtags
+    hashtagBrand: 'salk',
+    hashtagPlatform: 'instagram',
+
+    // Studio
+    studioProductType: '',
+    studioScene: '',
+    studioCamera: 'dramatic_studio',
+    studioLighting: 'dramatic_three_point',
+    studioSurface: 'reflective_black',
+    studioStyle: '',
+    studioMood: '',
+    studioIsLEV: false,
+    studioPromptResult: null,
+
+    // Performance
+    metricPieceId: '',
+    metricPlatform: 'instagram',
+    metricDate: '',
+    metricImpressions: 0,
+    metricReach: 0,
+    metricEngagement: 0,
+    metricClicks: 0,
+    metricSaves: 0,
+    metricShares: 0,
+
+    get pendingReviews() {
+      return this.reviews.filter(r => r.verdict === 'pending').length;
+    },
+
+    get claimProducts() {
+      return [...new Set(this.claims.map(c => c.produto))].sort();
+    },
+
+    async init() {
+      if (!this.authenticated) return;
+      await this.refreshData();
+    },
+
+    async doLogin() {
+      this.loginError = '';
+      try {
+        const data = await this.api('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username: this.loginUser, password: this.loginPass }),
+        });
+        localStorage.setItem('studio_token', data.token);
+        this.authenticated = true;
+        this.loginUser = '';
+        this.loginPass = '';
+        await this.refreshData();
+      } catch (e) {
+        this.loginError = 'Usuario ou senha incorretos';
+      }
+    },
+
+    logout() {
+      localStorage.removeItem('studio_token');
+      this.authenticated = false;
+    },
+
+    async refreshData() {
+      const [dashboard, piecesRes, vdpsRes, claimsRes, logosRes, productsRes, presetsRes, reviewsRes, metricsRes, metricsSumRes, personasRes] = await Promise.allSettled([
+        this.api('/api/dashboard'),
+        this.api('/api/production/pieces'),
+        this.api('/api/vdp'),
+        this.api('/api/assets/claims'),
+        this.api('/api/assets/logos'),
+        this.api('/api/assets/products'),
+        this.api('/api/vdp/presets'),
+        this.api('/api/reviews'),
+        this.api('/api/metrics'),
+        this.api('/api/metrics/summary'),
+        this.api('/api/data/buyer-personas'),
+      ]);
+
+      if (dashboard.status === 'fulfilled') {
+        this.stats = dashboard.value.stats || {};
+        this.recentLog = dashboard.value.recent_log || [];
+      }
+      if (piecesRes.status === 'fulfilled') this.pieces = piecesRes.value || [];
+      if (vdpsRes.status === 'fulfilled') this.vdps = vdpsRes.value || [];
+      if (claimsRes.status === 'fulfilled') this.claims = claimsRes.value || [];
+      if (logosRes.status === 'fulfilled') this.logos = logosRes.value || [];
+      if (productsRes.status === 'fulfilled') this.productImages = productsRes.value || {};
+      if (presetsRes.status === 'fulfilled') this.presets = presetsRes.value || {};
+      if (reviewsRes.status === 'fulfilled') this.reviews = reviewsRes.value || [];
+      if (metricsRes.status === 'fulfilled') this.metrics = metricsRes.value || [];
+      if (metricsSumRes.status === 'fulfilled') this.perfSummary = metricsSumRes.value || {};
+      if (personasRes.status === 'fulfilled') this.personas = personasRes.value || [];
+    },
+
+    async api(url, opts = {}) {
+      const base = (window.STUDIO_CONFIG && window.STUDIO_CONFIG.API_BASE_URL) || '';
+      const fullUrl = url.startsWith('http') ? url : base + url;
+      const token = localStorage.getItem('studio_token');
+      const headers = { 'Content-Type': 'application/json', ...opts.headers };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      const res = await fetch(fullUrl, { headers, ...opts });
+      if (res.status === 401) {
+        localStorage.removeItem('studio_token');
+        this.authenticated = false;
+        throw new Error('401');
+      }
+      if (!res.ok && res.status !== 503) throw new Error(`${res.status}`);
+      return res.json();
+    },
+
+    // Board helpers
+    piecesInStage(stage) {
+      let filtered = this.pieces.filter(p => p.stage === stage);
+      if (this.boardBrandFilter) filtered = filtered.filter(p => p.brand === this.boardBrandFilter);
+      return filtered;
+    },
+
+    async createNewPiece() {
+      await this.api('/api/production/pieces', {
+        method: 'POST',
+        body: JSON.stringify(this.newPiece),
+      });
+      this.showNewPiece = false;
+      this.newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'imagem', persona_target: '', notes: '' };
+      await this.loadPieces();
+    },
+
+    async loadPieces() {
+      const url = '/api/production/pieces' + (this.boardBrandFilter ? '?brand=' + this.boardBrandFilter : '');
+      this.pieces = await this.api(url);
+    },
+
+    async movePieceStage(id, stage) {
+      await this.api(`/api/production/pieces/${id}/stage`, {
+        method: 'PUT',
+        body: JSON.stringify({ stage }),
+      });
+      await this.loadPieces();
+      if (this.selectedPiece) this.selectedPiece.stage = stage;
+    },
+
+    async deletePiece(id) {
+      await this.api(`/api/production/pieces/${id}`, { method: 'DELETE' });
+      this.showPieceDetail = false;
+      await this.loadPieces();
+    },
+
+    async sendToReview(pieceId) {
+      await this.api('/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify({ piece_id: pieceId, review_type: 'editorial' }),
+      });
+      await this.movePieceStage(pieceId, 'review');
+      this.reviews = await this.api('/api/reviews');
+    },
+
+    getPieceTitle(pieceId) {
+      const p = this.pieces.find(x => x.id === pieceId);
+      return p ? p.title : pieceId;
+    },
+
+    // VDP
+    async loadVDPDetail(v) {
+      this.vdpDetail = await this.api(`/api/vdp/detail?path=${encodeURIComponent(v.file_path)}`);
+      this.showVDPDetail = true;
+    },
+
+    async createVDP() {
+      await this.api('/api/vdp/create', {
+        method: 'POST',
+        body: JSON.stringify(this.newVDP),
+      });
+      this.showNewVDP = false;
+      this.newVDP = { produto: '', marca: 'salk', conceito: '', formato: '1080x1350', png_referencia: '', prompt_nb2: '', canva_headline: '', canva_spec_line: '', canva_anvisa: '' };
+      this.vdps = await this.api('/api/vdp');
+    },
+
+    // Studio
+    async previewPrompt() {
+      this.studioPromptResult = await this.api('/api/vdp/preview-prompt', {
+        method: 'POST',
+        body: JSON.stringify({
+          product_type: this.studioProductType,
+          scene_description: this.studioScene,
+          lighting_preset: this.studioLighting,
+          camera_preset: this.studioCamera,
+          surface_preset: this.studioSurface,
+          style: this.studioStyle,
+          mood: this.studioMood,
+          is_lev: this.studioIsLEV,
+        }),
+      });
+    },
+
+    // Compliance
+    async runComplianceCheck() {
+      this.complianceResult = await this.api('/api/compliance/check', {
+        method: 'POST',
+        body: JSON.stringify({ text: this.complianceText, brand: this.complianceBrand, product: this.complianceProduct }),
+      });
+    },
+
+    async checkCopyCompliance() {
+      const fullText = [this.copyHeadline, this.copyText, this.copyCTA].filter(Boolean).join(' ');
+      this.copyComplianceResult = await this.api('/api/compliance/check', {
+        method: 'POST',
+        body: JSON.stringify({ text: fullText }),
+      });
+    },
+
+    // Claims
+    filteredClaims() {
+      if (!this.copyClaimFilter) return this.claims.slice(0, 20);
+      return this.claims.filter(c => c.produto === this.copyClaimFilter);
+    },
+
+    filteredClaimsAll() {
+      if (!this.claimsFilter) return this.claims;
+      return this.claims.filter(c => c.produto === this.claimsFilter);
+    },
+
+    insertClaim(claim) {
+      this.copyText += (this.copyText ? '\n' : '') + claim.texto;
+      this.copyCharCount = this.copyText.length;
+    },
+
+    // Review
+    filteredReviews() {
+      if (!this.reviewFilter) return this.reviews;
+      return this.reviews.filter(r => r.verdict === this.reviewFilter);
+    },
+
+    async submitReview(reviewId, verdict, comments = '') {
+      await this.api(`/api/reviews/${reviewId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ piece_id: '', verdict, comments }),
+      });
+      this.reviews = await this.api('/api/reviews');
+      await this.loadPieces();
+    },
+
+    // Calendar
+    async loadCalendar() {
+      const data = await this.api(`/api/calendar/${this.calWeekId}`);
+      this.calSlots = data.slots || [];
+    },
+
+    async generateCalendar() {
+      const data = await this.api(`/api/calendar/${this.calWeekId}/generate?brand=${this.calBrand}`, { method: 'POST' });
+      this.calSlots = data.slots || [];
+    },
+
+    async saveCalendar() {
+      await this.api(`/api/calendar/${this.calWeekId}`, {
+        method: 'POST',
+        body: JSON.stringify({ week_id: this.calWeekId, brand: this.calBrand, slots: this.calSlots }),
+      });
+    },
+
+    // Hashtags
+    async loadHashtags() {
+      this.hashtagData = await this.api(`/api/data/hashtags/${this.hashtagBrand}?platform=${this.hashtagPlatform}`);
+      this.selectedHashtags = [];
+    },
+
+    toggleHashtag(h) {
+      const idx = this.selectedHashtags.indexOf(h);
+      if (idx >= 0) this.selectedHashtags.splice(idx, 1);
+      else this.selectedHashtags.push(h);
+    },
+
+    copySelectedHashtags() {
+      navigator.clipboard.writeText(this.selectedHashtags.join(' '));
+    },
+
+    // Performance
+    async saveMetric() {
+      await this.api('/api/metrics', {
+        method: 'POST',
+        body: JSON.stringify({
+          piece_id: this.metricPieceId,
+          platform: this.metricPlatform,
+          published_at: this.metricDate,
+          impressions: this.metricImpressions,
+          reach: this.metricReach,
+          engagement: this.metricEngagement,
+          clicks: this.metricClicks,
+          saves: this.metricSaves,
+          shares: this.metricShares,
+        }),
+      });
+      this.metrics = await this.api('/api/metrics');
+      this.perfSummary = await this.api('/api/metrics/summary');
+      this.metricPieceId = '';
+      this.metricImpressions = 0;
+      this.metricReach = 0;
+      this.metricEngagement = 0;
+      this.metricClicks = 0;
+      this.metricSaves = 0;
+      this.metricShares = 0;
+    },
+
+    // === Settings ===
+    async loadSettings() {
+      try {
+        this.settingsSaved = false;
+        this.settingsTestResults = null;
+        this.settingsData = await this.api('/api/settings');
+        // Inicializar form com valores mascarados
+        this.settingsForm = { ...(this.settingsData.values || {}) };
+      } catch (e) { console.error('Settings load error:', e); }
+    },
+
+    async saveSettings() {
+      this.settingsSaving = true;
+      this.settingsSaved = false;
+      try {
+        // Filtrar apenas campos que mudaram (sem máscara)
+        const toSave = {};
+        for (const [k, v] of Object.entries(this.settingsForm)) {
+          if (v && !v.includes('\u2022')) { // bullet = masked
+            toSave[k] = v;
+          }
+        }
+        const result = await this.api('/api/settings', {
+          method: 'PUT',
+          body: JSON.stringify({ settings: toSave }),
+        });
+        this.settingsSaved = true;
+        // Recarregar settings e stats
+        await this.loadSettings();
+        this.stats = (await this.api('/api/dashboard')).stats;
+        setTimeout(() => { this.settingsSaved = false; }, 3000);
+      } catch (e) { console.error('Settings save error:', e); }
+      this.settingsSaving = false;
+    },
+
+    async testConnections() {
+      try {
+        this.settingsTestResults = await this.api('/api/settings/test');
+      } catch (e) { console.error('Test error:', e); }
+    },
+
+    settingsGroupDefs(group) {
+      if (!this.settingsData) return [];
+      return (this.settingsData.definitions || []).filter(d => d.group === group);
+    },
+
+    settingsKeyStatus(key) {
+      if (!this.settingsData || !this.settingsData.status) return {};
+      return this.settingsData.status[key] || {};
+    },
+
+    formatNumber(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return n.toString();
+    },
+  };
+}
+</script>
+</body>
+</html>

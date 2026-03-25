@@ -1,0 +1,22 @@
+name: Deploy Content Studio
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/content-pipeline/**'
+      - 'packages/content-studio-frontend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "${RENDER_DEPLOY_HOOK}" ]; then
+            curl -sf "${RENDER_DEPLOY_HOOK}"
+            echo "Deploy triggered on Render"
+          else
+            echo "RENDER_DEPLOY_HOOK not configured, skipping deploy"
+          fi

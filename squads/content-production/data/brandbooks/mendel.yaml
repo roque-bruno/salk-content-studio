@@ -1,0 +1,87 @@
+# Brandbook — Mendel Medical
+# Fonte: brand-guidelines.yaml + feedback gestora + PRD v3.0
+# Tipo: Autoridade / Fabricante (Prioridade 2)
+
+brand: mendel
+full_name: "Mendel Medical"
+priority: 2
+focus: "Autoridade / Fabricante"
+tagline: "Fabricante Nacional de Equipamentos Medicos"
+website: "mendelmedical.com.br"
+cnpj: "20.102.553/0001-62"
+
+tone_of_voice:
+  primary: "Tecnico, preciso, autoritativo"
+  adjectives: ["Rigoroso", "Inovador", "Certificado", "Seguro"]
+  prohibited: ["Informal", "Superficial", "Vendedor", "Hype"]
+  cta_style: "Tecnico — 'Consulte a ficha tecnica', 'Veja os dados completos', 'Acesse a documentacao'"
+  language_level: "Tecnico/engenharia — engenheiros clinicos e equipes tecnicas"
+
+color_palette:
+  primary: "#1A1A2E"
+  secondary: "#16213E"
+  accent: "#FFFFFF"
+  background_dark: "#0f0f1a"
+  note: "Confirmar HEX exatos com Brand Kit Canva"
+
+typography:
+  primary: "A confirmar (Brand Kit Canva)"
+  headline_size: "36pt bold"
+  body_size: "16pt"
+
+logo_usage:
+  position: "Canto superior direito"
+  min_width_px: 180
+  max_width_px: 200
+  rule: "Usar em conteudo TECNICO — specs, fabricacao, engenharia, Ra/R9, normas, bastidores"
+  decision_rule: "Se tem numero tecnico (Ra, kg, mm, horas, lux) → Mendel"
+
+content_pillars:
+  - name: "Bastidores da Fabrica"
+    percentage: 35
+    description: "Processo de fabricacao, CNC, montagem, testes, qualidade"
+  - name: "Engenharia e Inovacao"
+    percentage: 30
+    description: "Desenvolvimento LEV, P&D, normas tecnicas, certificacoes"
+  - name: "Dados Tecnicos Oficiais"
+    percentage: 20
+    description: "Specs detalhadas com fonte ANVISA, comparativos com mercado"
+  - name: "Time de Engenharia"
+    percentage: 15
+    description: "Perfis, dia a dia, laboratorio, eventos tecnicos"
+
+target_personas:
+  - id: "eng_clinica"
+    name: "Engenheiro Clinico"
+    role: "Avaliador tecnico"
+    concerns: ["Normas", "Specs", "Certificacoes", "Comparativos"]
+  - id: "eng_biomedico"
+    name: "Engenheiro Biomedico"
+    role: "Especificador"
+    concerns: ["ANVISA", "ISO", "Compatibilidade", "Manutencao preditiva"]
+
+visual_rules:
+  nb2_product: "Produto integrado na cena via NB2. Enfase em detalhes tecnicos."
+  nb2_scene: "Ambientes laboratoriais, industriais, sala limpa. NUNCA clinicos com IA."
+  people: "NUNCA pessoas geradas por IA."
+  text_logo: "NUNCA texto ou logo via IA."
+  certifications: "Destaque ANVISA + ISO em toda peca."
+
+canva_composition:
+  margins: "60px"
+  headline: "36pt bold, dados tecnicos em destaque"
+  spec_line: "18pt, dados precisos com unidades"
+  anvisa: "Badge ANVISA + ISO obrigatorio"
+
+social:
+  linkedin: "mendelmedical"
+  instagram: "@mendelmedical"
+  facebook: "mendelmedical"
+  youtube: "@mendelmedical"
+
+prohibited_terms:
+  - "ETRUS"
+  - "o melhor"
+  - "garante"
+  - "cura"
+  - "100% seguro"

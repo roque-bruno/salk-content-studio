@@ -1,0 +1,70 @@
+# Brandbook — Manager Grupo
+# Fonte: brand-guidelines.yaml + PRD v3.0
+# Tipo: Institucional / Employer Branding (Prioridade 3)
+
+brand: manager-grupo
+full_name: "Manager Grupo"
+priority: 3
+focus: "Institucional / Employer Branding"
+tagline: "Integrando Solucoes"
+website: "managergrupo.com.br"
+
+tone_of_voice:
+  primary: "Acolhedor, institucional, inspirador"
+  adjectives: ["Integrado", "Humano", "Colaborativo", "Inovador"]
+  prohibited: ["Corporativo frio", "Generico", "Tecnico demais"]
+  cta_style: "Institucional — 'Conheca nosso time', 'Faca parte', 'Saiba mais sobre o grupo'"
+  language_level: "Acessivel e humano — publico geral e candidatos"
+
+color_palette:
+  primary: "#2D3436"
+  secondary: "#636E72"
+  accent: "#FFFFFF"
+  background_dark: "#1a1a1a"
+  note: "Confirmar HEX exatos com Brand Kit Canva"
+
+typography:
+  primary: "A confirmar (Brand Kit Canva)"
+  headline_size: "36pt bold"
+  body_size: "16pt"
+
+logo_usage:
+  position: "Central ou canto inferior"
+  min_width_px: 180
+  rule: "Usar em conteudo INSTITUCIONAL — cultura, equipe, grupo, carreiras"
+
+content_pillars:
+  - name: "Cultura Organizacional"
+    percentage: 40
+    description: "Valores, missao, dia a dia, equipe"
+  - name: "Carreiras e Employer Branding"
+    percentage: 35
+    description: "Vagas, depoimentos de colaboradores, beneficios"
+  - name: "O Grupo"
+    percentage: 25
+    description: "Apresentacao das empresas, cadeia de valor, eventos"
+
+target_personas:
+  - id: "candidato"
+    name: "Candidato"
+    role: "Potencial colaborador"
+    concerns: ["Cultura", "Beneficios", "Crescimento", "Proposito"]
+  - id: "stakeholder"
+    name: "Stakeholder"
+    role: "Parceiro/fornecedor"
+    concerns: ["Solidez", "Valores", "Portfolio", "Reputacao"]
+
+visual_rules:
+  photos: "Fotos REAIS da equipe e ambiente de trabalho. NUNCA pessoas geradas por IA."
+  style: "Acolhedor, cores quentes, foco em pessoas reais."
+  text_logo: "NUNCA texto ou logo via IA."
+
+social:
+  linkedin: "managergrupo"
+  instagram: "@managergrupo"
+  facebook: "managergrupo"
+
+prohibited_terms:
+  - "ETRUS"
+  - "o melhor"
+  - "garante"

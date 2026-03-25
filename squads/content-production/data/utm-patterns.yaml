@@ -1,0 +1,112 @@
+# Padrões UTM — Manager Grupo
+# Derivado de: specs do agente Bridge (crm-integration)
+# Uso: Rastreamento de leads de redes sociais no Bitrix24/Protheus
+
+version: "1.0"
+last_updated: "2026-03-16"
+
+# ═══════════════════════════════════════════════════════════════
+# ESTRUTURA UTM PADRÃO
+# ═══════════════════════════════════════════════════════════════
+
+structure:
+  format: "?utm_source={source}&utm_medium={medium}&utm_campaign={campaign}&utm_content={content}&utm_term={term}"
+
+# ═══════════════════════════════════════════════════════════════
+# VALORES POR COMPONENTE
+# ═══════════════════════════════════════════════════════════════
+
+sources:
+  - value: "instagram"
+    when: "Posts, Reels, Stories do Instagram"
+  - value: "linkedin"
+    when: "Posts, artigos, PDFs do LinkedIn"
+  - value: "youtube"
+    when: "Vídeos e Shorts do YouTube"
+  - value: "facebook"
+    when: "Posts e vídeos do Facebook"
+  - value: "email"
+    when: "Newsletters e emails marketing"
+
+mediums:
+  - value: "social"
+    when: "Conteúdo orgânico em redes sociais"
+  - value: "paid"
+    when: "Anúncios pagos (futuro)"
+  - value: "email"
+    when: "Email marketing"
+
+campaigns:
+  format: "{marca}-{ano}-{pilar}"
+  examples:
+    - "salk-2026-produto"
+    - "salk-2026-educacional"
+    - "salk-2026-cases"
+    - "mendel-2026-bastidores"
+    - "mendel-2026-engenharia"
+    - "manager-2026-cultura"
+    - "dayho-2026-fabril"
+
+content:
+  format: "{formato}-{produto}-{id}"
+  examples:
+    - "carousel-lev-001"
+    - "reel-kratus-demo-015"
+    - "pdf-lev-specs-003"
+    - "post-command-feature-007"
+
+# ═══════════════════════════════════════════════════════════════
+# TEMPLATES PRONTOS POR PLATAFORMA
+# ═══════════════════════════════════════════════════════════════
+
+templates:
+  instagram_bio:
+    url: "salkmedical.com.br/?utm_source=instagram&utm_medium=social&utm_campaign={campaign}&utm_content=bio-link"
+    note: "Atualizar link na bio semanalmente com campanha ativa"
+
+  linkedin_comment:
+    url: "salkmedical.com.br/?utm_source=linkedin&utm_medium=social&utm_campaign={campaign}&utm_content={post-id}"
+    note: "Link no primeiro comentário do post"
+
+  youtube_description:
+    url: "salkmedical.com.br/?utm_source=youtube&utm_medium=social&utm_campaign={campaign}&utm_content={video-id}"
+
+  facebook_post:
+    url: "salkmedical.com.br/?utm_source=facebook&utm_medium=social&utm_campaign={campaign}&utm_content={post-id}"
+
+# ═══════════════════════════════════════════════════════════════
+# CTAs PADRÃO COM UTM
+# ═══════════════════════════════════════════════════════════════
+
+ctas_by_funnel:
+  topo_awareness:
+    primary: "Baixe o guia: Como especificar focos cirúrgicos"
+    alternative: "Salve este post para consultar depois"
+    platforms: ["Instagram", "LinkedIn"]
+
+  meio_consideracao:
+    primary: "Compare especificações: LEV vs média de mercado"
+    alternative: "Assista a demonstração completa"
+    platforms: ["LinkedIn", "YouTube"]
+
+  meio_avaliacao:
+    primary: "Agende uma demonstração técnica gratuita"
+    alternative: "Solicite a ficha técnica completa"
+    platforms: ["LinkedIn", "Email"]
+
+  fundo_decisao:
+    primary: "Solicite uma proposta personalizada"
+    alternative: "Fale com um consultor técnico"
+    platforms: ["LinkedIn", "Email"]
+
+  fundo_licitacao:
+    primary: "Receba a documentação completa para licitação"
+    alternative: "Solicite cotação para pregão"
+    platforms: ["LinkedIn", "Email"]
+
+ctas_by_platform:
+  instagram: ["Link na bio", "Salve para consultar depois", "Envie para seu engenheiro clínico"]
+  linkedin: ["Comente 'FICHA' e envio a especificação completa", "Link no primeiro comentário"]
+  youtube: ["Se inscreva para mais conteúdo técnico", "Assista a demo completa no link"]
+  facebook: ["Compartilhe com quem precisa saber", "Comente sua dúvida"]
+  email: ["[Botão] Agendar Demonstração", "[Botão] Baixar Catálogo Técnico"]

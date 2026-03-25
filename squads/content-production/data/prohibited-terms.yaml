@@ -1,0 +1,173 @@
+# Termos Proibidos — Compliance ANVISA/CFM
+# Fonte: docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md (linhas 451-482)
+# Fonte: Agente Shield (compliance-guardian) domain_knowledge
+# Referências: RDC 96/2008, RDC 751/2022, RDC 848/2024, CFM Res. 2.336/2023
+
+version: "2.0"
+last_updated: "2026-03-25"
+owner: "Shield (compliance-guardian)"
+severity: BLOCKING
+
+# ═══════════════════════════════════════════════════════════════
+# PRODUTOS BLOQUEADOS PARA PUBLICACAO (PRD v2.0 CON-008)
+# ═══════════════════════════════════════════════════════════════
+
+produtos_bloqueados:
+  severity: CRITICAL
+  reference: "PRD v2.0 CON-008 — Produto nao lancado"
+  terms:
+    - term: "ETRUS"
+      reason: "Produto NAO lancado — PROIBIDO publicar qualquer conteudo"
+      alternative: "Usar LEV (linha atual de focos cirurgicos)"
+    - term: "foco cirurgico ETRUS"
+      reason: "Produto NAO lancado"
+      alternative: "Foco cirurgico LEV"
+    - term: "linha ETRUS"
+      reason: "Produto NAO lancado"
+      alternative: "Linha LEV"
+    - term: "novo foco cirurgico"
+      reason: "Pode ser interpretado como referencia ao ETRUS"
+      alternative: "Foco cirurgico LEV"
+    - term: "lancamento"
+      reason: "Pode ser associado ao ETRUS"
+      alternative: "Evitar ou usar apenas para produtos ja publicados"
+      exception: "Permitido se referente a produto JA lancado e publicavel"
+
+# ═══════════════════════════════════════════════════════════════
+# SUPERLATIVOS E ABSOLUTOS (PROIBIDOS)
+# ═══════════════════════════════════════════════════════════════
+
+superlativos:
+  severity: CRITICAL
+  reference: "RDC 96/2008 — Publicidade de dispositivos médicos"
+  terms:
+    - term: "o melhor"
+      reason: "Superlativo sem evidência comparativa formal"
+      alternative: "Referência em qualidade de iluminação cirúrgica"
+    - term: "o único"
+      reason: "Exclusividade difícil de sustentar — verificar exceções"
+      alternative: "Um dos poucos fabricantes nacionais com..."
+      exception: "COMMAND pode ser 'único sistema de sala integrada nacional' se verificado"
+    - term: "o mais moderno"
+      reason: "Subjetivo e não mensurável"
+      alternative: "Com tecnologia de última geração"
+    - term: "revolucionário"
+      reason: "Hipérbole sem sustentação"
+      alternative: "Inovador" ou "com avanço significativo"
+    - term: "incomparável"
+      reason: "Superlativo absoluto"
+      alternative: "Com diferenciais significativos"
+    - term: "perfeito"
+      reason: "Absoluto impossível de sustentar"
+      alternative: "De alta precisão"
+    - term: "infalível"
+      reason: "Nenhum equipamento é infalível"
+      alternative: "Com alto índice de confiabilidade"
+
+# ═══════════════════════════════════════════════════════════════
+# PROMESSAS E GARANTIAS (PROIBIDOS)
+# ═══════════════════════════════════════════════════════════════
+
+promessas:
+  severity: CRITICAL
+  reference: "ANVISA + Código de Defesa do Consumidor"
+  terms:
+    - term: "garante melhores resultados"
+      reason: "Não se pode garantir resultado clínico"
+      alternative: "Projetado para oferecer condições ideais de iluminação"
+    - term: "elimina riscos"
+      reason: "Nenhum equipamento elimina todos os riscos"
+      alternative: "Contribui para a redução de riscos"
+    - term: "cura"
+      reason: "Equipamento não cura — fornece suporte"
+      alternative: "Auxilia no procedimento"
+    - term: "100% seguro"
+      reason: "Segurança absoluta é impossível de garantir"
+      alternative: "Conforme normas de segurança vigentes"
+
+# ═══════════════════════════════════════════════════════════════
+# COMPARATIVOS DIRETOS (PROIBIDOS)
+# ═══════════════════════════════════════════════════════════════
+
+comparativos:
+  severity: HIGH
+  reference: "CONAR + RDC 96/2008"
+  terms:
+    - term: "melhor que [marca X]"
+      reason: "Comparativo direto depreciativo é proibido"
+      alternative: "Usar CMP-01 (vs média de mercado, sem nomes)"
+    - term: "superior ao [concorrente]"
+      reason: "Citar concorrente por nome é proibido"
+      alternative: "Com specs acima da média de mercado*"
+    - term: "[marca] não oferece"
+      reason: "Denigrir concorrente"
+      alternative: "Diferencial exclusivo: [feature]"
+
+# ═══════════════════════════════════════════════════════════════
+# URGÊNCIA FALSA / MARKETING AGRESSIVO (PROIBIDOS)
+# ═══════════════════════════════════════════════════════════════
+
+urgencia_falsa:
+  severity: MEDIUM
+  terms:
+    - term: "últimas unidades"
+      reason: "Se não for verdade, é propaganda enganosa"
+      condition: "Permitido APENAS se houver estoque realmente limitado documentado"
+    - term: "oferta por tempo limitado"
+      reason: "Healthcare B2B não é varejo"
+      alternative: "Condições especiais para projetos em andamento"
+    - term: "não perca"
+      reason: "Tom de urgência inadequado para B2B healthcare"
+      alternative: "Conheça as condições"
+
+# ═══════════════════════════════════════════════════════════════
+# CONTEÚDO VISUAL PROIBIDO
+# ═══════════════════════════════════════════════════════════════
+
+visual_prohibitions:
+  severity: CRITICAL
+  items:
+    - "Imagens clínicas reais sem consentimento por escrito"
+    - "Fotos de pacientes (reais ou geradas por IA)"
+    - "Cenas de procedimentos cirúrgicos (reais ou IA)"
+    - "Pessoas geradas por IA"
+    - "Produto com aparência alterada por IA (cor, formato, tamanho)"
+    - "Emojis que banalizam saúde (caveiras, seringas, rostos doentes)"
+    - "Dados ou depoimentos inventados"
+
+# ═══════════════════════════════════════════════════════════════
+# INFORMAÇÕES ALÉM DO REGISTRO (PROIBIDO)
+# ═══════════════════════════════════════════════════════════════
+
+alem_registro:
+  severity: CRITICAL
+  reference: "ANVISA — Publicidade deve se ater ao registro"
+  rule: "NÃO divulgar especificações que não constem no registro ANVISA"
+  examples:
+    - "Indicações terapêuticas não registradas"
+    - "Specs de produtos em desenvolvimento (pré-registro)"
+    - "Funcionalidades experimentais"
+
+# ═══════════════════════════════════════════════════════════════
+# GLOSSÁRIO DE TRADUÇÃO SEGURA
+# ═══════════════════════════════════════════════════════════════
+
+safe_translations:
+  - technical: "Ra/R9 = 99"
+    accessible: "Luz que reproduz as cores exatamente como são"
+  - technical: "NBR IEC 60601"
+    accessible: "Certificado pelas normas brasileiras de segurança"
+  - technical: "Capacidade bariátrica"
+    accessible: "Projetada para pacientes de todos os portes"
+  - technical: "Eletro-hidráulico"
+    accessible: "Movimentação suave e precisa com controles eletrônicos"
+  - technical: "Campo estéril"
+    accessible: "Sem comprometer a higiene do procedimento"
+  - technical: "CRI (Color Rendering Index)"
+    accessible: "Índice que mede a fidelidade das cores sob a luz"
+  - technical: "Diluição de sombra"
+    accessible: "Visão clara sem obstáculos no campo operatório"
+  - technical: "IHM Touch Screen"
+    accessible: "Painel de controle por toque"
+  - technical: "Vida útil LEDs >300.000h"
+    accessible: "Mais de 30 anos de iluminação em uso típico"

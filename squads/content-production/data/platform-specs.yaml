@@ -1,0 +1,209 @@
+# Especificações Técnicas por Plataforma
+# Fonte: docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md (linhas 184-234)
+# Fonte: docs/research/pesquisa-algoritmos-redes-sociais-2025-2026.md
+
+version: "1.0"
+last_updated: "2026-03-16"
+
+# ═══════════════════════════════════════════════════════════════
+# IMAGENS
+# ═══════════════════════════════════════════════════════════════
+
+images:
+  instagram_feed_retrato:
+    format: "JPG/PNG"
+    dimensions: "1080x1350"
+    aspect_ratio: "4:5"
+    max_file_size: "30 MB"
+  instagram_feed_quadrado:
+    format: "JPG/PNG"
+    dimensions: "1080x1080"
+    aspect_ratio: "1:1"
+    max_file_size: "30 MB"
+  instagram_carousel:
+    format: "JPG/PNG"
+    dimensions: "1080x1350"
+    aspect_ratio: "4:5"
+    max_file_size: "30 MB"
+    max_slides: 20
+    ideal_slides_b2b: "7-10"
+  instagram_stories:
+    format: "JPG/PNG"
+    dimensions: "1080x1920"
+    aspect_ratio: "9:16"
+    max_file_size: "30 MB"
+  instagram_reel_cover:
+    format: "JPG/PNG"
+    dimensions: "1080x1920"
+    aspect_ratio: "9:16"
+  linkedin_post_paisagem:
+    format: "JPG/PNG"
+    dimensions: "1200x627"
+    aspect_ratio: "1.91:1"
+    max_file_size: "5 MB"
+  linkedin_post_quadrado:
+    format: "JPG/PNG"
+    dimensions: "1200x1200"
+    aspect_ratio: "1:1"
+    max_file_size: "5 MB"
+  linkedin_carousel_pdf:
+    format: "PDF"
+    dimensions: "1080x1080 ou 1080x1350"
+    aspect_ratio: "1:1 ou 4:5"
+    max_file_size: "100 MB"
+    ideal_pages: "8-12"
+  youtube_thumbnail:
+    format: "JPG/PNG"
+    dimensions: "1280x720"
+    aspect_ratio: "16:9"
+    max_file_size: "2 MB"
+  facebook_post:
+    format: "JPG/PNG"
+    dimensions: "1200x630"
+    aspect_ratio: "1.91:1"
+    max_file_size: "10 MB"
+
+# ═══════════════════════════════════════════════════════════════
+# VÍDEOS
+# ═══════════════════════════════════════════════════════════════
+
+videos:
+  instagram_reels:
+    format: "MP4"
+    dimensions: "1080x1920"
+    aspect_ratio: "9:16"
+    duration_ideal: "7-30s (viral) / 30-60s (educativo)"
+    duration_max: "3 min"
+    safe_zone_central: "1080x1440"
+    thumbnail_grid: "1080x1080 (1:1)"
+  instagram_stories:
+    format: "MP4"
+    dimensions: "1080x1920"
+    aspect_ratio: "9:16"
+    duration_ideal: "15s por story"
+    duration_max: "60s"
+  linkedin_video:
+    format: "MP4"
+    dimensions: "1920x1080"
+    aspect_ratio: "16:9 ou 1:1"
+    duration_ideal: "< 90s"
+    duration_max: "10 min"
+  youtube_shorts:
+    format: "MP4"
+    dimensions: "1080x1920"
+    aspect_ratio: "9:16"
+    duration_ideal: "20-45s (geral) / 60-90s (B2B)"
+    duration_max: "3 min"
+    frame_rate: "30-60 FPS"
+  youtube_long:
+    format: "MP4"
+    dimensions: "1920x1080"
+    aspect_ratio: "16:9"
+    duration_ideal: "10-20 min (demo) / 30-60 min (webinar)"
+    duration_max: "12h"
+  facebook_video:
+    format: "MP4"
+    dimensions: "1080x1080"
+    aspect_ratio: "1:1 ou 16:9"
+    duration_ideal: "< 60s"
+    duration_max: "240 min"
+
+# ═══════════════════════════════════════════════════════════════
+# REGRAS GERAIS
+# ═══════════════════════════════════════════════════════════════
+
+rules:
+  - "Legendas em vídeo são OBRIGATÓRIAS (muitos assistem sem som)"
+  - "Safe zones respeitadas em Reels e Stories"
+  - "Texto legível em mobile: mínimo 24pt"
+
+# ═══════════════════════════════════════════════════════════════
+# COPY — LIMITES POR PLATAFORMA
+# ═══════════════════════════════════════════════════════════════
+
+copy_limits:
+  instagram_feed:
+    char_limit: "300-500"
+    technical_level: "5/10"
+    tone: "Acessível, visual"
+    hashtags: 11
+  instagram_reels:
+    char_limit: "15-60s script"
+    technical_level: "3/10"
+    tone: "Dinâmico, direto"
+    hook: "3 primeiros segundos"
+  instagram_stories:
+    char_limit: "1-2 frases"
+    technical_level: "3/10"
+    tone: "Casual-profissional"
+  linkedin:
+    char_limit: "1500-3000"
+    technical_level: "8/10"
+    tone: "Profissional, consultivo, técnico"
+    hashtags: "3-5"
+  youtube_shorts:
+    char_limit: "20-90s script"
+    technical_level: "4/10"
+    tone: "Educativo, rápido"
+  youtube_long:
+    char_limit: "5-60 min script"
+    technical_level: "7/10"
+    tone: "Tutorial, demonstrativo"
+  facebook:
+    char_limit: "80-100"
+    technical_level: "4/10"
+    tone: "Conversacional"
+
+# ═══════════════════════════════════════════════════════════════
+# FORMATOS PRIORITÁRIOS POR PLATAFORMA
+# ═══════════════════════════════════════════════════════════════
+
+priority_formats:
+  instagram:
+    first: "Reels (60-70% do conteúdo)"
+    second: "Carousels 4:5 (20-30%)"
+    third: "Stories (5-10%)"
+  linkedin:
+    first: "PDF Carousels (maior engagement: 6.60%)"
+    second: "Texto longo + imagem"
+    third: "Vídeo nativo < 90s"
+  youtube:
+    first: "Shorts 9:16 (descoberta)"
+    second: "Vídeos longos 16:9 (conversão)"
+  facebook:
+    first: "Vídeo curto"
+    second: "Posts com imagem"
+    third: "Grupos (participação)"
+
+# ═══════════════════════════════════════════════════════════════
+# FREQUÊNCIA POR MARCA E PLATAFORMA
+# ═══════════════════════════════════════════════════════════════
+
+frequency:
+  salk_medical:
+    instagram_feed: "5x/semana (3 Reels + 2 Carousels)"
+    instagram_stories: "Diário"
+    linkedin: "5x/semana (2 PDF + 2 Texto + 1 Vídeo)"
+    youtube_shorts: "3x/semana"
+    youtube_long: "2x/mês"
+    facebook: "3x/semana"
+    best_times:
+      instagram: "Ter-Qui 11h-13h"
+      linkedin: "Ter-Qui 8h-10h"
+      youtube: "14h-16h"
+      facebook: "12h-15h"
+  mendel_medical:
+    instagram_feed: "4x/semana (2 Reels + 2 Carousels)"
+    instagram_stories: "4x/semana"
+    linkedin: "4x/semana (2 PDF + 1 Texto + 1 Vídeo)"
+    youtube_shorts: "2x/semana"
+    youtube_long: "1x/mês"
+    facebook: "2x/semana"
+  manager_grupo:
+    instagram_feed: "2x/semana (1 Reel + 1 Post)"
+    instagram_stories: "2x/semana"
+    linkedin: "2x/semana (1 Texto + 1 Imagem)"
+    facebook: "1x/semana"
+  dayho:
+    instagram_feed: "1x/semana (1 Reel ou Post)"
+    linkedin: "1x/semana (1 Post técnico)"

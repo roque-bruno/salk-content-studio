@@ -1,0 +1,372 @@
+# Content Production Pipeline — Squad Content Production
+# Workflow end-to-end: do briefing à publicação
+
+workflow:
+  name: content-pipeline
+  title: "Pipeline de Produção de Conteúdo"
+  description: |
+    Workflow completo de produção de conteúdo para 4 marcas e 16 canais.
+    11 estágios (10 sequenciais + feedback loop) com gate bloqueante em compliance.
+    Pipeline CÍCLICO: publicação → performance analysis → briefing (fecha o loop).
+  version: "2.1"
+  created: "2026-03-16"
+  updated: "2026-03-25"
+
+  # Ciclo semanal de batch production
+  batch_schedule:
+    monday: "Planejamento + Calendarios (Atlas)"
+    tuesday: "Copywriting (Helix) + Review Intermediario (Lens)"
+    wednesday: "Producao Visual NB2 (Apex)"
+    thursday: "Atomizacao (Nova) + Review Final (Lens) + Compliance (Shield)"
+    friday: "Ajustes Finais + Agendamento (Usuario)"
+
+  stages:
+    # ── SEGUNDA-FEIRA ──────────────────────────────────────
+
+    - name: briefing
+      order: 1
+      agent: content-strategist  # Atlas
+      day: monday
+      input:
+        - "Calendário editorial aprovado"
+        - "Pilares de conteúdo por marca"
+        - "Insights de @market-intelligence (se disponíveis)"
+      process:
+        - "Revisar calendário da semana"
+        - "Criar briefs estruturados (template content-brief.md)"
+        - "Definir pilar, persona, formato, plataforma, claims"
+        - "Identificar peças-mãe para atomização"
+      output: "Briefs aprovados para todas as peças da semana"
+      quality_gate: "Brief validation checklist (10 pontos)"
+      time: "2-3h"
+
+    - name: intelligence
+      order: 2
+      agent: market-intelligence  # Vigil
+      day: monday
+      input: "Solicitações de inteligência do Atlas"
+      process:
+        - "Atualizar dados de concorrência (se necessário)"
+        - "Verificar tendências relevantes"
+        - "Fornecer dados de mercado para enriquecer briefs"
+      output: "Insights de mercado para copy"
+      time: "1-2h"
+      optional: true  # Nem toda semana precisa de intelligence fresh
+
+    - name: copywriting
+      order: 3
+      agent: medical-copywriter  # Helix
+      day: tuesday
+      input:
+        - "Briefs estruturados (do Atlas)"
+        - "Insights de mercado (do Vigil, se disponivel)"
+        - "Banco de claims pre-aprovados"
+      process:
+        - "Selecionar claims do banco para cada brief"
+        - "Aplicar framework de copy adequado (PAS/AIDA/BAB/SPIN)"
+        - "Escrever copy adaptado por persona e plataforma"
+        - "Criar hooks, headlines, CTAs"
+      output: "Copy sets para design"
+      quality_gate: "Copy quality checklist"
+      time: "2-3h"
+
+    - name: copy-review
+      order: 4
+      agent: quality-editor  # Lens
+      day: tuesday
+      input: "Copy sets do Helix"
+      process:
+        - "Validar tom de voz por marca"
+        - "Verificar claims contra claims-bank.yaml"
+        - "Verificar adequacao a persona e plataforma"
+        - "Verificar formato e CTA"
+        - "Aprovar ou devolver com feedback especifico"
+      output: "Copy aprovado para design (reduz retrabalho 30%)"
+      quality_gate: "Copy quality checklist (review intermediario)"
+      time: "1h"
+      note: "Review intermediario — Lens valida copy ANTES de Apex investir tempo em VDPs"
+
+    # ── QUARTA-FEIRA ────────────────────────────────────────
+
+    - name: visual-design
+      order: 5
+      agent: visual-designer  # Apex
+      day: wednesday
+      input:
+        - "Copy aprovado por Lens (review intermediario)"
+        - "Product PNGs recortados (fundo transparente)"
+        - "Templates Canva por marca"
+      process:
+        - "Gerar prompt NB2 com arquitetura 8 dimensoes"
+        - "Usuario executa no Google AI Studio com upload do PNG"
+        - "Criar VDP completo: prompt + instrucoes composicao Canva"
+        - "Montar carousels e PDFs"
+      output: "Visual Delivery Packs completos"
+      quality_gate: "Visual compliance + brand consistency checklist"
+      time: "3-4h"
+      nb2_rules:
+        - "Descrever APENAS cenario, NUNCA o produto"
+        - "Upload PNG real como referencia — IA integra na cena"
+        - "Negative prompt obrigatorio: no text, logos, competitor equipment"
+        - "LEV: luz focada para baixo, NUNCA dispersa"
+        - "Nunca wallpaper + colagem (PROIBIDO)"
+
+    # ── QUARTA-FEIRA ───────────────────────────────────────
+
+    # video-production DIFERIDO para Epico 3 (Flux nao esta no MVP)
+    # - name: video-production
+    #   order: N/A
+    #   agent: video-producer  # Flux (diferido)
+
+    - name: atomization
+      order: 6
+      agent: content-atomizer  # Nova
+      day: thursday
+      input:
+        - "Pecas-mae (imagens + copy aprovado)"
+      process:
+        - "Identificar pecas-mae para atomizacao"
+        - "Derivar 5-8 pecas cross-platform por master"
+        - "Adaptar copy, formato, dimensao, CTA por plataforma"
+        - "Verificar consistencia entre derivados"
+      output: "Derivados cross-platform (5-8 por peca-mae)"
+      quality_gate: "Atomization consistency checklist"
+      time: "2-3h"
+
+    # ── QUINTA-FEIRA ───────────────────────────────────────
+
+    - name: quality-review
+      order: 7
+      agent: quality-editor  # Lens
+      day: thursday
+      input: "Peças completas (originais + derivados)"
+      process:
+        - "Camada 1: Verificação automatizada"
+        - "Camada 2: Revisão editorial (tom, brand, qualidade)"
+        - "Verificar consistência entre derivados"
+        - "Executar checklist pré-publicação (seções 1-2)"
+      output: "Peças revisadas editorialmente"
+      quality_gate: "Pre-publication checklist (camadas 1+2)"
+      time: "2h"
+
+    - name: compliance-check
+      order: 8
+      agent: compliance-guardian  # Shield
+      day: thursday
+      type: BLOCKING_GATE
+      input: "Peças revisadas por Lens (com claims técnicos)"
+      process:
+        - "Camada 3: Revisão técnica/médica"
+        - "Camada 4: Revisão legal/compliance ANVISA"
+        - "Verificar claims contra banco aprovado"
+        - "Verificar termos proibidos"
+        - "Verificar compliance visual"
+        - "Emitir veredito: APROVADO / BLOQUEADO"
+      output: "Peças com selo de compliance"
+      quality_gate: "Compliance review checklist (BLOCKING)"
+      time: "2-3h"
+      blocking: true
+      note: "NENHUMA peça avança sem aprovação de Shield"
+
+    - name: crm-tagging
+      order: 9
+      agent: crm-integration  # Bridge
+      day: thursday-friday
+      input: "Peças aprovadas por Shield"
+      process:
+        - "Adicionar UTM parameters padronizados"
+        - "Verificar CTA rastreável no Bitrix24"
+        - "Mapear peça para estágio do funil"
+        - "Alinhar com SPIN Selling"
+      output: "Peças tagueadas e rastreáveis"
+      time: "1h"
+
+    # ── SEXTA-FEIRA ────────────────────────────────────────
+
+    - name: scheduling
+      order: 10
+      agent: platform-publisher  # Echo
+      day: friday
+      input: "Peças tagueadas e prontas para publicação"
+      process:
+        - "Verificar formato final por plataforma"
+        - "Selecionar hashtags do banco"
+        - "Agendar nos horários ótimos"
+        - "Configurar stories e sequências"
+        - "Verificar link na bio atualizado"
+      output: "2 semanas de conteúdo agendadas em 16 canais"
+      quality_gate: "Final format validation"
+      time: "1-2h"
+
+    # ── FEEDBACK LOOP (CONTÍNUO) ─────────────────────────────
+
+    - name: performance-analysis
+      order: 11
+      agent: performance-analyst  # Pulse
+      day: continuous
+      type: FEEDBACK_LOOP
+      input:
+        - "Métricas pós-publicação (7 dias após publish)"
+        - "Journey Log de todo o pipeline"
+        - "Dados de conversão via UTM (do Bridge)"
+      process:
+        - "Capturar métricas de performance por peça publicada"
+        - "Classificar peças (⭐ star / 💪 strong / ✅ baseline / ⚠️ under / ❌ fail)"
+        - "Analisar Journey Log — gargalos, refações, tempos de handoff"
+        - "Identificar top/bottom performers com diagnóstico de WHY"
+        - "Calcular benchmarks internos atualizados"
+        - "Gerar feedback acionável para Atlas (briefing)"
+        - "Gerar feedback de copy para Helix (quinzenal)"
+        - "Gerar feedback visual para Prism (quinzenal)"
+        - "Gerar pipeline health report para Tempo"
+      output: "Insights de performance + recomendações para próximo ciclo"
+      quality_gate: "Data quality check (mínimo 7 dias de dados, 10+ peças no segmento)"
+      time: "2-3h/semana"
+      feedback_targets:
+        - agent: content-strategist
+          timing: "Segunda-feira (antes do briefing)"
+          content: "Top/bottom formatos, pilares, horários. Recomendações para semana."
+        - agent: medical-copywriter
+          timing: "Quinzenal"
+          content: "Melhores hooks, CTAs, frameworks por persona/plataforma."
+        - agent: visual-designer
+          timing: "Quinzenal"
+          content: "Melhores composições, templates, estilos visuais."
+        - agent: production-manager
+          timing: "Semanal"
+          content: "Journey Log summary, gargalos, SLAs, saúde do pipeline."
+      note: "Pulse FECHA O CICLO. Sem ele, o pipeline é linear e cego."
+
+  # Monitoramento contínuo
+  monitoring:
+    agent: production-manager  # Tempo
+    frequency: "Diário"
+    checks:
+      - "Pipeline status (peças em cada estágio)"
+      - "SLA compliance (tempo por peça < 2.5h)"
+      - "Bottleneck detection"
+      - "Volume vs meta mensal (227-265)"
+
+  # Fluxo de exceção (urgência)
+  fast_track:
+    trigger: "Necessidade urgente detectada por Atlas"
+    process:
+      - "Brief simplificado"
+      - "Helix + Prism trabalham em paralelo"
+      - "Shield faz revisão expressa (4h SLA)"
+      - "Echo publica mesmo dia"
+    note: "Fast-track só para urgências reais, não rotina"
+
+  # Worker Layer (Executor Decision Tree — Modelo AIOX)
+  # REGRA: Workers NUNCA dependem de máquina local. Produção roda em infra cloud.
+  worker_layer:
+    philosophy: |
+      "Se a tarefa não requer raciocínio, criatividade ou subjetividade,
+      ela é estritamente determinística e deve ser executada por código (Workers)."
+    infrastructure:
+      - "GitHub Actions — workflows agendados, processamento batch (2K min/mês free)"
+      - "VPS da empresa — cron jobs, webhook receivers, processamento pesado"
+      - "Bitrix24 CRM — automações de funil, human gate notifications, lead tracking"
+      - "Platform APIs — Meta Graph, Google/YouTube, LinkedIn Marketing (publicação + analytics)"
+      - "Canva API — geração visual programática, Bulk Create"
+    distribution_target:
+      workers: "~40% das sub-tarefas"
+      agents: "~45% das sub-tarefas"
+      humans: "~15% das sub-tarefas"
+    workers:
+      - name: image-resize-worker
+        stage: visual-design
+        infra: github_actions
+        task: "Redimensionar imagens para múltiplos formatos (Sharp via Docker)"
+      - name: canva-bulk-worker
+        stage: visual-design
+        infra: canva_api
+        task: "Aplicar templates em batch (Canva Connect API)"
+      - name: ffmpeg-keyframe-worker
+        stage: video-production
+        infra: github_actions
+        task: "Extrair keyframes para thumbnails (FFMPEG via Docker)"
+      - name: ffmpeg-resize-worker
+        stage: video-production
+        infra: github_actions_or_vps
+        task: "Redimensionar vídeos para múltiplas plataformas"
+      - name: auto-qa-worker
+        stage: quality-review
+        infra: github_actions
+        task: "QC automatizado — Camada 1 (Node.js + LanguageTool API)"
+      - name: utm-generator-worker
+        stage: crm-tagging
+        infra: github_actions
+        task: "Gerar UTM parameters em batch → integra Bitrix24"
+      - name: format-validator-worker
+        stage: scheduling
+        infra: github_actions
+        task: "Validar formato final contra specs da plataforma"
+      - name: folder-structure-worker
+        stage: pre-production
+        infra: github_actions
+        task: "Criar space holders no repo para próximo batch"
+      - name: analytics-collector-worker
+        stage: performance-analysis
+        infra: vps_cron
+        task: "Coletar métricas brutas via Platform APIs (cron diário)"
+      - name: bitrix24-lead-tracker
+        stage: crm-tagging
+        infra: bitrix24
+        task: "Registrar leads com UTM no CRM automaticamente"
+      - name: publishing-scheduler-worker
+        stage: scheduling
+        infra: vps_or_github_actions
+        task: "Agendar posts via Meta/Google/LinkedIn APIs"
+      - name: human-gate-notifier
+        stage: compliance-check
+        infra: bitrix24
+        task: "Criar task de aprovação no Bitrix24 para gates humanos"
+
+  # Human Gates (decisões de risco alto)
+  human_gates:
+    - name: compliance-high-risk
+      stage: compliance-check
+      trigger: "Peças com claims de lançamento, cases clínicos, dados comparativos"
+      approver: "Responsável regulatório / diretor da marca"
+      sla: "24h"
+    - name: strategy-change
+      stage: performance-analysis
+      trigger: "Pulse recomenda mudança de pilares ou frequência"
+      approver: "Diretor de marketing"
+      sla: "48h"
+    - name: brand-risk
+      stage: any
+      trigger: "Conteúdo sobre recalls, incidentes, temas sensíveis"
+      approver: "Diretor da marca + jurídico"
+      sla: "48h"
+
+  # Journey Log (Self-Learning System)
+  journey_log:
+    owner: performance-analyst  # Pulse
+    description: |
+      Diário de bordo de toda peça produzida. Rastreia handoffs, gargalos,
+      refações e tempos de ciclo. Diagnostica PROCESSOS, não pessoas.
+    health_indicators:
+      green: "Peça fluiu sem bloqueios ou refações"
+      yellow: "1 refação ou ajuste menor"
+      red: "Bloqueada por Shield ou devolvida 2+ vezes"
+    self_learning: |
+      Ao final de cada ciclo, se padrão de erro é detectado (ex: 40%+ devoluções
+      no mesmo estágio), Pulse diagnostica a TASK e recomenda ajuste no processo.
+      Erro corrigido no processo = erro que não se repete.
+
+  # Métricas do pipeline
+  metrics:
+    volume_mvp: "5 masters + 25-40 derivados/semana"
+    volume_regime: "227-265 pecas/mes"
+    velocity: "< 5 dias uteis brief→publicacao"
+    efficiency: "< 2.5h por peca master"
+    first_pass_mvp: "> 70% aprovacao primeira vez"
+    first_pass_regime: "> 85% aprovacao primeira vez"
+    compliance: "100% sem violacao"
+    atomization: "5-8 derivados/peca-mae"
+    worker_ratio: "> 35% das sub-tarefas por workers"
+    human_gate_sla: "< 24h para aprovação"
+    feedback_loop: "Weekly report entregue segunda antes do briefing"
+    journey_log_health: "> 80% peças green"

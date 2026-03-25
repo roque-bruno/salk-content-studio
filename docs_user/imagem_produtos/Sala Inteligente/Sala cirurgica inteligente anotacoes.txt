@@ -1,0 +1,26 @@
+01: Caixa de comando
+02: Caixa para conexão de sinais
+03: Suporte para Equipamentos Kronus Monoarticulado Kit Anestesia
+04: Cúpula M1LEC
+05: Foco Cirúrgico Triplex 4LEV / M1LEC / Monitor
+06: Câmera Satelital
+07: Cúpula Monitor
+08: Controle de parede Command
+09: Mesa Cirúrgica Kratus EH
+10: Suporte para Equipamentos Kronus Biarticulado Kit Video HDMI
+11: Foco Cirúrgico Simplex Monitor
+12: Cúpula 4LEV
+
+
+01: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Command\caixa_comando
+02: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Command\caixa_para_conexao_de_sinais
+03: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Suporte para equipamentos\Suporte-para-Equipamentos-Kronus-Monoarticulado-Kit-Anestesia
+04: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Foco de Teto\Manopla-M1LEC-detail ou cupula-camera-detail-2
+05: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Foco de Teto\Triplex_4LEV_mon_M1LEC
+06: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Command\camera_satelital-VEDO-2025
+07: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Foco de Teto\Cupula-monitor
+08: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Command\controle_de_parede_command
+09: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Mesa Cirurgica\KRATUS-EH-460K_AO_MM014-272100-movimento-longitudinal
+10: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Suporte para equipamentos\Suporte-para-Equipamentos-Kronus-Biarticulado-Kit-Video HDMI (=fo)
+11: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Foco de Teto\Simplex_mon
+12: C:\Users\CONSULTORIA\Documents\Projeto-Web-Mendel\docs_user\Imagem Produtos\Foco de Teto\Cupula-4LEV 

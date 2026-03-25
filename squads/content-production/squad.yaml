@@ -1,0 +1,257 @@
+# Squad: Content Production — Manager Grupo
+# Mass content production system for B2B healthcare medical devices
+# Meta Regime: 227-265 pieces/month | Meta MVP: 5 masters + 25-40 derivados/semana
+
+squad:
+  name: content-production
+  title: "Squad de Produção de Conteúdo"
+  description: |
+    Squad elite de produção em massa de conteúdo para redes sociais do Manager Grupo.
+    Opera em 4 marcas (Salk Medical, Mendel Medical, Manager Grupo, Dayho) e 4 plataformas
+    (Instagram, LinkedIn, YouTube, Facebook), totalizando 16 canais ativos.
+    Setor: B2B healthcare — dispositivos médicos com registro ANVISA.
+  version: "2.1.0"
+  created: "2026-03-16"
+  updated: "2026-03-25"
+  status: mvp
+  prd_version: "2.0"
+
+  # PRD reference
+  prd: "docs/prd/PRD-content-production.md"
+
+  # Strategic reference documents
+  references:
+    strategy: "docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md"
+    mapping: "docs/MAPEAMENTO_ORGANIZACIONAL.md"
+    research_marketing: "docs/PESQUISA-MARKETING-DIGITAL-B2B-HEALTHCARE-2025-2026.md"
+    research_content_ops: "docs/PESQUISA-CONTENT-OPERATIONS.md"
+    research_ai_visual: "docs/research/relatorio-ia-generativa-producao-visual.md"
+    research_copywriting: "docs/RELATORIO-COPYWRITING-DISPOSITIVOS-MEDICOS.md"
+    research_algorithms: "docs/research/pesquisa-algoritmos-redes-sociais-2025-2026.md"
+
+  # Brand priorities (1=highest)
+  brands:
+    - name: "Salk Medical"
+      priority: 1
+      focus: "Comercial / Vendas"
+      intensity: "Máxima"
+      target_pieces_month: "120-160"
+    - name: "Mendel Medical"
+      priority: 2
+      focus: "Autoridade / Fabricante"
+      intensity: "Alta"
+      target_pieces_month: "80-100"
+    - name: "Manager Grupo"
+      priority: 3
+      focus: "Institucional / Employer Branding"
+      intensity: "Baixa"
+      target_pieces_month: "20-30"
+    - name: "Dayho"
+      priority: 4
+      focus: "Autoridade Industrial"
+      intensity: "Mínima"
+      target_pieces_month: "10-15"
+
+  # Production targets
+  targets:
+    # Meta de REGIME (norte estrategico)
+    regime_pieces_month: "227-265"
+    # Meta MVP (semanas 1-4, escalar com dados reais)
+    mvp_masters_week: 5
+    mvp_derivatives_per_master: "5-8"
+    mvp_total_week: "30-45"
+    channels: 16
+    platforms: ["Instagram", "LinkedIn", "YouTube", "Facebook"]
+    atomization_ratio: "1:5-8"  # Revisado: 1:17-20 era irreal. Carousel/PDF = conteudo original
+    batch_cycle: "weekly"
+    principle: "Qualidade > Volume. 30 pecas a 9.0 > 60 pecas a 6.0"
+
+  # Produtos publicaveis (MVP)
+  products:
+    publishable: ["LEV", "KRATUS", "OSTUS", "KRONUS"]
+    blocked: ["ETRUS"]  # NAO lancado — PROIBIDO publicar
+    restricted: ["COMMAND"]  # Vinculado ao ETRUS — verificar independencia
+
+  # Regra de logo por tipo de conteudo
+  logo_rules:
+    mendel: "Conteudo tecnico, specs, fabricacao, engenharia, normas, bastidores"
+    salk: "Conteudo comercial, vendas, cases, licitacoes, atendimento"
+    rule: "Numero tecnico (Ra, kg, mm, horas, lux) = Mendel. CTA de venda = Salk"
+
+  # Agent roster — MVP: 8 agents (4 deferred to month 2+)
+  agents:
+    # ═══ MVP CORE 8 ═══
+
+    # Tier 1 — Strategy
+    - id: content-strategist
+      persona: Atlas
+      tier: 1
+      role: "Chief Content Strategist & Pipeline Orchestrator"
+      file: "agents/content-strategist.md"
+      mvp: true
+
+    # Tier 2 — Content Creation
+    - id: medical-copywriter
+      persona: Helix
+      tier: 2
+      role: "Specialized Medical Device Copywriter"
+      file: "agents/medical-copywriter.md"
+      mvp: true
+
+    - id: visual-designer
+      persona: Apex
+      tier: 2
+      role: "Elite Visual Designer — NB2 Product-in-Scene Architect & Advertising Creative Director"
+      file: "agents/visual-designer.md"
+      mvp: true
+      note: "Substitui Prism (demitido 2026-03-17). 943 linhas, product-in-scene com upload de referência."
+
+    - id: content-atomizer
+      persona: Nova
+      tier: 2
+      role: "Content Atomization & Cross-Platform Specialist"
+      file: "agents/content-atomizer.md"
+      mvp: true
+
+    # Tier 3 — Quality & Compliance
+    - id: compliance-guardian
+      persona: Shield
+      tier: 3
+      role: "Regulatory Compliance Guardian (ANVISA/CFM)"
+      file: "agents/compliance-guardian.md"
+      mvp: true
+
+    - id: quality-editor
+      persona: Lens
+      tier: 3
+      role: "Chief Editor & Quality Control"
+      file: "agents/quality-editor.md"
+      mvp: true
+
+    # Tier 4 — Operations & Pipeline
+    - id: production-manager
+      persona: Tempo
+      tier: 4
+      role: "Production Manager & Pipeline Controller"
+      file: "agents/production-manager.md"
+      mvp: true
+
+    - id: performance-analyst
+      persona: Pulse
+      tier: 4
+      role: "Performance Analyst & Feedback Loop Controller"
+      file: "agents/performance-analyst.md"
+      mvp: true
+
+    # ═══ DEFERRED (Month 2+) ═══
+
+    - id: market-intelligence
+      persona: Vigil
+      tier: 1
+      role: "Market Intelligence & Competitor Analyst"
+      file: "agents/market-intelligence.md"
+      mvp: false
+      deferred_reason: "Atlas absorve contexto de mercado via docs de pesquisa existentes"
+
+    - id: video-producer
+      persona: Flux
+      tier: 2
+      role: "Video Producer & Motion Specialist"
+      file: "agents/video-producer.md"
+      mvp: false
+      deferred_reason: "MVP foca em imagens estaticas (maior ROI em B2B). Apex cobre Reels basicos."
+
+    - id: crm-integration
+      persona: Bridge
+      tier: 3
+      role: "CRM Integration & Lead Tracking Specialist"
+      file: "agents/crm-integration.md"
+      mvp: false
+      deferred_reason: "UTMs via data/utm-patterns.yaml. CTA guidelines em data files."
+
+    - id: platform-publisher
+      persona: Echo
+      tier: 4
+      role: "Platform Publisher & Distribution Specialist"
+      file: "agents/platform-publisher.md"
+      mvp: false
+      deferred_reason: "Publicação manual no MVP (Meta Business Suite). Vira checklist."
+
+  # Data directory
+  data:
+    dir: "data/"
+    files:
+      - claims-bank.yaml
+      - platform-specs.yaml
+      - brand-guidelines.yaml
+      - buyer-personas.yaml
+      - hashtag-bank.yaml
+      - utm-patterns.yaml
+      - prohibited-terms.yaml
+      - editorial-calendar-template.yaml
+
+  # Pipeline workflow — MVP (8 stages, intelligence/video/crm/publishing deferred)
+  pipeline:
+    stages:
+      - name: briefing
+        agent: content-strategist
+        task: create-editorial-calendar.md / create-weekly-briefs.md
+        input: "Calendário editorial + pilares + claims bank"
+        output: "Briefs estruturados aprovados"
+      - name: copywriting
+        agent: medical-copywriter
+        task: write-batch-copy.md
+        input: "Briefs + claims bank + brand guidelines"
+        output: "Copy sets por formato"
+      - name: copy-review
+        agent: quality-editor
+        task: review-copy-intermediate.md
+        input: "Copy sets do batch"
+        output: "Copy aprovado para design (reduz retrabalho 30%)"
+        note: "Review intermediário — Lens valida copy ANTES de Apex investir tempo em VDPs"
+      - name: visual-design
+        agent: visual-designer
+        task: create-visual-delivery-pack.md
+        input: "Copy + produto PNG + brand guidelines"
+        output: "Visual Delivery Packs"
+      - name: atomization
+        agent: content-atomizer
+        task: atomize-master-piece.md
+        input: "Peça-mãe (copy + visual)"
+        output: "5-8 derivados cross-platform por master"
+      - name: quality-review
+        agent: quality-editor
+        task: review-batch-editorial.md
+        input: "Peças completas"
+        output: "Peças revisadas (camadas 1+2)"
+      - name: compliance-check
+        agent: compliance-guardian
+        task: review-batch-compliance.md
+        input: "Peças revisadas"
+        output: "Peças aprovadas (BLOCKING GATE)"
+        blocking: true
+      - name: publication
+        agent: user  # Manual no MVP
+        input: "Peças aprovadas + UTMs de utm-patterns.yaml"
+        output: "Posts agendados em 16 canais"
+        note: "Manual via Meta Business Suite, LinkedIn, YT Studio"
+      - name: performance-feedback
+        agent: performance-analyst
+        task: analyze-weekly-performance.md
+        input: "Métricas pós-publicação"
+        output: "Insights → feedback para briefing (fecha o ciclo)"
+
+  # Batch production schedule
+  batch_schedule:
+    monday: "Planejamento & Copywriting"
+    tuesday: "Produção Visual (Imagens + Design)"
+    wednesday: "Atomização (MVP) / Produção de Vídeo (pós-MVP)"
+    thursday: "Revisão & Aprovação (QC 4 camadas)"
+    friday: "Agendamento & Distribuição"
+
+  # Quality control layers
+  quality_control:
+    layer_1: "Automatizada (IA) — ortografia, brand guidelines, dimensões, claims"
+    layer_2: "Revisão Editorial — tom, voz, qualidade, adequação ao brief"
+    layer_3: "Revisão Técnica/Médica — precisão clínica, terminologia, referências"
+    layer_4: "Revisão Legal/Compliance — ANVISA, claims, disclaimers, aprovação final"

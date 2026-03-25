@@ -1,0 +1,215 @@
+# Brand Guidelines — 4 Marcas Manager Grupo
+# Fonte: docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md (linhas 328-371, 601-632)
+# Fonte: docs/MAPEAMENTO_ORGANIZACIONAL.md
+
+version: "2.0"
+last_updated: "2026-03-25"
+
+# ═══════════════════════════════════════════════════════════════
+# REGRA DE LOGO POR TIPO DE CONTEUDO (PRD v2.0 FR-014)
+# Definida pela diretora — 2026-03-17
+# ═══════════════════════════════════════════════════════════════
+logo_assignment:
+  mendel_medical:
+    use_when: "Conteudo tecnico, specs, fabricacao, engenharia, Ra/R9, normas, bastidores de fabrica"
+    pillars: ["Bastidores da Fabrica", "Engenharia e Inovacao", "Dados Tecnicos Oficiais", "Educacional Tecnico"]
+    rule: "Se tem numero tecnico (Ra, kg, mm, horas, lux) → Mendel"
+  salk_medical:
+    use_when: "Conteudo comercial, vendas, preco, atendimento, cases, licitacoes"
+    pillars: ["Produto em Destaque", "Cases e Social Proof", "Licitacoes e TCO", "Sala Cirurgica Inteligente"]
+    rule: "Se tem CTA de venda → Salk"
+  source: "Feedback diretora 2026-03-17"
+
+# ═══════════════════════════════════════════════════════════════
+# SALK MEDICAL (Prioridade 1 — Comercial/Vendas)
+# ═══════════════════════════════════════════════════════════════
+
+salk_medical:
+  priority: 1
+  focus: "Comercial / Vendas"
+  tagline: "Sala Cirúrgica Inteligente"
+  website: "salkmedical.com.br"
+
+  social:
+    linkedin: "salkmedical"
+    instagram: "@salkmedical"
+    facebook: "salkmedical"
+    youtube: "@salkmedical"
+
+  tone:
+    primary: "Consultivo, confiante, orientado a resultados"
+    adjectives: ["Eficiente", "Confiável", "Acessível", "Inovador"]
+    avoid: ["Agressivo", "Vendedor", "Arrogante"]
+
+  content_pillars:
+    - name: "Produto em Destaque"
+      percentage: 30
+      description: "Specs, demos, diferenciais de LEV, KRATUS, OSTUS, KRONUS, COMMAND"
+    - name: "Educacional Técnico"
+      percentage: 25
+      description: "FAQ, tendências em CC, guias de compra"
+    - name: "Cases e Social Proof"
+      percentage: 20
+      description: "Instalações, depoimentos, números, logos de clientes"
+    - name: "Sala Cirúrgica Inteligente"
+      percentage: 15
+      description: "Conceito COMMAND, integração, futuro do CC"
+    - name: "Licitações e TCO"
+      percentage: 10
+      description: "Processo de compra, compliance, custo-benefício"
+
+  visual:
+    # TODO: Confirmar HEX exatos com brand kit Canva
+    primary_color: "#003366"  # Placeholder — confirmar
+    secondary_color: "#0066CC"  # Placeholder — confirmar
+    accent_color: "#FFFFFF"
+    typography:
+      primary: "A confirmar (Brand Kit Canva)"
+      secondary: "A confirmar"
+    logo_position: "Canto superior direito ou inferior esquerdo"
+    badge: "Registro ANVISA"
+
+# ═══════════════════════════════════════════════════════════════
+# MENDEL MEDICAL (Prioridade 2 — Autoridade/Fabricante)
+# ═══════════════════════════════════════════════════════════════
+
+mendel_medical:
+  priority: 2
+  focus: "Autoridade / Fabricante"
+  tagline: "Fabricante Nacional de Equipamentos Médicos"
+  website: "mendelmedical.com.br"
+  cnpj: "20.102.553/0001-62"
+
+  social:
+    linkedin: "mendelmedical"
+    instagram: "@mendelmedical"
+    facebook: "mendelmedical"
+    youtube: "@mendelmedical"
+
+  tone:
+    primary: "Técnico, preciso, autoritativo"
+    adjectives: ["Rigoroso", "Inovador", "Certificado", "Seguro"]
+    avoid: ["Informal", "Superficial"]
+
+  content_pillars:
+    - name: "Bastidores da Fábrica"
+      percentage: 35
+      description: "Processo de fabricação, CNC, montagem, testes, qualidade"
+    - name: "Engenharia e Inovação"
+      percentage: 30
+      description: "Desenvolvimento LEV, P&D, normas técnicas, certificações"
+    - name: "Dados Técnicos Oficiais"
+      percentage: 20
+      description: "Specs detalhadas com fonte ANVISA, comparativos com mercado"
+    - name: "Time de Engenharia"
+      percentage: 15
+      description: "Perfis, dia a dia, laboratório, eventos técnicos"
+
+  visual:
+    primary_color: "#1A1A2E"  # Placeholder — confirmar
+    secondary_color: "#16213E"  # Placeholder — confirmar
+    accent_color: "#FFFFFF"
+    typography:
+      primary: "A confirmar (Brand Kit Canva)"
+    logo_position: "Canto superior direito"
+    badge: "Registro ANVISA + ISO"
+
+# ═══════════════════════════════════════════════════════════════
+# MANAGER GRUPO (Prioridade 3 — Institucional)
+# ═══════════════════════════════════════════════════════════════
+
+manager_grupo:
+  priority: 3
+  focus: "Institucional / Employer Branding"
+  tagline: "Integrando Soluções"
+  website: "managergrupo.com.br"
+
+  social:
+    linkedin: "managergrupo"
+    instagram: "@managergrupo"
+    facebook: "managergrupo"
+
+  tone:
+    primary: "Acolhedor, institucional, inspirador"
+    adjectives: ["Integrado", "Humano", "Colaborativo"]
+    avoid: ["Corporativo frio", "Genérico"]
+
+  content_pillars:
+    - name: "Cultura Organizacional"
+      percentage: 40
+      description: "Valores, missão, dia a dia, equipe"
+    - name: "Carreiras e Employer Branding"
+      percentage: 35
+      description: "Vagas, depoimentos de colaboradores, benefícios"
+    - name: "O Grupo"
+      percentage: 25
+      description: "Apresentação das empresas, cadeia de valor, eventos"
+
+  visual:
+    primary_color: "#2D3436"  # Placeholder — confirmar
+    secondary_color: "#636E72"  # Placeholder — confirmar
+    accent_color: "#FFFFFF"
+    typography:
+      primary: "A confirmar (Brand Kit Canva)"
+    logo_position: "Central ou canto inferior"
+
+# ═══════════════════════════════════════════════════════════════
+# DAYHO (Prioridade 4 — Autoridade Industrial)
+# ═══════════════════════════════════════════════════════════════
+
+dayho:
+  priority: 4
+  focus: "Autoridade Industrial"
+  tagline: "Metalurgia de Precisão desde 1996"
+  website: "dayho.com.br"
+
+  social:
+    linkedin: "dayho"
+    instagram: "@dayho"
+
+  tone:
+    primary: "Industrial, técnico, sólido"
+    adjectives: ["Preciso", "Robusto", "Experiente"]
+    avoid: ["Marketing puro", "Superficial"]
+
+  content_pillars:
+    - name: "Capacidade Fabril"
+      percentage: 60
+      description: "CNC, processos de usinagem, maquinário, ERP TOTVS"
+    - name: "Precisão e Qualidade"
+      percentage: 40
+      description: "Close-ups de peças, controle de qualidade, rastreabilidade"
+
+  visual:
+    primary_color: "#4A4A4A"  # Placeholder — confirmar
+    secondary_color: "#FF6600"  # Placeholder — confirmar
+    accent_color: "#FFFFFF"
+    typography:
+      primary: "A confirmar (Brand Kit Canva)"
+    logo_position: "Canto inferior esquerdo"
+
+# ═══════════════════════════════════════════════════════════════
+# REGRAS VISUAIS GLOBAIS
+# ═══════════════════════════════════════════════════════════════
+
+global_rules:
+  product_images: "SEMPRE foto real (PNG uploadado como referencia). IA renderiza produto INTEGRADO na cena."
+  ai_people: "NUNCA pessoas geradas por IA"
+  ai_clinical: "NUNCA cenas clinicas com IA"
+  product_appearance: "Cores e aparencia do produto DEVEM corresponder ao real"
+  certifications: "Exibir apenas certificacoes validas e atuais"
+  emoji_health: "NAO banalizar saude com emojis (caveiras, seringas, rostos doentes)"
+  nb2_wallpaper: "NUNCA gerar wallpaper + colar PNG (PROIBIDO). NB2 = produto integrado na cena."
+  nb2_competitor: "NUNCA equipamento medico concorrente na cena. Negative prompt obrigatorio."
+  lev_light: "LEV: luz FOCADA para baixo, NUNCA dispersa/lateral. Sem glow, rays, spreading."
+  text_logo_ia: "NUNCA gerar texto ou logo via IA. Adicionar no Canva."
+
+  # Composicao Canva validada (2026-03-18)
+  canva_composition:
+    margins: "60px (5.5% da largura)"
+    logo_min_width: "180-200px"
+    headline: "36pt bold, alinhado a esquerda, topo"
+    spec_line: "18-20pt light, branco 70% opacidade, tracking +80-100, centralizado rodape"
+    anvisa_badge: "12-14pt, branco 50% opacidade, canto inferior direito"
+    gradients: "Preto→transparente: topo 40-60%, rodape 50-70%"
+    protected_zone: "NUNCA texto sobre produto ou reflexo"

@@ -1,0 +1,68 @@
+# Brandbook — Dayho
+# Fonte: brand-guidelines.yaml + PRD v3.0
+# Tipo: Autoridade Industrial (Prioridade 4)
+
+brand: dayho
+full_name: "Dayho"
+priority: 4
+focus: "Autoridade Industrial"
+tagline: "Metalurgia de Precisao desde 1996"
+website: "dayho.com.br"
+
+tone_of_voice:
+  primary: "Industrial, tecnico, solido"
+  adjectives: ["Preciso", "Robusto", "Experiente", "Confiavel"]
+  prohibited: ["Marketing puro", "Superficial", "Hype"]
+  cta_style: "Industrial — 'Solicite um orcamento', 'Consulte nosso catalogo', 'Fale com engenharia'"
+  language_level: "Tecnico/industrial — compradores industriais e engenheiros"
+
+color_palette:
+  primary: "#4A4A4A"
+  secondary: "#FF6600"
+  accent: "#FFFFFF"
+  background_dark: "#2a2a2a"
+  note: "Confirmar HEX exatos com Brand Kit Canva"
+
+typography:
+  primary: "A confirmar (Brand Kit Canva)"
+  headline_size: "36pt bold"
+  body_size: "16pt"
+
+logo_usage:
+  position: "Canto inferior esquerdo"
+  min_width_px: 180
+  rule: "Usar em conteudo INDUSTRIAL — usinagem, CNC, pecas, fabricacao"
+
+content_pillars:
+  - name: "Capacidade Fabril"
+    percentage: 60
+    description: "CNC, processos de usinagem, maquinario, ERP TOTVS"
+  - name: "Precisao e Qualidade"
+    percentage: 40
+    description: "Close-ups de pecas, controle de qualidade, rastreabilidade"
+
+target_personas:
+  - id: "comprador_industrial"
+    name: "Comprador Industrial"
+    role: "Decisor de compra"
+    concerns: ["Prazo", "Qualidade", "Volume", "Preco"]
+  - id: "eng_producao"
+    name: "Engenheiro de Producao"
+    role: "Especificador tecnico"
+    concerns: ["Tolerancias", "Materiais", "Acabamento", "Rastreabilidade"]
+
+visual_rules:
+  photos: "Fotos REAIS de maquinas CNC, pecas usinadas, ambiente fabril."
+  style: "Industrial, metalico, close-ups de precisao."
+  nb2: "Pode usar NB2 para renders de pecas em ambientes industriais."
+  people: "NUNCA pessoas geradas por IA."
+  text_logo: "NUNCA texto ou logo via IA."
+
+social:
+  linkedin: "dayho"
+  instagram: "@dayho"
+
+prohibited_terms:
+  - "o melhor"
+  - "garante"
+  - "unico"

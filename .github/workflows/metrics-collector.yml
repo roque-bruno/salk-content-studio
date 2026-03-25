@@ -1,0 +1,28 @@
+name: Collect Post Metrics
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Daily at 12:00 UTC (09:00 BRT)
+  workflow_dispatch: {}  # Manual trigger
+
+jobs:
+  collect-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect pending metrics
+        env:
+          STUDIO_API_URL: ${{ secrets.STUDIO_API_URL }}
+          STUDIO_USER: ${{ secrets.STUDIO_USER }}
+          STUDIO_PASS: ${{ secrets.STUDIO_PASS }}
+        run: |
+          # Login to get JWT token
+          TOKEN=$(curl -sf -X POST "${STUDIO_API_URL}/api/auth/login" \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"${STUDIO_USER}\",\"password\":\"${STUDIO_PASS}\"}" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+          # Collect metrics for posts published 48h+ ago
+          RESULT=$(curl -sf -X POST "${STUDIO_API_URL}/api/publishers/metrics/collect" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json")
+
+          echo "Metrics collection result: ${RESULT}"

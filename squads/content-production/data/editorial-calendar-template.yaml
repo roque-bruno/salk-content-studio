@@ -1,0 +1,235 @@
+# Template de Calendário Editorial Semanal
+# Derivado de: squad.yaml batch_schedule + docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md
+# Uso: Atlas (content-strategist) preenche semanalmente
+
+version: "2.0"
+last_updated: "2026-03-25"
+
+# ═══════════════════════════════════════════════════════════════
+# ESTRUTURA DO CALENDÁRIO
+# ═══════════════════════════════════════════════════════════════
+
+calendar:
+  week_id: "{ANO}-W{SEMANA}"  # Ex: 2026-W16
+  brand: "{marca}"
+  period: "{data_inicio} a {data_fim}"
+  status: "draft | approved | in_production | published"
+
+# ═══════════════════════════════════════════════════════════════
+# SLOTS POR DIA E PLATAFORMA — SALK MEDICAL (template)
+# ═══════════════════════════════════════════════════════════════
+
+salk_weekly_template:
+  segunda:
+    production_focus: "Planejamento & Copywriting"
+    slots:
+      - platform: "Instagram Feed"
+        format: "Carousel 4:5"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "11h-13h"
+      - platform: "LinkedIn"
+        format: "PDF Carousel"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "8h-10h"
+
+  terca:
+    production_focus: "Produção Visual"
+    slots:
+      - platform: "Instagram Reels"
+        format: "Reel 9:16 15-30s"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "11h-13h"
+      - platform: "LinkedIn"
+        format: "Texto longo + imagem"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "8h-10h"
+      - platform: "Facebook"
+        format: "Vídeo/Post"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "12h-15h"
+
+  quarta:
+    production_focus: "Atomização / Vídeo"
+    slots:
+      - platform: "Instagram Reels"
+        format: "Reel 9:16 30-60s"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "11h-13h"
+      - platform: "YouTube Shorts"
+        format: "Short 9:16"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "14h-16h"
+      - platform: "LinkedIn"
+        format: "Texto longo"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "8h-10h"
+
+  quinta:
+    production_focus: "Revisão & Aprovação"
+    slots:
+      - platform: "Instagram Feed"
+        format: "Carousel 4:5"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "11h-13h"
+      - platform: "LinkedIn"
+        format: "PDF Carousel"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "8h-10h"
+      - platform: "Facebook"
+        format: "Post"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "12h-15h"
+      - platform: "YouTube Shorts"
+        format: "Short 9:16"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "14h-16h"
+
+  sexta:
+    production_focus: "Agendamento & Distribuição"
+    slots:
+      - platform: "Instagram Reels"
+        format: "Reel 9:16"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "11h-13h"
+      - platform: "LinkedIn"
+        format: "Vídeo nativo < 90s"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "8h-10h"
+      - platform: "Facebook"
+        format: "Vídeo"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "12h-15h"
+
+  diario:
+    - platform: "Instagram Stories"
+      format: "Story 9:16"
+      note: "Enquetes, bastidores, CTAs — conteúdo leve e interativo"
+
+# ═══════════════════════════════════════════════════════════════
+# VOLUME SEMANAL POR MARCA
+# ═══════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════
+# METAS MVP (Semanas 1-4) — Escalar com dados reais
+# ═══════════════════════════════════════════════════════════════
+
+weekly_targets_mvp:
+  note: "Meta MVP: 5 masters + 25-40 derivados/semana. Escalar baseado em dados reais."
+  salk_medical:
+    masters_week: 3
+    derivados_per_master: "5-8"
+    focus: "LEV + KRATUS (prioridade maxima)"
+  mendel_medical:
+    masters_week: 2
+    derivados_per_master: "5-8"
+    focus: "LEV tecnico + KRATUS tecnico"
+  manager_grupo:
+    masters_week: 0
+    note: "Diferido para Epico 2"
+  dayho:
+    masters_week: 0
+    note: "Diferido para Epico 2"
+
+# ═══════════════════════════════════════════════════════════════
+# METAS REGIME (Meta estrategica — norte de longo prazo)
+# ═══════════════════════════════════════════════════════════════
+
+weekly_targets_regime:
+  note: "Meta de regime — atingir progressivamente apos calibracao MVP"
+  salk_medical:
+    ig_feed: "5 (3 Reels + 2 Carousels)"
+    ig_stories: "7 (diario)"
+    linkedin: "5 (2 PDF + 2 Texto + 1 Video)"
+    youtube_shorts: 3
+    facebook: 3
+    total: "~23/semana"
+  mendel_medical:
+    ig_feed: "4 (2 Reels + 2 Carousels)"
+    ig_stories: 4
+    linkedin: "4 (2 PDF + 1 Texto + 1 Video)"
+    youtube_shorts: 2
+    facebook: 2
+    total: "~16/semana"
+  manager_grupo:
+    ig_feed: "2 (1 Reel + 1 Post)"
+    ig_stories: 2
+    linkedin: "2 (1 Texto + 1 Imagem)"
+    facebook: 1
+    total: "~7/semana"
+  dayho:
+    ig_feed: 1
+    linkedin: 1
+    total: "~2/semana"
+
+# ═══════════════════════════════════════════════════════════════
+# DISTRIBUIÇÃO DE PILARES POR SEMANA (SALK — EXEMPLO)
+# ═══════════════════════════════════════════════════════════════
+
+pilar_rotation_salk:
+  note: "Produto 30%, Educacional 25%, Cases 20%, COMMAND 15%, Licitações 10%"
+  weekly_suggestion:
+    produto: 2
+    educacional: 1
+    cases: 1
+    command: 1
+    licitacoes: "Quinzenal"
+
+# ═══════════════════════════════════════════════════════════════
+# DATAS SAZONAIS (referência para planejamento)
+# ═══════════════════════════════════════════════════════════════
+
+seasonal_dates:
+  - date: "07/04"
+    event: "Dia Mundial da Saúde"
+    content: "Post institucional + dados do setor"
+  - date: "01/05"
+    event: "Dia do Trabalho"
+    content: "Employer branding (Manager Grupo)"
+  - date: "12/05"
+    event: "Dia do Enfermeiro"
+    content: "Homenagem + produto em contexto"
+  - date: "12/06"
+    event: "Dia do Cirurgião"
+    content: "Conteúdo LEV + homenagem"
+  - date: "11/07"
+    event: "Dia do Engenheiro"
+    content: "Conteúdo Mendel + bastidores"
+  - date: "18/08"
+    event: "Dia do Médico (Brasil)"
+    content: "Social proof"
+  - date: "Novembro"
+    event: "Hospitalar (feira)"
+    content: "Cobertura do evento"
+  - date: "Dezembro"
+    event: "Retrospectiva do ano"
+    content: "Números, conquistas, agradecimento"

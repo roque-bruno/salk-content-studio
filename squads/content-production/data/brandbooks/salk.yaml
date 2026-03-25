@@ -1,0 +1,141 @@
+# Brandbook — Salk Medical
+# Fonte: brand-guidelines.yaml + feedback gestora + PRD v3.0
+# Tipo: Comercial / Vendas (Prioridade 1)
+
+brand: salk
+full_name: "Salk Medical"
+priority: 1
+focus: "Comercial / Vendas"
+tagline: "Sala Cirurgica Inteligente"
+website: "salkmedical.com.br"
+
+tone_of_voice:
+  primary: "Consultivo, confiante, orientado a resultados"
+  adjectives: ["Eficiente", "Confiavel", "Acessivel", "Inovador"]
+  prohibited: ["Agressivo", "Vendedor", "Arrogante", "Superficial"]
+  cta_style: "Consultivo — 'Saiba mais', 'Converse com um especialista', 'Solicite uma demonstracao'"
+  language_level: "Profissional mas acessivel — gestores hospitalares entendem sem ser engenheiros"
+
+color_palette:
+  primary: "#003366"
+  secondary: "#0066CC"
+  accent: "#FFFFFF"
+  background_dark: "#001a33"
+  success: "#34d399"
+  warning: "#f59e0b"
+  note: "Confirmar HEX exatos com Brand Kit Canva"
+
+typography:
+  primary: "A confirmar (Brand Kit Canva)"
+  secondary: "A confirmar"
+  headline_size: "36pt bold"
+  body_size: "16-18pt"
+  spec_line_size: "18-20pt light"
+
+logo_usage:
+  position: "Canto superior direito ou inferior esquerdo"
+  min_width_px: 180
+  max_width_px: 200
+  clear_space: "Minimo 20px ao redor"
+  rule: "Usar em conteudo COMERCIAL — vendas, preco, atendimento, cases, licitacoes"
+  never_with: "Conteudo tecnico puro (usar Mendel)"
+
+content_pillars:
+  - name: "Produto em Destaque"
+    percentage: 30
+    description: "Specs, demos, diferenciais de LEV, KRATUS, OSTUS, KRONUS, COMMAND"
+  - name: "Educacional Tecnico"
+    percentage: 25
+    description: "FAQ, tendencias em CC, guias de compra"
+  - name: "Cases e Social Proof"
+    percentage: 20
+    description: "Instalacoes, depoimentos, numeros, logos de clientes"
+  - name: "Sala Cirurgica Inteligente"
+    percentage: 15
+    description: "Conceito COMMAND, integracao, futuro do CC"
+  - name: "Licitacoes e TCO"
+    percentage: 10
+    description: "Processo de compra, compliance, custo-beneficio"
+
+target_personas:
+  - id: "eng_clinica"
+    name: "Engenheiro Clinico"
+    role: "Decisor tecnico"
+    concerns: ["Certificacoes", "Compatibilidade", "Manutencao", "ANVISA"]
+  - id: "compras"
+    name: "Gestor de Compras"
+    role: "Decisor financeiro"
+    concerns: ["TCO", "Licitacao", "Prazo", "Garantia"]
+  - id: "equipe_medica"
+    name: "Equipe Medica"
+    role: "Usuario final"
+    concerns: ["Usabilidade", "Seguranca", "Conforto", "Integrado"]
+  - id: "admin_hospitalar"
+    name: "Administrador Hospitalar"
+    role: "Decisor estrategico"
+    concerns: ["ROI", "Eficiencia", "Modernizacao", "Imagem"]
+
+visual_rules:
+  nb2_product: "Produto integrado na cena via NB2. NUNCA wallpaper + colagem."
+  nb2_scene: "Descrever APENAS cenario, NUNCA o produto no prompt."
+  nb2_competitor: "NUNCA equipamento medico concorrente. Negative prompt obrigatorio."
+  lev_light: "Luz FOCADA para baixo, NUNCA dispersa/lateral. Sem glow, rays, spreading."
+  people: "NUNCA pessoas geradas por IA."
+  clinical: "NUNCA cenas clinicas geradas por IA."
+  text_logo: "NUNCA texto ou logo via IA. Adicionar no Canva."
+  product_fidelity: "Cores e aparencia DEVEM corresponder ao produto real."
+  certifications: "Exibir apenas certificacoes validas e atuais."
+  anvisa_badge: "Obrigatorio em toda peca — 12-14pt, branco 50% opacidade."
+
+canva_composition:
+  margins: "60px (5.5% da largura)"
+  headline: "36pt bold, alinhado a esquerda, topo"
+  spec_line: "18-20pt light, branco 70% opacidade, tracking +80-100, centralizado rodape"
+  anvisa: "12-14pt, branco 50% opacidade, canto inferior direito"
+  gradients: "Preto→transparente: topo 40-60%, rodape 50-70%"
+  protected_zone: "NUNCA texto sobre produto ou reflexo"
+
+products:
+  - id: "lev"
+    name: "LEV"
+    type: "Foco Cirurgico LED"
+    status: "ATIVO"
+    special_rules: ["Luz focada para baixo", "Nunca dispersao lateral", "Dramatic studio = melhor tecnica"]
+  - id: "kratus"
+    name: "KRATUS"
+    type: "Mesa Cirurgica"
+    status: "ATIVO"
+  - id: "ostus"
+    name: "OSTUS"
+    type: "Mesa Ortopedica"
+    status: "ATIVO"
+  - id: "kronus"
+    name: "KRONUS"
+    type: "Coluna de Distribuicao"
+    status: "ATIVO"
+  - id: "command"
+    name: "COMMAND"
+    type: "Sistema Integrado Sala Cirurgica"
+    status: "ATIVO"
+    special_rules: ["Verificar independencia do ETRUS"]
+  - id: "etrus"
+    name: "ETRUS"
+    type: "A definir"
+    status: "BLOQUEADO"
+    special_rules: ["PROIBIDO publicar", "NAO lancado"]
+
+social:
+  linkedin: "salkmedical"
+  instagram: "@salkmedical"
+  facebook: "salkmedical"
+  youtube: "@salkmedical"
+
+prohibited_terms:
+  - "ETRUS"
+  - "o melhor"
+  - "o unico"
+  - "garante"
+  - "cura"
+  - "100% seguro"
+  - "infalivel"
+  - "sem riscos"

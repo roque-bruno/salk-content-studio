@@ -1,0 +1,34 @@
+URL: http://162.240.13.51:2086/
+Usuário: root
+Senha: BfLMt&/K20=|}E8M"mO9J9mF0
+Porta: 22
+
+URL Wordpress Salk Medical: https://www.salkmedical.com.br/wp-admin/
+Usuário: botsalk
+Senha: zE&RH
+Permissão: Administrador
+
+URL Wordpress Mendel: http://mendelmedical.com.br/wp-admin
+Usuário: botmendel
+Senha: Ji0mZ33pTR)Zp7W&HFD8$^r1
+Permissão: Administrador
+
+URL Wordpress Manager Grupo: https://www.managergrupo.com.br/wp-admin/
+Usuário: botmanager
+Senha: J6K9SgsrFES8DSrnATdPnuA)
+Permissão: Administrador
+
+URL Wordpress Dayho: https://dayho.com.br/wp-admin/
+Usuário: botdayho
+Senha: zGTgx47uw)IOj1etA#Q6%*D!
+Permissão: Administrador
+
+URL Wordpress Salk Fitness: http://salkfitness.com.br/wp-admin
+Usuário: botfitness
+Senha: 3sVyx1OEU&FJXC8cUMoewymN
+Permissão: Administrador
+
+
+
+
+

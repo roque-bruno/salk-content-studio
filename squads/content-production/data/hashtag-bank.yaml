@@ -1,0 +1,179 @@
+# Banco de Hashtags Curadas — Manager Grupo
+# Fonte: docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md (linhas 1210-1249)
+# Estratégia escada: core (sempre) + produto (rotar) + nicho (complementar)
+# Instagram: 11 hashtags totais | LinkedIn: 3-5 totais
+
+version: "1.0"
+last_updated: "2026-03-16"
+
+# ═══════════════════════════════════════════════════════════════
+# SALK MEDICAL
+# ═══════════════════════════════════════════════════════════════
+
+salk_medical:
+  core:
+    always_use: true
+    count: "3-5"
+    tags:
+      - "#SalkMedical"
+      - "#EquipamentoMedico"
+      - "#CentroCirurgico"
+      - "#DispositivoMedico"
+      - "#MedTech"
+
+  produto:
+    always_use: false
+    rotate: true
+    note: "Rotar conforme produto do post"
+    tags:
+      - "#LEV"
+      - "#FocoCirurgico"
+      - "#KRATUS"
+      - "#MesaCirurgica"
+      - "#OSTUS"
+      - "#SerraCirurgica"
+      - "#KRONUS"
+      - "#COMMAND"
+      - "#SalaCirurgicaInteligente"
+      - "#IluminacaoCirurgica"
+
+  nicho:
+    always_use: false
+    note: "Complementar até 11 totais no Instagram"
+    tags:
+      - "#EngenhariaClinica"
+      - "#SaudePublica"
+      - "#HospitalBrasileiro"
+      - "#FabricacaoNacional"
+      - "#LicitacaoSaude"
+      - "#ComprasHospitalares"
+      - "#CirurgiaBrasil"
+      - "#IndustriaBrasileira"
+
+  linkedin:
+    max: 5
+    tags:
+      - "#EquipamentoMedico"
+      - "#CentroCirurgico"
+      - "#EngenhariaClinica"
+      - "#DispositivoMedico"
+      - "#FabricacaoNacional"
+
+# ═══════════════════════════════════════════════════════════════
+# MENDEL MEDICAL
+# ═══════════════════════════════════════════════════════════════
+
+mendel_medical:
+  core:
+    always_use: true
+    tags:
+      - "#MendelMedical"
+      - "#FabricanteBrasileiro"
+      - "#EquipamentoMedico"
+      - "#ANVISA"
+      - "#MedTech"
+
+  tecnico:
+    rotate: true
+    tags:
+      - "#EngenhariaClinica"
+      - "#IEC60601"
+      - "#QualidadeMedica"
+      - "#ISO13485"
+      - "#FabricacaoNacional"
+      - "#PeD"
+      - "#InovacaoMedica"
+
+  nicho:
+    tags:
+      - "#IndustriaBrasileira"
+      - "#EngenhariaDeProducao"
+      - "#ControleDeQualidade"
+      - "#CNC"
+      - "#MetalmecAnica"
+
+  linkedin:
+    max: 5
+    tags:
+      - "#FabricanteBrasileiro"
+      - "#EquipamentoMedico"
+      - "#EngenhariaClinica"
+      - "#ANVISA"
+      - "#InovacaoMedica"
+
+# ═══════════════════════════════════════════════════════════════
+# MANAGER GRUPO
+# ═══════════════════════════════════════════════════════════════
+
+manager_grupo:
+  core:
+    tags:
+      - "#ManagerGrupo"
+      - "#IntegrandoSolucoes"
+      - "#B2BHealthcare"
+
+  employer_branding:
+    tags:
+      - "#TrabalheConosco"
+      - "#CulturaOrganizacional"
+      - "#EquipeManagerGrupo"
+      - "#CarreiraSaude"
+      - "#VagasParana"
+
+  institucional:
+    tags:
+      - "#GrupoEmpresarial"
+      - "#SaoJoseDosPinhais"
+      - "#IndustriaParanaense"
+
+  linkedin:
+    max: 3
+    tags:
+      - "#ManagerGrupo"
+      - "#B2BHealthcare"
+      - "#EmployerBranding"
+
+# ═══════════════════════════════════════════════════════════════
+# DAYHO
+# ═══════════════════════════════════════════════════════════════
+
+dayho:
+  core:
+    tags:
+      - "#Dayho"
+      - "#Metalmecanica"
+      - "#Usinagem"
+
+  tecnico:
+    tags:
+      - "#CNC"
+      - "#PrecisaoIndustrial"
+      - "#ControleDeQualidade"
+      - "#FabricacaoNacional"
+      - "#IndustriaBrasileira"
+
+  linkedin:
+    max: 3
+    tags:
+      - "#Metalmecanica"
+      - "#IndustriaBrasileira"
+      - "#Usinagem"
+
+# ═══════════════════════════════════════════════════════════════
+# REGRAS DE USO
+# ═══════════════════════════════════════════════════════════════
+
+rules:
+  instagram:
+    total_max: 11
+    strategy: "Core (3-5) + Produto (2-3) + Nicho (3-5) = 11"
+    placement: "Após o CTA, com espaço"
+  linkedin:
+    total_max: 5
+    strategy: "Apenas core + 1-2 técnicos relevantes"
+    placement: "Final do post"
+  youtube:
+    note: "Tags no campo de tags do vídeo, não na descrição"
+  facebook:
+    total_max: 3
+    strategy: "Apenas core"
