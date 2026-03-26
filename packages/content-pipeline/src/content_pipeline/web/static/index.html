@@ -1106,22 +1106,24 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 <!-- TAB: COPY EDITOR (Helix) -->
 <!-- ===================================================== -->
 <div x-show="tab === 'copy'">
-  <div class="form-row">
+  <div class="form-row" style="grid-template-columns: 1fr 360px;">
     <div>
+      <!-- Step 1: Briefing + Geração IA -->
       <div class="card">
-        <div class="card-title">Editor de Copy</div>
-        <div class="form-group">
-          <label>Headline</label>
-          <input class="form-input" x-model="copyHeadline" placeholder="Headline da peca...">
-        </div>
-        <div class="form-group">
-          <label>Texto Principal</label>
-          <textarea class="form-textarea" style="min-height: 160px;" x-model="copyText" placeholder="Escreva o texto da peca..." @input="copyCharCount = copyText.length"></textarea>
-          <div style="text-align: right; font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
-            <span x-text="copyCharCount"></span> caracteres
-          </div>
+        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>1. Gerar Copy com IA</span>
+          <span class="badge badge-blue" x-text="copyWriterName ? 'Copywriter: ' + copyWriterName : ''" x-show="copyWriterName"></span>
         </div>
         <div class="form-row">
+          <div class="form-group">
+            <label>Marca</label>
+            <select class="form-select" x-model="copyBrand">
+              <option value="salk">Salk Medical</option>
+              <option value="mendel">Mendel Medical</option>
+              <option value="manager-grupo">Manager Grupo</option>
+              <option value="dayho">Dayho</option>
+            </select>
+          </div>
           <div class="form-group">
             <label>Plataforma</label>
             <select class="form-select" x-model="copyPlatform">
@@ -1133,52 +1135,127 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
             </select>
           </div>
           <div class="form-group">
-            <label>CTA</label>
-            <input class="form-input" x-model="copyCTA" placeholder="Call-to-action...">
+            <label>Formato</label>
+            <select class="form-select" x-model="copyFormat">
+              <option value="post">Post</option>
+              <option value="carousel">Carrossel</option>
+              <option value="reel">Reel/Video</option>
+              <option value="story">Story</option>
+            </select>
           </div>
         </div>
-        <div class="btn-group" style="margin-top: 8px;">
-          <button class="btn btn-primary" @click="checkCopyCompliance()">Verificar Regras</button>
-          <button class="btn" @click="copyText = ''; copyHeadline = ''; copyCTA = ''; copyCharCount = 0;">Limpar</button>
+        <div class="form-group">
+          <label>Briefing (descreva o que a peca deve comunicar)</label>
+          <textarea class="form-textarea" style="min-height: 80px;" x-model="copyBriefing" placeholder="Ex: Post sobre o foco cirurgico LEV 4LEV, destacar Ra 99 e campo iluminado uniforme. Publico: engenheiros clinicos. Tom consultivo."></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" @click="generateCopy()" :disabled="copyGenerating || !copyBriefing.trim()">
+            <span x-show="!copyGenerating">Gerar Copy com IA</span>
+            <span x-show="copyGenerating">Gerando...</span>
+          </button>
+          <button class="btn" @click="generateBriefingThenCopy()" :disabled="copyGenerating" title="Gera briefing automatico (Atlas) e depois a copy">
+            Briefing + Copy Automatico
+          </button>
         </div>
       </div>
 
-      <!-- Compliance Result inline -->
-      <div class="card" x-show="copyComplianceResult" :class="copyComplianceResult?.passed ? 'compliance-ok' : 'compliance-fail'">
-        <div class="card-title" x-text="copyComplianceResult?.passed ? 'Compliance OK' : 'Problemas Encontrados'"></div>
+      <!-- Step 2: Editor -->
+      <div class="card">
+        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>2. Editar Copy</span>
+          <span style="font-size: 0.7rem; color: var(--text-muted);" x-text="copyCharCount + ' caracteres'"></span>
+        </div>
+        <div class="form-group">
+          <label>Headline</label>
+          <input class="form-input" x-model="copyHeadline" placeholder="Headline da peca...">
+        </div>
+        <div class="form-group">
+          <label>Texto Principal</label>
+          <textarea class="form-textarea" style="min-height: 180px; font-family: var(--font);" x-model="copyText" placeholder="A copy aparecera aqui apos gerar com IA, ou escreva manualmente..." @input="copyCharCount = copyText.length"></textarea>
+        </div>
+        <div class="form-group">
+          <label>CTA (Call-to-Action)</label>
+          <input class="form-input" x-model="copyCTA" placeholder="Ex: Solicite uma demonstracao gratuita">
+        </div>
+        <div class="btn-group" style="margin-top: 8px;">
+          <button class="btn btn-primary" @click="checkCopyCompliance()">Verificar Regras</button>
+          <button class="btn" @click="showRewritePanel = !showRewritePanel" x-show="copyText.trim()">Reescrever com Feedback</button>
+          <button class="btn" @click="copyText = ''; copyHeadline = ''; copyCTA = ''; copyCharCount = 0; copyComplianceResult = null; copyBriefing = ''; copyWriterName = ''; copyPersonaResults = [];">Limpar Tudo</button>
+        </div>
+      </div>
+
+      <!-- Rewrite Panel -->
+      <div class="card" x-show="showRewritePanel && copyText.trim()" x-cloak>
+        <div class="card-title">Reescrever Copy</div>
+        <div class="form-group">
+          <label>O que mudar?</label>
+          <textarea class="form-textarea" style="min-height: 60px;" x-model="copyRewriteFeedback" placeholder="Ex: Tornar mais tecnico, reduzir para 300 caracteres, destacar o CRI 99..."></textarea>
+        </div>
+        <button class="btn btn-primary" @click="rewriteCopy()" :disabled="copyGenerating || !copyRewriteFeedback.trim()">
+          <span x-show="!copyGenerating">Reescrever</span>
+          <span x-show="copyGenerating">Reescrevendo...</span>
+        </button>
+      </div>
+
+      <!-- Compliance Result -->
+      <div class="card" x-show="copyComplianceResult" :style="copyComplianceResult?.passed ? 'border-left: 3px solid var(--green);' : 'border-left: 3px solid var(--red);'">
+        <div class="card-title" x-text="copyComplianceResult?.passed ? 'Compliance OK — Texto aprovado' : 'Problemas Encontrados'"></div>
         <template x-for="v in (copyComplianceResult?.violations || [])">
-          <div class="violation-item violation-critical">
-            <strong x-text="v.term"></strong> — <span x-text="v.reason"></span>
+          <div style="padding: 6px 8px; margin: 4px 0; background: rgba(239,68,68,0.1); border-radius: 6px; font-size: 0.8rem;">
+            <strong style="color: var(--red);" x-text="v.term"></strong> — <span x-text="v.reason"></span>
             <div x-show="v.alternative" style="margin-top: 4px; color: var(--green); font-size: 0.75rem;">
-              Alternativa: <span x-text="v.alternative"></span>
+              Sugestao: <span x-text="v.alternative"></span>
             </div>
           </div>
         </template>
         <template x-for="w in (copyComplianceResult?.warnings || [])">
-          <div class="violation-item violation-warning">
-            <strong x-text="w.term"></strong> — <span x-text="w.reason"></span>
+          <div style="padding: 6px 8px; margin: 4px 0; background: rgba(234,179,8,0.1); border-radius: 6px; font-size: 0.8rem;">
+            <strong style="color: #eab308;" x-text="w.term"></strong> — <span x-text="w.reason"></span>
+          </div>
+        </template>
+      </div>
+
+      <!-- Step 3: Teste com Personas -->
+      <div class="card" x-show="copyText.trim()">
+        <div class="card-title">3. Testar com Personas</div>
+        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">Avalie como diferentes perfis de compradores reagem a esta copy.</p>
+        <div class="btn-group" style="flex-wrap: wrap;">
+          <button class="btn btn-sm" @click="evaluatePersona('eng_clinica')" :disabled="copyPersonaLoading">Dr. Marcelo (Eng. Clinico)</button>
+          <button class="btn btn-sm" @click="evaluatePersona('compras')" :disabled="copyPersonaLoading">Fernanda (Compras)</button>
+          <button class="btn btn-sm" @click="evaluatePersona('equipe_medica')" :disabled="copyPersonaLoading">Dra. Ana (Medica)</button>
+          <button class="btn btn-sm" @click="evaluatePersona('admin_hospitalar')" :disabled="copyPersonaLoading">Carlos (Admin Hospital)</button>
+        </div>
+        <div x-show="copyPersonaLoading" style="margin-top: 8px; font-size: 0.8rem; color: var(--accent);">Avaliando com persona...</div>
+        <template x-for="pr in copyPersonaResults">
+          <div style="margin-top: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; border-left: 3px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="font-size: 0.85rem;" x-text="pr.persona"></strong>
+              <span class="badge" :class="pr.score >= 7 ? 'badge-green' : pr.score >= 5 ? 'badge-yellow' : 'badge-red'" x-text="'Nota: ' + pr.score + '/10'"></span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); white-space: pre-line;" x-text="pr.evaluation"></div>
           </div>
         </template>
       </div>
     </div>
 
+    <!-- Right sidebar -->
     <div>
-      <!-- Claims Sugestao -->
+      <!-- Claims -->
       <div class="card">
-        <div class="card-title">Argumentos Disponiveis</div>
+        <div class="card-title">Argumentos Aprovados</div>
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px;">Clique para inserir na copy</p>
         <div class="form-group">
-          <label>Filtrar Produto</label>
           <select class="form-select" x-model="copyClaimFilter">
-            <option value="">Todos</option>
+            <option value="">Todos os Produtos</option>
             <template x-for="p in claimProducts">
               <option :value="p" x-text="p"></option>
             </template>
           </select>
         </div>
-        <div style="max-height: 300px; overflow-y: auto;">
+        <div style="max-height: 280px; overflow-y: auto;">
           <template x-for="c in filteredClaims()">
-            <div style="padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 0.78rem; cursor: pointer;" @click="insertClaim(c)">
-              <span class="badge badge-blue" style="font-size: 0.65rem;" x-text="c.claim_id"></span>
+            <div style="padding: 8px; border-bottom: 1px solid var(--border); font-size: 0.78rem; cursor: pointer; transition: background 0.15s;" @click="insertClaim(c)" @mouseenter="$el.style.background='var(--bg-tertiary)'" @mouseleave="$el.style.background='transparent'">
+              <span class="badge badge-blue" style="font-size: 0.6rem;" x-text="c.claim_id"></span>
               <span x-text="c.texto" style="margin-left: 6px;"></span>
             </div>
           </template>
@@ -1187,23 +1264,32 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 
       <!-- Limites por Plataforma -->
       <div class="card">
-        <div class="card-title">Limites de Copy</div>
-        <div style="font-size: 0.8rem;">
-          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
-            <span>Instagram Feed</span><span>300-500 chars</span>
+        <div class="card-title">Limites por Plataforma</div>
+        <div style="font-size: 0.78rem;">
+          <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border);">
+            <span>Instagram Feed</span><span style="color: var(--accent);">300-500 chars</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
-            <span>Instagram Reels</span><span>15-60s script</span>
+          <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border);">
+            <span>Instagram Reels</span><span style="color: var(--accent);">15-60s script</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
-            <span>LinkedIn</span><span>1500-3000 chars</span>
+          <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border);">
+            <span>LinkedIn</span><span style="color: var(--accent);">1500-3000 chars</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
-            <span>YouTube Shorts</span><span>15-60s script</span>
+          <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border);">
+            <span>YouTube Shorts</span><span style="color: var(--accent);">15-60s script</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 4px 0;">
-            <span>Facebook</span><span>200-400 chars</span>
+          <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+            <span>Facebook</span><span style="color: var(--accent);">200-400 chars</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Custo estimado -->
+      <div class="card" x-show="copyCostUsd > 0">
+        <div class="card-title">Custo da Geracao</div>
+        <div style="font-size: 0.85rem;">
+          <span style="color: var(--green);">$<span x-text="copyCostUsd.toFixed(4)"></span></span>
+          <span style="color: var(--text-muted); font-size: 0.7rem; margin-left: 6px;" x-text="'via ' + copyModelUsed"></span>
         </div>
       </div>
     </div>
@@ -2476,10 +2562,21 @@ function studioApp() {
     copyText: '',
     copyHeadline: '',
     copyCTA: '',
+    copyBrand: 'salk',
     copyPlatform: 'instagram',
+    copyFormat: 'post',
+    copyBriefing: '',
     copyCharCount: 0,
     copyClaimFilter: '',
     copyComplianceResult: null,
+    copyGenerating: false,
+    copyWriterName: '',
+    copyModelUsed: '',
+    copyCostUsd: 0,
+    showRewritePanel: false,
+    copyRewriteFeedback: '',
+    copyPersonaResults: [],
+    copyPersonaLoading: false,
 
     // Compliance
     complianceText: '',
@@ -2880,6 +2977,149 @@ function studioApp() {
         method: 'POST',
         body: JSON.stringify({ text: this.complianceText, brand: this.complianceBrand, product: this.complianceProduct }),
       });
+    },
+
+    // Copy Generation
+    async generateCopy() {
+      if (!this.copyBriefing.trim()) return;
+      this.copyGenerating = true;
+      this.copyComplianceResult = null;
+      this.copyPersonaResults = [];
+      try {
+        const result = await this.api('/api/automation/copy/write', {
+          method: 'POST',
+          body: JSON.stringify({
+            briefing: this.copyBriefing,
+            brand: this.copyBrand,
+            platform: this.copyPlatform,
+            format_type: this.copyFormat,
+          }),
+        });
+        this.copyText = result.copy_text || '';
+        this.copyCharCount = this.copyText.length;
+        this.copyWriterName = result.copywriter || '';
+        this.copyModelUsed = result.model_used || '';
+        this.copyCostUsd = result.cost_usd || 0;
+        // Try to extract headline from generated copy
+        const lines = this.copyText.split('\n').filter(l => l.trim());
+        if (lines.length > 1 && lines[0].length < 80) {
+          this.copyHeadline = lines[0].replace(/^#+\s*/, '').replace(/^\*+/, '').replace(/\*+$/, '').trim();
+          this.copyText = lines.slice(1).join('\n').trim();
+          this.copyCharCount = this.copyText.length;
+        }
+        this.notify('Copy gerada por ' + this.copyWriterName);
+      } catch (e) {
+        this.notify('Erro ao gerar copy: ' + e.message, 'error');
+      } finally {
+        this.copyGenerating = false;
+      }
+    },
+
+    async generateBriefingThenCopy() {
+      this.copyGenerating = true;
+      this.copyComplianceResult = null;
+      this.copyPersonaResults = [];
+      try {
+        // Step 1: Generate briefing via Atlas
+        const briefing = await this.api('/api/automation/briefing', {
+          method: 'POST',
+          body: JSON.stringify({
+            brand: this.copyBrand,
+            platform: this.copyPlatform,
+            pillar: 'produto',
+            product: '',
+          }),
+        });
+        this.copyBriefing = briefing.briefing_text || briefing.briefing || briefing.text || JSON.stringify(briefing);
+        this.notify('Briefing gerado por Atlas');
+
+        // Step 2: Generate copy from briefing
+        const result = await this.api('/api/automation/copy/write', {
+          method: 'POST',
+          body: JSON.stringify({
+            briefing: this.copyBriefing,
+            brand: this.copyBrand,
+            platform: this.copyPlatform,
+            format_type: this.copyFormat,
+          }),
+        });
+        this.copyText = result.copy_text || '';
+        this.copyCharCount = this.copyText.length;
+        this.copyWriterName = result.copywriter || '';
+        this.copyModelUsed = result.model_used || '';
+        this.copyCostUsd = result.cost_usd || 0;
+        const lines = this.copyText.split('\n').filter(l => l.trim());
+        if (lines.length > 1 && lines[0].length < 80) {
+          this.copyHeadline = lines[0].replace(/^#+\s*/, '').replace(/^\*+/, '').replace(/\*+$/, '').trim();
+          this.copyText = lines.slice(1).join('\n').trim();
+          this.copyCharCount = this.copyText.length;
+        }
+        this.notify('Copy gerada por ' + this.copyWriterName);
+      } catch (e) {
+        this.notify('Erro ao gerar: ' + e.message, 'error');
+      } finally {
+        this.copyGenerating = false;
+      }
+    },
+
+    async rewriteCopy() {
+      if (!this.copyText.trim() || !this.copyRewriteFeedback.trim()) return;
+      this.copyGenerating = true;
+      try {
+        const fullCopy = [this.copyHeadline, this.copyText, this.copyCTA].filter(Boolean).join('\n\n');
+        const result = await this.api('/api/automation/copy/rewrite', {
+          method: 'POST',
+          body: JSON.stringify({
+            original: fullCopy,
+            feedback: this.copyRewriteFeedback,
+            brand: this.copyBrand,
+          }),
+        });
+        this.copyText = result.copy_text || '';
+        this.copyCharCount = this.copyText.length;
+        this.copyCostUsd += result.cost_usd || 0;
+        this.copyRewriteFeedback = '';
+        this.showRewritePanel = false;
+        this.copyComplianceResult = null;
+        this.notify('Copy reescrita com sucesso');
+      } catch (e) {
+        this.notify('Erro ao reescrever: ' + e.message, 'error');
+      } finally {
+        this.copyGenerating = false;
+      }
+    },
+
+    async evaluatePersona(personaId) {
+      if (!this.copyText.trim()) return;
+      this.copyPersonaLoading = true;
+      try {
+        const fullCopy = [this.copyHeadline, this.copyText, this.copyCTA].filter(Boolean).join('\n\n');
+        const result = await this.api('/api/automation/persona/evaluate', {
+          method: 'POST',
+          body: JSON.stringify({
+            copy_text: fullCopy,
+            persona_id: personaId,
+            brand: this.copyBrand,
+          }),
+        });
+        // Remove previous result from same persona
+        this.copyPersonaResults = this.copyPersonaResults.filter(p => p.persona_id !== personaId);
+        // Extract score from evaluation text
+        let score = 0;
+        const scoreMatch = (result.evaluation || '').match(/(\d+)\s*\/\s*10/);
+        if (scoreMatch) score = parseInt(scoreMatch[1]);
+        this.copyPersonaResults.push({
+          persona_id: personaId,
+          persona: result.persona || personaId,
+          evaluation: result.evaluation || '',
+          score: score,
+        });
+        this.copyCostUsd += result.cost_usd || 0;
+      } catch (e) {
+        this.notify('Erro ao avaliar persona: ' + e.message, 'error');
+      } finally {
+        this.copyPersonaLoading = false;
+      }
     },
 
     async checkCopyCompliance() {
