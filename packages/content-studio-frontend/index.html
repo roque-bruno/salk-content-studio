@@ -1017,6 +1017,10 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
       <option value="dayho">Dayho</option>
     </select>
     <div style="flex: 1;"></div>
+    <button class="btn btn-sm btn-primary" @click="batchGenerateCopy()" x-show="piecesInStage('briefing').length > 0" :disabled="batchProcessing" title="Gerar copy para todas as pecas em briefing">
+      <span x-show="!batchProcessing">Gerar Copy p/ Briefings (<span x-text="piecesInStage('briefing').length"></span>)</span>
+      <span x-show="batchProcessing">Processando...</span>
+    </button>
     <button class="btn btn-sm" @click="batchMoveStage('review', 'approved')" x-show="piecesInStage('review').length > 0" title="Aprovar todas as pecas em revisao">
       Aprovar Todas em Revisao (<span x-text="piecesInStage('review').length"></span>)
     </button>
@@ -2642,6 +2646,7 @@ function studioApp() {
     showNewPiece: false,
     showPieceDetail: false,
     pieceActionLoading: false,
+    batchProcessing: false,
     showNewVDP: false,
     showVDPDetail: false,
     showCalSlotModal: false,
@@ -2939,6 +2944,25 @@ function studioApp() {
       }
       await this.loadPieces();
       this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}`);
+    },
+
+    async batchGenerateCopy() {
+      const pcs = this.piecesInStage('briefing');
+      if (!pcs.length) return;
+      if (!confirm(`Gerar copy automatica para ${pcs.length} pecas em Briefing? Isso usara creditos de IA.`)) return;
+      this.batchProcessing = true;
+      let done = 0, failed = 0;
+      for (const p of pcs) {
+        try {
+          await this.api(`/api/production/pieces/${p.id}/generate-copy`, {
+            method: 'POST', body: JSON.stringify({}),
+          });
+          done++;
+        } catch(e) { failed++; }
+      }
+      await this.loadPieces();
+      this.batchProcessing = false;
+      this.notify(`${done} copies geradas${failed ? `, ${failed} falharam` : ''}`);
     },
 
     async deletePiece(id) {

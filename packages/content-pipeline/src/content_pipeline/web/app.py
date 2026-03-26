@@ -702,6 +702,11 @@ async def update_review(review_id: str, req: ReviewItem):
     result = svc.update_review(review_id, req.verdict, req.comments)
     if result is None:
         raise HTTPException(404, f"Review não encontrado: {review_id}")
+    # Auto-advance piece stage on approval
+    if req.verdict == "approved" and result.get("piece_id"):
+        svc.update_piece_stage(result["piece_id"], "approved")
+    elif req.verdict == "rejected" and result.get("piece_id"):
+        svc.update_piece_stage(result["piece_id"], "copy", notes=f"Rejeitado: {req.comments}")
     return result
 
 
