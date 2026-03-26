@@ -347,10 +347,16 @@ class StudioService:
 
     def scan_product_images(self) -> dict[str, list[dict]]:
         result: dict[str, list[dict]] = {}
-        images_dir = self.config.product_images_dir
 
+        # Cloud mode — Supabase Storage has priority when configured
+        if self.settings.get("SUPABASE_URL"):
+            result = self._scan_supabase_bucket("produtos")
+            if result:
+                return result
+
+        # Local mode — serve from filesystem
+        images_dir = self.config.product_images_dir
         if images_dir.exists():
-            # Local mode — serve from filesystem
             for category_dir in sorted(images_dir.iterdir()):
                 if not category_dir.is_dir():
                     continue
@@ -366,9 +372,6 @@ class StudioService:
                         })
                 if items:
                     result[category_dir.name] = items
-        elif self.settings.get("SUPABASE_URL"):
-            # Cloud mode — list from Supabase Storage
-            result = self._scan_supabase_bucket("produtos")
 
         return result
 
@@ -430,12 +433,21 @@ class StudioService:
         return result
 
     def scan_logos(self) -> list[dict]:
+        # Cloud mode — Supabase Storage has priority when configured
+        if self.settings.get("SUPABASE_URL"):
+            bucket_data = self._scan_supabase_bucket("logos")
+            logos = []
+            for items in bucket_data.values():
+                logos.extend(items)
+            if logos:
+                return logos
+
+        # Local mode — serve from filesystem
         logos_dir = self.config.assets_dir / "logomarcas"
         if not logos_dir.exists():
             logos_dir = self.config.assets_dir / "logos"
 
         if logos_dir.exists():
-            # Local mode
             logos = []
             for logo_file in sorted(logos_dir.rglob("*")):
                 if logo_file.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg"):
@@ -447,14 +459,6 @@ class StudioService:
                         "size_kb": round(logo_file.stat().st_size / 1024, 1),
                         "category": logo_file.parent.name if logo_file.parent != logos_dir else "geral",
                     })
-            return logos
-
-        # Cloud mode — Supabase Storage
-        if self.settings.get("SUPABASE_URL"):
-            bucket_data = self._scan_supabase_bucket("logos")
-            logos = []
-            for items in bucket_data.values():
-                logos.extend(items)
             return logos
 
         return []
