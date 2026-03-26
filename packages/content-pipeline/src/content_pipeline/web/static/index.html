@@ -752,6 +752,12 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 </head>
 <body x-data="studioApp()" x-init="init()">
 
+<!-- Toast Notification -->
+<div x-show="toastVisible" x-transition:enter="transition ease-out duration-200" x-transition:leave="transition ease-in duration-150"
+     style="position: fixed; top: 24px; right: 24px; z-index: 10000; padding: 14px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"
+     :style="toastType === 'error' ? 'background: #dc2626; color: white;' : 'background: #16a34a; color: white;'"
+     x-text="toastMessage" x-cloak></div>
+
 <!-- ============================================= -->
 <!-- LOGIN SCREEN -->
 <!-- ============================================= -->
@@ -2383,6 +2389,11 @@ function studioApp() {
     loginPass: '',
     loginError: '',
 
+    // Toast notifications
+    toastMessage: '',
+    toastType: 'success',
+    toastVisible: false,
+
     tab: 'dashboard',
     tabTitles: {
       dashboard: 'Painel Geral',
@@ -2637,6 +2648,14 @@ function studioApp() {
       return res.json();
     },
 
+    // Toast notification
+    notify(message, type = 'success') {
+      this.toastMessage = message;
+      this.toastType = type;
+      this.toastVisible = true;
+      setTimeout(() => { this.toastVisible = false; }, 4000);
+    },
+
     // Board helpers
     piecesInStage(stage) {
       let filtered = this.pieces.filter(p => p.stage === stage);
@@ -2645,13 +2664,18 @@ function studioApp() {
     },
 
     async createNewPiece() {
-      await this.api('/api/production/pieces', {
-        method: 'POST',
-        body: JSON.stringify(this.newPiece),
-      });
-      this.showNewPiece = false;
-      this.newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'imagem', persona_target: '', notes: '' };
-      await this.loadPieces();
+      try {
+        await this.api('/api/production/pieces', {
+          method: 'POST',
+          body: JSON.stringify(this.newPiece),
+        });
+        await this.loadPieces();
+        this.showNewPiece = false;
+        this.newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'imagem', persona_target: '', notes: '' };
+        this.notify('Peca criada com sucesso');
+      } catch (e) {
+        this.notify('Erro ao criar peca: ' + e.message, 'error');
+      }
     },
 
     async loadPieces() {
@@ -2736,8 +2760,9 @@ function studioApp() {
           }),
         });
         this.nb2GeneratedImage = result;
+        this.notify('Imagem gerada com sucesso');
       } catch(e) {
-        console.error('Erro gerando imagem:', e);
+        this.notify('Erro ao gerar imagem: ' + e.message, 'error');
       }
       this.nb2Generating = false;
     },
@@ -2888,12 +2913,17 @@ function studioApp() {
     },
 
     async submitReview(reviewId, verdict, comments = '') {
-      await this.api(`/api/reviews/${reviewId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ piece_id: '', verdict, comments }),
-      });
-      this.reviews = await this.api('/api/reviews');
-      await this.loadPieces();
+      try {
+        await this.api(`/api/reviews/${reviewId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ verdict, comments }),
+        });
+        this.reviews = await this.api('/api/reviews');
+        await this.loadPieces();
+        this.notify(verdict === 'approved' ? 'Conteudo aprovado' : 'Conteudo rejeitado', verdict === 'approved' ? 'success' : 'error');
+      } catch (e) {
+        this.notify('Erro ao enviar review: ' + e.message, 'error');
+      }
     },
 
     // Calendar

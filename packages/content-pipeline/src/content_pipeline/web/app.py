@@ -876,7 +876,7 @@ async def kling_image_to_video(request: Request, user: dict = Depends(require_au
         duration=data.get("duration", 5),
         aspect_ratio=data.get("aspect_ratio", "9:16"),
     )
-    return result
+    return result.to_dict() if hasattr(result, 'to_dict') else result
 
 
 @app.post("/api/video/kling/t2v")
@@ -891,7 +891,7 @@ async def kling_text_to_video(request: Request, user: dict = Depends(require_aut
         duration=data.get("duration", 5),
         aspect_ratio=data.get("aspect_ratio", "16:9"),
     )
-    return result
+    return result.to_dict() if hasattr(result, 'to_dict') else result
 
 
 # =========================================================================
@@ -917,10 +917,10 @@ async def generate_tts(request: Request, user: dict = Depends(require_auth)):
         raise HTTPException(503, "ElevenLabs nao configurado. Adicione ELEVENLABS_API_KEY nas configuracoes.")
     result = await svc.tts_client.generate(
         text=data.get("text", ""),
-        voice_id=data.get("voice_id", ""),
-        output_path=data.get("output_path", ""),
+        voice_id=data.get("voice_id", "") or None,
+        output_path=data.get("output_path", "") or None,
     )
-    return result
+    return result.to_dict() if hasattr(result, 'to_dict') else result
 
 
 # =========================================================================
@@ -932,17 +932,18 @@ async def assemble_video(request: Request, user: dict = Depends(require_auth)):
     """Monta video final: clip + narracao + musica + legendas."""
     svc = get_service()
     data = await request.json()
-    if not svc.video_assembler or not svc.video_assembler.ffmpeg_available:
+    if not svc.video_assembler or not svc.video_assembler.available:
         raise HTTPException(503, "FFmpeg nao disponivel no servidor.")
-    result = await svc.video_assembler.assemble(
+    result = await asyncio.to_thread(
+        svc.video_assembler.assemble,
         video_path=data.get("video_path", ""),
-        audio_path=data.get("audio_path", ""),
-        subtitle_text=data.get("subtitle_text", ""),
-        bgm_path=data.get("bgm_path", ""),
-        output_path=data.get("output_path", ""),
+        narration_path=data.get("audio_path", "") or None,
+        subtitle_text=data.get("subtitle_text", "") or None,
+        bgm_path=data.get("bgm_path", "") or None,
+        output_name=data.get("output_name", "") or None,
         bgm_volume=data.get("bgm_volume", 0.15),
     )
-    return result
+    return result.to_dict() if hasattr(result, 'to_dict') else result
 
 
 # =========================================================================
@@ -993,39 +994,46 @@ async def video_pipeline(request: Request, user: dict = Depends(require_auth)):
     except Exception as e:
         results["errors"].append(f"Erro gerando video: {str(e)}")
 
-    results["video"] = video_result
+    # Convert video result to dict for downstream use
+    video_dict = video_result.to_dict() if video_result and hasattr(video_result, 'to_dict') else video_result
+    results["video"] = video_dict
 
     # Step 2: Generate narration (if script provided)
     narration_result = None
+    narration_dict = None
     if data.get("narration_text") and svc.tts_client and svc.tts_client.api_key:
         try:
             narration_result = await svc.tts_client.generate(
                 text=data["narration_text"],
                 voice_id=data.get("voice_id", ""),
             )
+            narration_dict = narration_result.to_dict() if hasattr(narration_result, 'to_dict') else narration_result
             results["steps"].append({"step": "narration", "status": "ok"})
         except Exception as e:
             results["errors"].append(f"Erro gerando narracao: {str(e)}")
 
-    results["narration"] = narration_result
+    results["narration"] = narration_dict
 
     # Step 3: Assembly (if video + narration available)
-    if video_result and narration_result and svc.video_assembler and svc.video_assembler.ffmpeg_available:
+    narration_audio = getattr(narration_result, 'audio_path', '') if narration_result else ''
+    video_output = video_dict.get("video_path", "") or video_dict.get("output_path", "") if video_dict else ''
+    if video_output and narration_audio and svc.video_assembler and svc.video_assembler.available:
         try:
-            assembly_result = await svc.video_assembler.assemble(
-                video_path=video_result.get("output_path", ""),
-                audio_path=narration_result.get("output_path", ""),
-                subtitle_text=data.get("narration_text", ""),
-                bgm_path=data.get("bgm_path", ""),
-                output_path=data.get("final_output_path", ""),
+            assembly_result = await asyncio.to_thread(
+                svc.video_assembler.assemble,
+                video_path=video_output,
+                narration_path=narration_audio or None,
+                subtitle_text=data.get("narration_text", "") or None,
+                bgm_path=data.get("bgm_path", "") or None,
+                output_name=data.get("final_output_name", "") or None,
             )
             results["steps"].append({"step": "assembly", "status": "ok"})
-            results["final_video"] = assembly_result
+            results["final_video"] = assembly_result.to_dict() if hasattr(assembly_result, 'to_dict') else assembly_result
         except Exception as e:
             results["errors"].append(f"Erro na montagem: {str(e)}")
 
     results["total_cost_usd"] = sum(
-        r.get("cost_usd", 0) for r in [video_result, narration_result] if r and isinstance(r, dict)
+        r.get("cost_usd", 0) for r in [video_dict, narration_dict] if r and isinstance(r, dict)
     )
 
     return results

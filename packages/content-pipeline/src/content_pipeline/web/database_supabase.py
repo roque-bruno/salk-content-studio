@@ -78,7 +78,7 @@ class SupabaseDatabase:
         return None
 
     def update_piece_stage(self, piece_id: str, stage: str, notes: str = "") -> Optional[dict]:
-        update_data: dict = {"stage": stage}
+        update_data: dict = {"stage": stage, "updated_at": datetime.utcnow().isoformat()}
         if notes:
             update_data["notes"] = notes
         result = self.client.table("pieces").update(update_data).eq("id", piece_id).execute()
@@ -90,6 +90,7 @@ class SupabaseDatabase:
         update_data = {k: v for k, v in data.items() if k != "id"}
         if not update_data:
             return self.get_piece(piece_id)
+        update_data["updated_at"] = datetime.utcnow().isoformat()
         result = self.client.table("pieces").update(update_data).eq("id", piece_id).execute()
         if result.data:
             return self._parse_piece(result.data[0])
@@ -147,7 +148,7 @@ class SupabaseDatabase:
     def update_review(self, review_id: str, verdict: str, comments: str = "") -> Optional[dict]:
         result = (
             self.client.table("reviews")
-            .update({"verdict": verdict, "comments": comments})
+            .update({"verdict": verdict, "comments": comments, "updated_at": datetime.utcnow().isoformat()})
             .eq("id", review_id)
             .execute()
         )
