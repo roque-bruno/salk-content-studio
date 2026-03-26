@@ -165,6 +165,15 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.error("Unhandled error on %s %s: %s", request.method, request.url.path, exc, exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "type": type(exc).__name__},
+    )
+
+
 # =========================================================================
 # ROOT & HEALTH
 # =========================================================================
@@ -546,8 +555,13 @@ async def list_pieces(stage: str = "", brand: str = ""):
 
 
 @app.post("/api/production/pieces")
-async def create_piece(req: ProductionPiece):
-    return get_service().create_piece(req.model_dump())
+async def create_piece(request: Request):
+    try:
+        data = await request.json()
+        return get_service().create_piece(data)
+    except Exception as e:
+        logger.error("Erro ao criar peca: %s", e, exc_info=True)
+        raise HTTPException(500, f"Erro ao criar peca: {str(e)}")
 
 
 @app.put("/api/production/pieces/{piece_id}/stage")
