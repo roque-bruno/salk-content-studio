@@ -40,6 +40,10 @@ venv/
 .venv/
 *.so
 
+# Assets — served from Supabase Storage in production
+docs_user/imagem_produtos/
+docs_user/logomarcas/
+
 # Content Pipeline — only ignore root output dir (not src/content_pipeline/output/)
 /output/
 *.db
