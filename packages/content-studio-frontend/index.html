@@ -263,6 +263,88 @@ a:hover { color: var(--accent-hover); }
   justify-content: space-between;
 }
 
+/* === SIDEBAR MINI MODE === */
+.sidebar.mini { width: 60px; min-width: 60px; }
+.sidebar.mini .sidebar-brand-bg { padding: 12px 8px; }
+.sidebar.mini .brand-logo { height: 32px; max-width: 100%; margin-bottom: 0; }
+.sidebar.mini h1, .sidebar.mini .studio-label, .sidebar.mini .version, .sidebar.mini .sidebar-brand-divider { display: none; }
+.sidebar.mini .sidebar-section-title { display: none; }
+.sidebar.mini .sidebar-item { padding: 10px 0; justify-content: center; gap: 0; }
+.sidebar.mini .sidebar-item span:not(.icon):not(.sidebar-badge) { display: none; }
+.sidebar.mini .sidebar-item .icon { width: 24px; height: 24px; }
+.sidebar.mini .sidebar-badge { position: absolute; top: 2px; right: 6px; font-size: 0.5rem; padding: 1px 4px; min-width: 14px; }
+.sidebar.mini .sidebar-footer { padding: 8px; flex-direction: column; gap: 4px; }
+.sidebar.mini .sidebar-footer > *:not(.btn-logout) { display: none; }
+.sidebar.mini .sidebar-footer .btn-logout { font-size: 0.6rem; padding: 2px 4px; }
+.sidebar.mini + .main { margin-left: 0; }
+body:has(.sidebar.mini) { --sidebar-w: 60px; }
+
+.sidebar-collapse-btn {
+  position: absolute;
+  bottom: 50px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  z-index: 10;
+  transition: var(--transition);
+}
+.sidebar-collapse-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+/* === BADGE PULSE === */
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.sidebar-badge { animation: badgePulse 2s ease-in-out infinite; }
+
+/* === ACTIVE INDICATOR GLOW === */
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* === DRAWER TAB ANIMATION === */
+.drawer-tab { transition: all 0.15s ease; position: relative; }
+.drawer-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* === BTN HOVER LIFT === */
+.btn { transition: all 0.15s ease; }
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(0); }
+
+/* === TOAST ANIMATION === */
+@keyframes toastSlide {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.toast { animation: toastSlide 0.3s ease-out; }
+
 .preview-badge {
   display: inline-flex;
   align-items: center;
@@ -1759,7 +1841,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- SIDEBAR -->
 <!-- ============================================= -->
 <div class="sidebar-overlay" :class="{ active: sidebarOpen }" @click="sidebarOpen = false"></div>
-<aside class="sidebar" :class="{ open: sidebarOpen }">
+<aside class="sidebar" :class="{ open: sidebarOpen, mini: sidebarMini }">
   <div class="sidebar-brand">
     <div class="sidebar-brand-bg">
       <img src="/img/salk-logo-white.png" alt="Salk Medical" class="brand-logo" onerror="this.onerror=null; this.src='https://uottkdywmxbwiogxzaqa.supabase.co/storage/v1/object/public/logos/Salk%20Medical/LogSalkMedicalPNG%20-%20W.png';">
@@ -1773,79 +1855,79 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Producao</div>
-    <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" @click="tab='dashboard'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" @click="tab='dashboard'; sidebarOpen=false" title="Painel">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.9"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.3"/></svg></span> Painel
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'; sidebarOpen=false" title="Board">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="6" y="4" width="4" height="10" rx="1" fill="currentColor" opacity="0.5"/><rect x="11" y="1" width="4" height="13" rx="1" fill="currentColor" opacity="0.3"/></svg></span> Board
       <span class="sidebar-badge badge-blue" x-show="stats.pieces_in_production > 0" x-text="stats.pieces_in_production"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'; sidebarOpen=false" title="Calendario">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="1" x2="5" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> Calendario
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Criar</div>
-    <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'; sidebarOpen=false" title="Textos">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4" fill="none"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1.2"/></svg></span> Textos
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'; sidebarOpen=false" title="Imagens">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" opacity="0.7"/><path d="M1 12l4-4 2.5 2.5L11 7l4 5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/></svg></span> Imagens
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'video' }" @click="tab='video'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'video' }" @click="tab='video'; sidebarOpen=false" title="Videos">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M11 6l4-2v8l-4-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/></svg></span> Videos
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'editor' }" @click="tab='editor'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'editor' }" @click="tab='editor'; sidebarOpen=false" title="Editor">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="4" y1="12" x2="4" y2="15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="12" x2="8" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="12" y1="12" x2="12" y2="15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="8" r="1" fill="currentColor" opacity="0.6"/><circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.6"/><circle cx="11" cy="8" r="1" fill="currentColor" opacity="0.6"/></svg></span> Editor
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Gerenciar</div>
-    <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'; sidebarOpen=false" title="Aprovar">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span> Aprovar
       <span class="sidebar-badge badge-amber" x-show="pendingReviews > 0" x-text="pendingReviews"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'approval' }" @click="tab='approval'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'approval' }" @click="tab='approval'; sidebarOpen=false" title="Aprovacoes">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Aprovacoes
       <span class="sidebar-badge badge-green" x-show="approvalPending.length > 0" x-text="approvalPending.length"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'publish' }" @click="tab='publish'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'publish' }" @click="tab='publish'; sidebarOpen=false" title="Publicar">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="rotate(180 8 8)"/><path d="M2 12v2h12v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></span> Publicar
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'; sidebarOpen=false" title="Resultados">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="1,12 5,7 9,9 15,3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="15" cy="3" r="1.5" fill="currentColor" opacity="0.6"/></svg></span> Resultados
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'budget' }" @click="tab='budget'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'budget' }" @click="tab='budget'; sidebarOpen=false" title="Custos IA">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M4 4h8M5 7h6M4 10h8M6 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> Custos IA
     </div>
   </div>
 
   <div class="sidebar-section" style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px;">
     <div class="sidebar-section-title">Recursos</div>
-    <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'; sidebarOpen=false" title="Biblioteca">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Biblioteca
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'; sidebarOpen=false" title="Fichas">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1" opacity="0.5"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1" opacity="0.5"/><line x1="5" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1" opacity="0.5"/></svg></span> Fichas
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'; sidebarOpen=false" title="Argumentos">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Argumentos
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'; sidebarOpen=false" title="Hashtags">
       <span class="icon" style="font-weight:700; font-size:0.85rem;">#</span> Hashtags
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'; sidebarOpen=false" title="Personas">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M2 15c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Personas
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'; sidebarOpen=false" title="Regras">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Regras
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'reference' }" @click="tab='reference'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'reference' }" @click="tab='reference'; sidebarOpen=false" title="Referencia">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Referencia
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; sidebarOpen=false">
+    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; sidebarOpen=false" title="Config">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6l1.4 1.4M13 3l-1.4 1.4M4.4 11.6L3 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Config
     </div>
   </div>
@@ -1862,6 +1944,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <span x-show="currentUser" style="font-size: 0.72rem; color: var(--text-secondary);" x-text="currentUser?.username || currentUser?.sub || 'Gestora'"></span>
     <button class="btn-logout" @click="logout()">Sair</button>
   </div>
+  <button class="sidebar-collapse-btn" @click="sidebarMini = !sidebarMini" :title="sidebarMini ? 'Expandir menu' : 'Recolher menu'" x-text="sidebarMini ? '&#9654;' : '&#9664;'"></button>
 </aside>
 
 <!-- ============================================= -->
@@ -4687,16 +4770,29 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <span class="badge badge-purple" x-text="selectedPiece?.format" x-show="selectedPiece?.format"></span>
       </div>
     </div>
+      <!-- Stage Progress -->
+      <div style="display: flex; align-items: center; gap: 0; margin-top: 10px;">
+        <template x-for="(s, idx) in stages" :key="'dp-'+s">
+          <div style="display: flex; align-items: center;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 700; transition: all 0.2s;"
+                 :style="stages.indexOf(selectedPiece?.stage) >= idx ? 'background:' + stageColors[s] + '; color: white' : 'background: var(--bg-darker); color: var(--text-muted); border: 1px solid var(--border)'"
+                 x-text="idx + 1"></div>
+            <div x-show="idx < stages.length - 1" style="width: 20px; height: 2px;"
+                 :style="stages.indexOf(selectedPiece?.stage) > idx ? 'background:' + stageColors[s] : 'background: var(--border)'"></div>
+          </div>
+        </template>
+      </div>
+    </div>
     <button class="modal-close" @click="showPieceDetail = false">&times;</button>
   </div>
 
   <!-- Drawer Tabs -->
   <div class="drawer-tabs">
-    <button class="drawer-tab" :class="{ active: (drawerTab || 'resumo') === 'resumo' }" @click="drawerTab = 'resumo'">Resumo</button>
-    <button class="drawer-tab" :class="{ active: drawerTab === 'texto' }" @click="drawerTab = 'texto'">Texto</button>
-    <button class="drawer-tab" :class="{ active: drawerTab === 'visual' }" @click="drawerTab = 'visual'">Visual</button>
-    <button class="drawer-tab" :class="{ active: drawerTab === 'acoes' }" @click="drawerTab = 'acoes'">Acoes</button>
-    <button class="drawer-tab" :class="{ active: drawerTab === 'journey' }" @click="drawerTab = 'journey'; loadPieceJourney()">Jornada</button>
+    <button class="drawer-tab" :class="{ active: (drawerTab || 'resumo') === 'resumo' }" @click="drawerTab = 'resumo'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Resumo</button>
+    <button class="drawer-tab" :class="{ active: drawerTab === 'texto' }" @click="drawerTab = 'texto'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Texto</button>
+    <button class="drawer-tab" :class="{ active: drawerTab === 'visual' }" @click="drawerTab = 'visual'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Visual</button>
+    <button class="drawer-tab" :class="{ active: drawerTab === 'acoes' }" @click="drawerTab = 'acoes'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg> Acoes</button>
+    <button class="drawer-tab" :class="{ active: drawerTab === 'journey' }" @click="drawerTab = 'journey'; loadPieceJourney()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Jornada</button>
   </div>
 
   <div class="drawer-body">
@@ -5284,6 +5380,7 @@ function studioApp() {
 
     // UI state
     sidebarOpen: false,
+    sidebarMini: false,
     dataLoading: true,
 
     // Toast notifications
