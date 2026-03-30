@@ -55,6 +55,12 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* === BRAND THEMES === */
+[data-theme="salk"] { --accent: #4f8eff; --accent-hover: #6ba1ff; --accent-dim: rgba(79,142,255,0.10); --accent-glow: rgba(79,142,255,0.20); --accent-gradient: linear-gradient(135deg, #4f8eff 0%, #7c5cfc 100%); }
+[data-theme="mendel"] { --accent: #10b981; --accent-hover: #34d399; --accent-dim: rgba(16,185,129,0.10); --accent-glow: rgba(16,185,129,0.20); --accent-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 100%); }
+[data-theme="manager"] { --accent: #8b5cf6; --accent-hover: #a78bfa; --accent-dim: rgba(139,92,246,0.10); --accent-glow: rgba(139,92,246,0.20); --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); }
+[data-theme="dayho"] { --accent: #f59e0b; --accent-hover: #fbbf24; --accent-dim: rgba(245,158,11,0.10); --accent-glow: rgba(245,158,11,0.20); --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); }
+
 [x-cloak] { display: none !important; }
 
 html { font-size: 14px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -2009,7 +2015,20 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         </div>
       </div>
     </div>
-    <button class="btn" @click="refreshData()">&#8635;</button>
+    <select class="form-select" style="width: 110px; font-size: 0.72rem; padding: 4px 6px;" x-model="brandTheme" title="Tema da marca">
+      <option value="salk">Salk</option>
+      <option value="mendel">Mendel</option>
+      <option value="manager">Manager</option>
+      <option value="dayho">Dayho</option>
+    </select>
+    <div style="display: flex; align-items: center; gap: 4px;">
+      <span style="width: 8px; height: 8px; border-radius: 50%;" :style="connectionOk ? 'background: var(--green)' : 'background: var(--red)'"></span>
+      <button class="btn" @click="refreshData()" title="Atualizar dados">&#8635;</button>
+      <button class="btn" @click="toggleAutoRefresh()" :style="autoRefresh ? 'color: var(--green); border-color: var(--green)' : ''" :title="autoRefresh ? 'Auto-refresh LIGADO (30s)' : 'Auto-refresh desligado'">
+        <span x-show="!autoRefresh">&#9201;</span>
+        <span x-show="autoRefresh">&#9200;</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2034,6 +2053,33 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- TAB: DASHBOARD -->
 <!-- ===================================================== -->
 <div x-show="tab === 'dashboard' && !dataLoading">
+
+  <!-- Onboarding -->
+  <div x-show="showOnboarding" x-transition style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(79,142,255,0.08) 0%, rgba(139,92,246,0.05) 100%); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: 24px; position: relative;">
+    <button @click="showOnboarding = false; localStorage.setItem('studio_onboarded', '1')" style="position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem;">&times;</button>
+    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Bem-vinda ao Content Studio!</div>
+    <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px;">Siga estes 3 passos para comecar a produzir conteudo:</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+      <div style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border);">
+        <div style="font-size: 1.5rem; margin-bottom: 6px;">1&#65039;&#8419;</div>
+        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 4px;">Configure as APIs</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px;">Adicione suas chaves (OpenRouter, fal.ai, ElevenLabs) em Config.</div>
+        <button class="btn btn-sm" @click="tab = 'settings'; showOnboarding = false; localStorage.setItem('studio_onboarded', '1')" style="font-size: 0.72rem; width: 100%;">Ir para Config</button>
+      </div>
+      <div style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border);">
+        <div style="font-size: 1.5rem; margin-bottom: 6px;">2&#65039;&#8419;</div>
+        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 4px;">Planeje a Semana</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px;">Use o Calendario para planejar e gerar conteudo da semana automaticamente.</div>
+        <button class="btn btn-sm" @click="tab = 'calendar'; showOnboarding = false; localStorage.setItem('studio_onboarded', '1')" style="font-size: 0.72rem; width: 100%;">Ir para Calendario</button>
+      </div>
+      <div style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border);">
+        <div style="font-size: 1.5rem; margin-bottom: 6px;">3&#65039;&#8419;</div>
+        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 4px;">Revise e Publique</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px;">Aprove as pecas no Board e publique nas redes sociais.</div>
+        <button class="btn btn-sm" @click="tab = 'board'; showOnboarding = false; localStorage.setItem('studio_onboarded', '1')" style="font-size: 0.72rem; width: 100%;">Ir para Board</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Welcome Banner -->
   <div class="welcome-banner">
@@ -2345,6 +2391,9 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <option value="educativo">Educativo</option>
       <option value="social_proof">Social Proof</option>
     </select>
+    <button class="btn btn-sm" @click="boardSelectMode = !boardSelectMode; if(!boardSelectMode) boardSelected = []"
+            :style="boardSelectMode ? 'background: var(--accent); color: white;' : ''"
+            style="font-size: 0.72rem;" x-text="boardSelectMode ? 'Sair Selecao (' + boardSelected.length + ')' : 'Selecionar'"></button>
     <div style="flex: 1;"></div>
     <button class="btn btn-sm btn-primary" @click="batchGenerateCopy()" x-show="piecesInStage('briefing').length > 0" :disabled="batchProcessing" title="Gerar copy para todas as pecas em briefing">
       <span x-show="!batchProcessing">Gerar Copy p/ Briefings (<span x-text="piecesInStage('briefing').length"></span>)</span>
@@ -2381,6 +2430,9 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
                  @dragstart="dragPiece = piece; $event.dataTransfer.effectAllowed = 'move'; $el.classList.add('dragging')"
                  @dragend="dragPiece = null; $el.classList.remove('dragging')"
                  @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true">
+              <div x-show="boardSelectMode" style="position: absolute; top: 6px; right: 6px; z-index: 2;" @click.stop>
+                <input type="checkbox" :value="piece.id" x-model="boardSelected" style="width: 16px; height: 16px; accent-color: var(--accent);">
+              </div>
               <div class="kc-title" x-text="piece.title || piece.id"></div>
               <img x-show="piece.image_url" :src="piece.image_url" class="kc-image-thumb" loading="lazy" onerror="this.style.display='none'">
               <div class="kc-meta">
@@ -2404,6 +2456,19 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         </div>
       </div>
     </template>
+  </div>
+
+  <!-- Bulk Actions Bar -->
+  <div x-show="boardSelectMode && boardSelected.length > 0" x-transition
+       style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: 10px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px var(--accent); z-index: 200;">
+    <span style="font-weight: 700; font-size: 0.85rem; color: var(--accent);" x-text="boardSelected.length + ' selecionadas'"></span>
+    <div style="width: 1px; height: 24px; background: var(--border);"></div>
+    <template x-for="s in stages">
+      <button class="btn btn-sm" @click="bulkMoveStage(s)" style="font-size: 0.7rem; padding: 4px 8px;" x-text="'→ ' + stageLabels[s]"></button>
+    </template>
+    <div style="width: 1px; height: 24px; background: var(--border);"></div>
+    <button class="btn btn-sm" @click="bulkExport()" style="font-size: 0.7rem; padding: 4px 8px;">Exportar</button>
+    <button class="btn btn-sm" @click="bulkDelete()" style="font-size: 0.7rem; padding: 4px 8px; color: var(--red); border-color: var(--red);">Excluir</button>
   </div>
 </div>
 
@@ -5532,12 +5597,17 @@ function studioApp() {
     sidebarOpen: false,
     sidebarMini: false,
     dataLoading: true,
+    autoRefresh: false,
+    autoRefreshInterval: null,
+    connectionOk: true,
+    showOnboarding: !localStorage.getItem('studio_onboarded'),
 
     // Toast notifications
     toastMessage: '',
     toastType: 'success',
     toastVisible: false,
 
+    brandTheme: 'salk',
     tab: 'dashboard',
     tabTitles: {
       dashboard: 'Painel Geral',
@@ -5599,6 +5669,8 @@ function studioApp() {
     selectedHashtags: [],
 
     // Board
+    boardSelectMode: false,
+    boardSelected: [],
     dragPiece: null,
     stages: ['briefing', 'copy', 'visual', 'review', 'approved', 'published'],
     stageLabels: { briefing: 'Briefing', copy: 'Texto', visual: 'Visual', review: 'Revisao', approved: 'Aprovado', published: 'Publicado' },
@@ -5865,6 +5937,14 @@ function studioApp() {
     async init() {
       if (!this.authenticated) return;
       await this.refreshData();
+      // Brand theme
+      const savedTheme = localStorage.getItem('studio_theme') || 'salk';
+      this.brandTheme = savedTheme;
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      this.$watch('brandTheme', (val) => {
+        document.documentElement.setAttribute('data-theme', val);
+        localStorage.setItem('studio_theme', val);
+      });
       this.$watch('tab', (val) => {
         if (val === 'video') { this.loadVideoStatus(); this.loadVeo3Models(); }
         if (val === 'editor') this.loadEditorData();
@@ -5966,14 +6046,20 @@ function studioApp() {
       const token = localStorage.getItem('studio_token');
       const headers = { 'Content-Type': 'application/json', ...opts.headers };
       if (token) headers['Authorization'] = 'Bearer ' + token;
-      const res = await fetch(fullUrl, { headers, ...opts });
-      if (res.status === 401) {
-        localStorage.removeItem('studio_token');
-        this.authenticated = false;
-        throw new Error('401');
+      try {
+        const res = await fetch(fullUrl, { headers, ...opts });
+        this.connectionOk = true;
+        if (res.status === 401) {
+          localStorage.removeItem('studio_token');
+          this.authenticated = false;
+          throw new Error('401');
+        }
+        if (!res.ok && res.status !== 503) throw new Error(`${res.status}`);
+        return res.json();
+      } catch(e) {
+        if (e.message !== '401') this.connectionOk = false;
+        throw e;
       }
-      if (!res.ok && res.status !== 503) throw new Error(`${res.status}`);
-      return res.json();
     },
 
     // Toast notification
@@ -7487,6 +7573,50 @@ function studioApp() {
       const ok = Object.values(results).filter(r => r.success).length;
       this.notify(ok + ' de ' + platforms.length + ' plataformas publicadas');
       this.publishingPiece = null;
+    },
+
+    async bulkMoveStage(stage) {
+      for (const id of this.boardSelected) {
+        try {
+          await this.api('/api/production/pieces/' + id + '/stage', {
+            method: 'PUT', body: JSON.stringify({ stage }),
+          });
+          const p = this.pieces.find(x => x.id === id);
+          if (p) p.stage = stage;
+        } catch(e) { /* continue */ }
+      }
+      this.notify(this.boardSelected.length + ' pecas movidas para ' + this.stageLabels[stage]);
+      this.boardSelected = [];
+    },
+
+    async bulkDelete() {
+      if (!confirm('Excluir ' + this.boardSelected.length + ' pecas?')) return;
+      for (const id of this.boardSelected) {
+        try { await this.api('/api/production/pieces/' + id, { method: 'DELETE' }); } catch(e) { /* continue */ }
+      }
+      this.pieces = this.pieces.filter(p => !this.boardSelected.includes(p.id));
+      this.notify(this.boardSelected.length + ' pecas excluidas');
+      this.boardSelected = [];
+    },
+
+    bulkExport() {
+      const selected = this.pieces.filter(p => this.boardSelected.includes(p.id));
+      const headers = ['ID', 'Titulo', 'Marca', 'Produto', 'Plataforma', 'Formato', 'Pilar', 'Estagio', 'Criado'];
+      const rows = selected.map(p => [p.id, p.title, p.brand, p.product, p.platform, p.format, p.pillar, p.stage, (p.created_at || '').substring(0, 10)]);
+      this.exportCSV('selecao_' + new Date().toISOString().substring(0, 10) + '.csv', headers, rows);
+      this.boardSelected = [];
+    },
+
+    toggleAutoRefresh() {
+      this.autoRefresh = !this.autoRefresh;
+      if (this.autoRefresh) {
+        this.autoRefreshInterval = setInterval(() => this.refreshData(), 30000);
+        this.notify('Auto-refresh ligado (30s)');
+      } else {
+        clearInterval(this.autoRefreshInterval);
+        this.autoRefreshInterval = null;
+        this.notify('Auto-refresh desligado');
+      }
     },
 
     formatNumber(n) {
