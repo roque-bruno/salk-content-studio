@@ -2318,6 +2318,74 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   width: 60px;
   height: 20px;
 }
+
+/* === COPY VERSION TIMELINE === */
+.version-timeline { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 16px; }
+.version-timeline::before { content: ''; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+.version-item { position: relative; padding: 8px 10px; margin-bottom: 2px; background: var(--bg-darker); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); }
+.version-item:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+.version-item::before { content: ''; position: absolute; left: -14px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-primary); z-index: 1; }
+.version-item .version-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.version-item .version-source { font-size: 0.6rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.version-item .version-source.generated { background: var(--blue-bg); color: var(--accent); }
+.version-item .version-source.rewritten { background: var(--purple-bg); color: var(--purple); }
+.version-item .version-source.briefing { background: var(--green-bg); color: var(--green); }
+.version-item .version-preview { font-size: 0.72rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.version-item .version-time { font-size: 0.6rem; color: var(--text-muted); }
+
+/* === IMAGE GALLERY GRID === */
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.gallery-card { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-darker); cursor: pointer; transition: var(--transition); }
+.gallery-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+.gallery-card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--bg-primary); }
+.gallery-card .gallery-info { padding: 8px 10px; }
+.gallery-card .gallery-prompt { font-size: 0.68rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
+.gallery-card .gallery-meta { display: flex; align-items: center; justify-content: space-between; }
+.gallery-card .gallery-time { font-size: 0.6rem; color: var(--text-muted); }
+.gallery-card .gallery-type { font-size: 0.58rem; padding: 1px 5px; border-radius: 3px; background: var(--accent-dim); color: var(--accent); }
+
+/* === ZEN/FOCUS MODE === */
+body.zen-mode { overflow: hidden; }
+body.zen-mode .sidebar { display: none !important; }
+body.zen-mode .header-bar { display: none !important; }
+body.zen-mode .main { margin: 0; padding: 0; max-width: 100%; }
+body.zen-mode .tab-bar { display: none !important; }
+.zen-overlay { position: fixed; inset: 0; background: rgba(8,10,15,0.96); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+.zen-overlay::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%); pointer-events: none; }
+.zen-editor { position: relative; z-index: 1; width: 100%; max-width: 700px; padding: 40px 24px; }
+.zen-editor .zen-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.zen-editor .zen-title { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); }
+.zen-editor .zen-close { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 4px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.75rem; transition: var(--transition); }
+.zen-editor .zen-close:hover { border-color: var(--accent); color: var(--accent); }
+.zen-editor textarea { width: 100%; min-height: 400px; background: transparent; border: none; color: var(--text-primary); font-family: var(--font); font-size: 1rem; line-height: 1.8; resize: none; outline: none; }
+.zen-editor .zen-charcount { text-align: right; font-size: 0.72rem; color: var(--text-muted); margin-top: 8px; }
+
+/* === DASHBOARD WIDGET CUSTOMIZER === */
+.widget-customizer { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+.widget-customizer .widget-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.widget-customizer .widget-toggle { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.75rem; cursor: pointer; transition: var(--transition); background: var(--bg-darker); color: var(--text-secondary); }
+.widget-customizer .widget-toggle.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+.widget-customizer .widget-toggle input { display: none; }
+
+/* === PIECE QUICK MENU === */
+.piece-quick-menu { position: absolute; top: 100%; right: 0; z-index: 50; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 4px 0; min-width: 180px; animation: menuFadeIn 0.15s ease; }
+@keyframes menuFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.piece-quick-menu .pqm-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 0.78rem; color: var(--text-secondary); cursor: pointer; transition: var(--transition); border: none; background: none; width: 100%; text-align: left; }
+.piece-quick-menu .pqm-item:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.piece-quick-menu .pqm-item .pqm-icon { width: 18px; text-align: center; font-size: 0.8rem; }
+.piece-quick-menu .pqm-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* === SCHEDULE QUEUE === */
+.schedule-queue { display: flex; flex-direction: column; gap: 16px; }
+.schedule-lane { background: var(--bg-darker); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+.schedule-lane .lane-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.82rem; font-weight: 600; }
+.schedule-lane .lane-header .lane-icon { font-size: 1rem; }
+.schedule-lane .lane-items { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.schedule-item { flex-shrink: 0; min-width: 200px; max-width: 260px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; transition: var(--transition); }
+.schedule-item:hover { border-color: var(--accent); }
+.schedule-item .si-time { font-size: 0.72rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+.schedule-item .si-title { font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.schedule-item .si-status { font-size: 0.65rem; padding: 1px 6px; border-radius: 3px; }
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -2707,6 +2775,23 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
   </div>
 
+  <!-- Dashboard Customizer -->
+  <div class="widget-customizer" x-show="dashboardCustomizing" x-cloak x-transition>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+      <div style="font-weight: 700; font-size: 0.85rem;">Personalizar Dashboard</div>
+      <button class="btn btn-sm" @click="dashboardCustomizing = false" style="font-size: 0.68rem;">Fechar</button>
+    </div>
+    <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">Selecione os widgets que deseja exibir:</p>
+    <div class="widget-list">
+      <template x-for="key in ['pipeline', 'kpis', 'distribution', 'activity', 'actions', 'brands', 'weekly', 'pieces', 'approval', 'insights']" :key="'wt-' + key">
+        <label class="widget-toggle" :class="{ active: dashboardLayout.includes(key) }">
+          <input type="checkbox" :value="key" :checked="dashboardLayout.includes(key)" @change="toggleDashboardWidget(key)">
+          <span x-text="dashboardWidgetLabels[key] || key"></span>
+        </label>
+      </template>
+    </div>
+  </div>
+
   <!-- Welcome Banner -->
   <div class="welcome-banner">
     <div>
@@ -2729,11 +2814,12 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <span x-show="abTestRunning">Gerando...</span>
       </button>
       <button class="btn" @click="openWeeklyReport()" title="Relatorio Semanal">&#128202; Relatorio</button>
+      <button class="btn" @click="dashboardCustomizing = !dashboardCustomizing" :style="dashboardCustomizing ? 'border-color: var(--accent); color: var(--accent)' : ''" title="Personalizar widgets">&#9881; Personalizar</button>
     </div>
   </div>
 
   <!-- Pipeline Funnel -->
-  <div class="card" style="margin-bottom: 20px;">
+  <div class="card" style="margin-bottom: 20px;" x-show="dashboardLayout.includes('pipeline')">
     <div class="pipeline-funnel">
       <template x-for="(stage, idx) in stages" :key="stage">
         <div class="pipeline-stage" :class="piecesInStage(stage).length > 0 ? 'has-pieces' : ''" @click="boardBrandFilter = ''; tab = 'board';">
@@ -2750,7 +2836,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </div>
 
   <!-- Stats Grid — 4 KPI cards -->
-  <div class="kpi-grid">
+  <div class="kpi-grid" x-show="dashboardLayout.includes('kpis')">
     <div class="kpi-card">
       <div class="kpi-icon" style="background: var(--blue-bg); color: var(--accent);">&#9638;</div>
       <div class="kpi-data">
@@ -2799,7 +2885,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </div>
 
   <!-- Stage Distribution Donut + Activity -->
-  <div style="display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 20px;">
+  <div style="display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 20px;" x-show="dashboardLayout.includes('distribution') || dashboardLayout.includes('activity')">
     <!-- Donut Chart -->
     <div class="card" style="text-align: center;">
       <div class="card-title">Distribuicao por Estagio</div>
@@ -2859,9 +2945,9 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
   </div>
 
-  <div class="actions-grid">
+  <div class="actions-grid" x-show="dashboardLayout.includes('actions') || dashboardLayout.includes('brands')">
     <!-- Quick Actions -->
-    <div class="card">
+    <div class="card" x-show="dashboardLayout.includes('actions')">
       <div class="card-title">Acoes Rapidas</div>
       <div style="display: flex; flex-direction: column; gap: 6px;">
         <button class="action-btn" @click="tab='calendar'; sidebarOpen=false">
@@ -2892,7 +2978,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
 
     <!-- Brand Distribution -->
-    <div class="card">
+    <div class="card" x-show="dashboardLayout.includes('brands')">
       <div class="card-title">Distribuicao por Marca</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
         <template x-for="b in ['salk', 'mendel', 'manager', 'dayho']">
@@ -2914,7 +3000,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </div>
 
   <!-- Recent Pieces -->
-  <div class="card" x-show="pieces.length > 0">
+  <div class="card" x-show="pieces.length > 0 && dashboardLayout.includes('pieces')">
     <div class="card-title">Ultimas Pecas</div>
     <div class="table-wrap">
       <table>
@@ -2935,8 +3021,8 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </div>
 
   <!-- Approval Queue Summary -->
-  <div class="actions-grid" style="margin-top: 16px;">
-    <div class="card">
+  <div class="actions-grid" style="margin-top: 16px;" x-show="dashboardLayout.includes('approval') || dashboardLayout.includes('insights')">
+    <div class="card" x-show="dashboardLayout.includes('approval')">
       <div class="card-title">Fila de Aprovacao</div>
       <template x-if="reviews.filter(r => r.verdict === 'pending').length > 0">
         <div>
@@ -2962,7 +3048,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       </template>
     </div>
 
-    <div class="card">
+    <div class="card" x-show="dashboardLayout.includes('insights')">
       <div class="card-title">Insights &amp; Progresso</div>
       <div style="display: flex; flex-direction: column; gap: 10px;">
         <!-- Pipeline velocity -->
@@ -3007,7 +3093,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </div>
 
   <!-- Weekly Production Widget -->
-  <div class="card" style="grid-column: 1 / -1;">
+  <div class="card" style="grid-column: 1 / -1;" x-show="dashboardLayout.includes('weekly')">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
       <div class="card-title" style="margin: 0;">Producao desta Semana</div>
       <span style="font-size: 0.72rem; color: var(--text-muted);" x-text="'Semana ' + currentWeekId()"></span>
@@ -3146,10 +3232,20 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
                 <div class="kc-progress-dot" :class="piece.image_url ? 'done' : ''"></div>
                 <div class="kc-progress-dot" :class="piece.stage === 'approved' || piece.stage === 'published' ? 'done' : piece.stage === 'review' ? 'partial' : ''"></div>
               </div>
-              <div class="kc-quick-actions">
+              <div class="kc-quick-actions" style="position: relative;">
                 <button class="kc-quick-btn" @click.stop="movePieceBack(piece)" x-show="stages.indexOf(piece.stage) > 0" title="Voltar estagio">&#9664;</button>
                 <button class="kc-quick-btn" @click.stop="movePieceForward(piece)" x-show="stages.indexOf(piece.stage) < stages.length - 1" title="Avancar estagio">&#9654;</button>
-                <button class="kc-quick-btn" @click.stop="deletePieceConfirm(piece)" title="Excluir" style="margin-left: auto;">&#10005;</button>
+                <button class="kc-quick-btn" @click.stop="quickMenuPiece = (quickMenuPiece === piece.id ? null : piece.id)" title="Mais acoes" style="margin-left: auto;">&#8943;</button>
+                <button class="kc-quick-btn" @click.stop="deletePieceConfirm(piece)" title="Excluir">&#10005;</button>
+                <!-- Quick Actions Menu -->
+                <div class="piece-quick-menu" x-show="quickMenuPiece === piece.id" @click.outside="quickMenuPiece = null" x-cloak>
+                  <button class="pqm-item" @click.stop="quickMenuPiece = null; generateCopyForPiece(piece.id)"><span class="pqm-icon">&#9998;</span> Gerar Copy</button>
+                  <button class="pqm-item" @click.stop="quickMenuPiece = null; selectedPiece = piece; tab = 'studio'"><span class="pqm-icon">&#128247;</span> Gerar Imagem</button>
+                  <button class="pqm-item" @click.stop="quickMenuPiece = null; movePieceToStage(piece, 'review')"><span class="pqm-icon">&#128269;</span> Enviar p/ Revisao</button>
+                  <div class="pqm-divider"></div>
+                  <button class="pqm-item" @click.stop="quickMenuPiece = null; clonePiece(piece)"><span class="pqm-icon">&#128203;</span> Duplicar</button>
+                  <button class="pqm-item" @click.stop="quickMenuPiece = null; deletePieceConfirm(piece)" style="color: var(--red);"><span class="pqm-icon">&#128465;</span> Excluir</button>
+                </div>
               </div>
             </div>
           </template>
@@ -3239,15 +3335,27 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </button>
     <button class="btn" style="background: var(--cyan); color: #000; font-weight: 600;" @click="smartBriefing()">Smart Briefing</button>
   </div>
-  <!-- Week Navigator -->
-  <div x-show="calWeeksList.length > 0" style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;">
-    <span style="font-size: 0.72rem; color: var(--text-muted); margin-right: 4px;">Semanas salvas:</span>
-    <template x-for="w in calWeeksList" :key="w.week_id || w">
-      <button class="btn btn-sm" :style="(w.week_id || w) === calWeekId ? 'background: var(--accent); color: #fff;' : ''"
-              @click="calWeekId = w.week_id || w; loadCalendar();"
-              style="font-size: 0.7rem; padding: 3px 10px;"
-              x-text="(w.week_id || w) + (w.slot_count ? ' (' + w.slot_count + ')' : '')"></button>
-    </template>
+  <!-- Enhanced Week Navigator -->
+  <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 8px;">
+      <button class="btn btn-sm" @click="navigateWeek(-1)" style="padding: 2px 8px; font-size: 0.8rem;" title="Semana anterior">&#9664;</button>
+      <div style="min-width: 180px; text-align: center;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);" x-text="calWeekId"></div>
+        <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="weekDateRange(calWeekId)"></div>
+      </div>
+      <button class="btn btn-sm" @click="navigateWeek(1)" style="padding: 2px 8px; font-size: 0.8rem;" title="Proxima semana">&#9654;</button>
+    </div>
+    <!-- Mini month overview -->
+    <div style="display: flex; gap: 3px; align-items: center;" x-show="calWeeksList.length > 0">
+      <span style="font-size: 0.65rem; color: var(--text-muted); margin-right: 4px;">Semanas:</span>
+      <template x-for="w in calWeeksList" :key="w.week_id || w">
+        <button class="btn btn-sm" :style="(w.week_id || w) === calWeekId ? 'background: var(--accent); color: #fff;' : ''"
+                @click="calWeekId = w.week_id || w; loadCalendar();"
+                style="font-size: 0.62rem; padding: 2px 7px; min-width: 0;"
+                :title="weekDateRange(w.week_id || w)"
+                x-text="(w.week_id || w).replace('2026-', '') + (w.slot_count ? ' (' + w.slot_count + ')' : '')"></button>
+      </template>
+    </div>
   </div>
 
   <!-- Production Summary -->
@@ -3392,7 +3500,10 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="card">
         <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
           <span>2. Editar Copy</span>
-          <span style="font-size: 0.7rem; color: var(--text-muted);" x-text="copyCharCount + ' caracteres'"></span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="btn btn-sm" @click="enterZenMode()" style="font-size: 0.68rem; padding: 2px 10px; border-color: var(--purple); color: var(--purple);" title="Modo Foco: escrita sem distracoes">&#9681; Modo Foco</button>
+            <span style="font-size: 0.7rem; color: var(--text-muted);" x-text="copyCharCount + ' caracteres'"></span>
+          </div>
         </div>
         <div class="form-group">
           <label style="display: flex; justify-content: space-between; align-items: center;">Headline <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 400;" x-show="copyHeadline.length > 0" x-text="copyHeadline.length + ' chars'"></span></label>
@@ -3442,6 +3553,29 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
             <strong style="color: #eab308;" x-text="w.term"></strong> — <span x-text="w.reason"></span>
           </div>
         </template>
+      </div>
+
+      <!-- Copy Version History -->
+      <div class="card" x-show="copyVersions.length > 0">
+        <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" @click="copyVersionsOpen = !copyVersionsOpen">
+          <div class="card-title" style="margin-bottom: 0;">Historico de Versoes (<span x-text="copyVersions.length"></span>)</div>
+          <span style="color: var(--text-muted); font-size: 0.8rem;" x-text="copyVersionsOpen ? '−' : '+'"></span>
+        </div>
+        <div x-show="copyVersionsOpen" x-transition style="margin-top: 12px;">
+          <div class="version-timeline">
+            <template x-for="(ver, idx) in copyVersions.slice().reverse()" :key="'cv-' + idx">
+              <div class="version-item" @click="restoreCopyVersion(ver)">
+                <div class="version-meta">
+                  <span class="version-source" :class="ver.source" x-text="ver.source === 'generated' ? 'Gerada' : ver.source === 'rewritten' ? 'Reescrita' : 'Briefing'"></span>
+                  <span class="version-time" x-text="fmtDate(ver.timestamp)"></span>
+                  <span x-show="ver.model" style="font-size: 0.58rem; color: var(--text-muted); margin-left: auto;" x-text="ver.model"></span>
+                </div>
+                <div class="version-preview" x-text="((ver.headline ? ver.headline + ' — ' : '') + ver.text).substring(0, 80) + '...'"></div>
+              </div>
+            </template>
+          </div>
+          <button class="btn btn-sm" style="margin-top: 10px; width: 100%; color: var(--red); border-color: var(--red);" @click="copyVersions = []; copyVersionsOpen = false;">Limpar Historico</button>
+        </div>
       </div>
 
       <!-- Step 3: Teste com Personas -->
@@ -3555,6 +3689,22 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <span style="color: var(--text-muted); font-size: 0.7rem; margin-left: 6px;" x-text="'via ' + copyModelUsed"></span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Zen Mode Overlay -->
+  <div class="zen-overlay" x-show="zenMode" x-cloak @keydown.escape.window="exitZenMode()">
+    <div class="zen-editor">
+      <div class="zen-toolbar">
+        <div class="zen-title">Modo Foco — Escrita sem Distracoes</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 0.72rem; color: var(--text-muted);" x-text="copyCharCount + ' / ' + (copyCharLimits[copyPlatform] || 2200) + ' caracteres'"></span>
+          <button class="zen-close" @click="exitZenMode()">Esc &mdash; Sair</button>
+        </div>
+      </div>
+      <input style="width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text-primary); font-family: var(--font); font-size: 1.1rem; font-weight: 600; padding: 8px 0; margin-bottom: 16px; outline: none;" x-model="copyHeadline" placeholder="Headline...">
+      <textarea x-model="copyText" @input="copyCharCount = copyText.length" placeholder="Escreva sua copy aqui..."></textarea>
+      <div class="zen-charcount" x-text="copyCharCount + ' caracteres — ' + (copyPlatform || 'instagram')"></div>
     </div>
   </div>
 </div>
@@ -3787,23 +3937,27 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
   </div>
 
-  <!-- Generation History -->
+  <!-- Generation History / Gallery -->
   <div class="card" style="margin-top: 16px;">
     <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" @click="studioHistoryOpen = !studioHistoryOpen">
-      <div class="card-title" style="margin-bottom: 0;">Historico de Geracoes</div>
-      <span style="color: var(--text-muted); font-size: 0.8rem;" x-text="studioHistoryOpen ? '−' : '+' "></span>
+      <div class="card-title" style="margin-bottom: 0;">Galeria de Imagens (<span x-text="studioHistory.length"></span>)</div>
+      <span style="color: var(--text-muted); font-size: 0.8rem;" x-text="studioHistoryOpen ? '−' : '+'"></span>
     </div>
     <div x-show="studioHistoryOpen" x-transition style="margin-top: 12px;">
       <template x-if="studioHistory.length === 0">
         <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.82rem;">Nenhuma geracao encontrada</div>
       </template>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;">
-        <template x-for="item in studioHistory.slice(0, 20)" :key="item.meta_file">
-          <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-darker);">
-            <img :src="item.image_url" style="width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--bg-primary);" loading="lazy">
-            <div style="padding: 6px 8px;">
-              <div style="font-size: 0.68rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="item.input?.prompt || item.prompt || 'Sem prompt'"></div>
-              <div style="font-size: 0.6rem; color: var(--text-muted);" x-text="fmtDate(item.timestamp || item.created_at)"></div>
+      <div class="gallery-grid">
+        <template x-for="item in studioHistory.slice(0, 24)" :key="item.meta_file || item.image_url">
+          <div class="gallery-card" @click="openGalleryImage(item)">
+            <img :src="item.image_url" loading="lazy" onerror="this.style.display='none'">
+            <div class="gallery-info">
+              <div class="gallery-prompt" x-text="(item.input?.prompt || item.prompt || 'Sem prompt').substring(0, 50)"></div>
+              <div class="gallery-meta">
+                <span class="gallery-time" x-text="fmtDate(item.timestamp || item.created_at)"></span>
+                <span class="gallery-type" x-text="item.input?.product_type || item.product_type || 'imagem'" x-show="item.input?.product_type || item.product_type"></span>
+              </div>
+              <button class="btn btn-sm" style="width: 100%; margin-top: 6px; font-size: 0.65rem; padding: 3px 0;" @click.stop="useAsVideoReference(item)">Usar como Referencia</button>
             </div>
           </div>
         </template>
@@ -5086,6 +5240,31 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <div class="label">YouTube</div>
         <div class="value" :style="publishStatus.youtube ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.youtube ? 'Conectado' : 'Nao conectado'"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Schedule Queue -->
+  <div class="card" style="margin-bottom: 16px;" x-show="scheduledPieces().length > 0">
+    <div class="card-title">Fila de Agendamento (<span x-text="scheduledPieces().length"></span>)</div>
+    <div class="schedule-queue">
+      <template x-for="platform in ['instagram', 'linkedin', 'facebook', 'youtube'].filter(p => scheduledPieces().some(x => x.platform === p || (x.publishPlatforms || []).includes(p)))">
+        <div class="schedule-lane">
+          <div class="lane-header">
+            <span class="lane-icon" x-text="platform === 'instagram' ? '&#128247;' : platform === 'linkedin' ? '&#128188;' : platform === 'facebook' ? '&#128077;' : '&#9654;'"></span>
+            <span style="text-transform: capitalize;" x-text="platform"></span>
+            <span style="font-size: 0.68rem; color: var(--text-muted);" x-text="scheduledPieces().filter(p => p.platform === platform || (p.publishPlatforms || []).includes(platform)).length + ' agendadas'"></span>
+          </div>
+          <div class="lane-items">
+            <template x-for="p in scheduledPieces().filter(x => x.platform === platform || (x.publishPlatforms || []).includes(platform))" :key="'sq-' + p.id">
+              <div class="schedule-item" @click="selectedPiece = p; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board';">
+                <div class="si-time" x-text="p.scheduled_at ? new Date(p.scheduled_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Sem data'"></div>
+                <div class="si-title" x-text="p.title || p.id"></div>
+                <span class="si-status" :style="p.scheduled_at ? 'background: var(--green-bg); color: var(--green)' : 'background: var(--amber-bg); color: var(--amber)'" x-text="p.scheduled_at ? 'Agendada' : 'Pendente'"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 
@@ -6689,6 +6868,9 @@ function studioApp() {
     copyRewriteFeedback: '',
     copyPersonaResults: [],
     copyPersonaLoading: false,
+    copyVersions: [],
+    copyVersionsOpen: false,
+    zenMode: false,
 
     // Compliance
     complianceText: '',
@@ -6839,6 +7021,17 @@ function studioApp() {
     // Studio History
     studioHistory: [],
     studioHistoryOpen: false,
+
+    // Dashboard Layout
+    dashboardLayout: JSON.parse(localStorage.getItem('studio_dashboard_layout') || 'null') || ['pipeline', 'kpis', 'distribution', 'activity', 'actions', 'brands', 'weekly', 'pieces', 'approval', 'insights'],
+    dashboardCustomizing: false,
+    dashboardWidgetLabels: { pipeline: 'Pipeline', kpis: 'KPIs', distribution: 'Distribuicao', activity: 'Atividade', actions: 'Acoes Rapidas', brands: 'Marcas', weekly: 'Semana', pieces: 'Pecas', approval: 'Aprovacao', insights: 'Insights' },
+
+    // Piece Quick Menu
+    quickMenuPiece: null,
+
+    // Schedule Queue
+    scheduleQueue: [],
 
     // Reference Library
     refActiveSection: '',
@@ -7875,6 +8068,7 @@ function studioApp() {
           this.copyText = lines.slice(1).join('\n').trim();
           this.copyCharCount = this.copyText.length;
         }
+        this.pushCopyVersion('generated');
         this.notify('Copy gerada por ' + this.copyWriterName);
       } catch (e) {
         this.notify('Erro ao gerar copy: ' + e.message, 'error');
@@ -7922,6 +8116,7 @@ function studioApp() {
           this.copyText = lines.slice(1).join('\n').trim();
           this.copyCharCount = this.copyText.length;
         }
+        this.pushCopyVersion('briefing');
         this.notify('Copy gerada por ' + this.copyWriterName);
       } catch (e) {
         this.notify('Erro ao gerar: ' + e.message, 'error');
@@ -7949,6 +8144,7 @@ function studioApp() {
         this.copyRewriteFeedback = '';
         this.showRewritePanel = false;
         this.copyComplianceResult = null;
+        this.pushCopyVersion('rewritten');
         this.notify('Copy reescrita com sucesso');
       } catch (e) {
         this.notify('Erro ao reescrever: ' + e.message, 'error');
@@ -8812,6 +9008,99 @@ function studioApp() {
       a.click();
       URL.revokeObjectURL(url);
       this.notify('Configuracoes exportadas');
+    },
+
+    // === COPY VERSION HISTORY ===
+    pushCopyVersion(source) {
+      this.copyVersions.push({
+        text: this.copyText,
+        headline: this.copyHeadline,
+        timestamp: new Date().toISOString(),
+        source: source,
+        model: this.copyModelUsed || '',
+        cost: this.copyCostUsd || 0,
+      });
+    },
+
+    restoreCopyVersion(ver) {
+      this.copyText = ver.text || '';
+      this.copyHeadline = ver.headline || '';
+      this.copyCharCount = this.copyText.length;
+      this.notify('Versao restaurada');
+    },
+
+    // === ZEN MODE ===
+    enterZenMode() {
+      this.zenMode = true;
+      document.body.classList.add('zen-mode');
+    },
+
+    exitZenMode() {
+      this.zenMode = false;
+      document.body.classList.remove('zen-mode');
+    },
+
+    // === GALLERY ===
+    openGalleryImage(item) {
+      this.selectedImage = item.image_url;
+      this.assetModalList = this.studioHistory.filter(h => h.image_url).map(h => h.image_url);
+      this.assetModalIndex = this.assetModalList.indexOf(item.image_url);
+      this.showImageModal = true;
+    },
+
+    useAsVideoReference(item) {
+      this.videoRefUpload = item.image_url;
+      this.tab = 'video';
+      this.notify('Imagem definida como referencia para video');
+    },
+
+    // === DASHBOARD WIDGET CUSTOMIZER ===
+    toggleDashboardWidget(key) {
+      const idx = this.dashboardLayout.indexOf(key);
+      if (idx >= 0) {
+        this.dashboardLayout.splice(idx, 1);
+      } else {
+        this.dashboardLayout.push(key);
+      }
+      localStorage.setItem('studio_dashboard_layout', JSON.stringify(this.dashboardLayout));
+    },
+
+    // === CALENDAR WEEK NAVIGATION ===
+    weekDateRange(weekId) {
+      try {
+        const match = (weekId || '').match(/(\d{4})-W(\d{1,2})/);
+        if (!match) return '';
+        const year = parseInt(match[1]);
+        const week = parseInt(match[2]);
+        const jan4 = new Date(year, 0, 4);
+        const dayOfWeek = jan4.getDay() || 7;
+        const monday = new Date(jan4);
+        monday.setDate(jan4.getDate() - dayOfWeek + 1 + (week - 1) * 7);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        return monday.getDate() + ' ' + months[monday.getMonth()] + ' - ' + sunday.getDate() + ' ' + months[sunday.getMonth()];
+      } catch { return ''; }
+    },
+
+    navigateWeek(direction) {
+      const match = (this.calWeekId || '').match(/(\d{4})-W(\d{1,2})/);
+      if (!match) return;
+      let year = parseInt(match[1]);
+      let week = parseInt(match[2]) + direction;
+      if (week < 1) { year--; week = 52; }
+      if (week > 52) { year++; week = 1; }
+      this.calWeekId = year + '-W' + String(week).padStart(2, '0');
+      this.loadCalendar();
+    },
+
+    // === SCHEDULE QUEUE ===
+    scheduledPieces() {
+      return this.approvedPieces.filter(p => p.scheduled_at || (p.publishPlatforms && p.publishPlatforms.length > 0)).sort((a, b) => {
+        if (!a.scheduled_at) return 1;
+        if (!b.scheduled_at) return -1;
+        return new Date(a.scheduled_at) - new Date(b.scheduled_at);
+      });
     },
 
     formatNumber(n) {
