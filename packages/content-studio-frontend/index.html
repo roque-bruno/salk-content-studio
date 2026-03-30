@@ -1191,6 +1191,11 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+@media (max-width: 700px) {
+  .drawer { width: 100% !important; }
+  .modal { margin: 8px !important; max-width: calc(100vw - 16px) !important; }
+}
+
 /* === LOGIN SCREEN === */
 .login-overlay {
   position: fixed; inset: 0; z-index: 9999;
@@ -1606,6 +1611,14 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 @media (max-width: 480px) {
   .kpi-grid { grid-template-columns: 1fr; }
   .pipeline-funnel { grid-template-columns: repeat(2, 1fr); }
+  .drawer { width: 100% !important; right: 0 !important; }
+  .modal { max-width: 95vw !important; margin: 8px; }
+  .modal-body { padding: 12px 16px; }
+  .form-row-3 { grid-template-columns: 1fr !important; }
+  .btn-group { flex-wrap: wrap; }
+  .stats-grid { grid-template-columns: 1fr !important; }
+  body { font-size: 13px; }
+  .sidebar-brand .brand-logo { height: 56px; }
 }
 </style>
 </head>
@@ -1616,6 +1629,62 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
      class="toast-notify" :class="toastType === 'error' ? 'toast-error' : 'toast-success'">
   <span x-text="toastType === 'error' ? '✕' : '✓'" style="font-size: 1rem; flex-shrink: 0;"></span>
   <span x-text="toastMessage"></span>
+</div>
+
+<!-- Keyboard Shortcuts Help -->
+<div class="modal-overlay" x-show="showShortcuts" @click.self="showShortcuts = false" x-cloak>
+  <div class="modal" style="max-width: 420px;">
+    <div class="modal-header">
+      <h3>Atalhos de Teclado</h3>
+      <button class="modal-close" @click="showShortcuts = false">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 16px 24px;">
+      <div style="display: grid; grid-template-columns: 100px 1fr; gap: 8px; font-size: 0.82rem;">
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+K</kbd> <span>Busca rapida</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+N</kbd> <span>Nova peca</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+B</kbd> <span>Ir para Board</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Esc</kbd> <span>Fechar modal/drawer</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">?</kbd> <span>Mostrar atalhos</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div class="modal-overlay" x-show="showCommandPalette" @click.self="showCommandPalette = false" x-cloak style="align-items: flex-start; padding-top: 15vh;">
+  <div style="width: 100%; max-width: 520px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;">
+    <div style="padding: 12px 16px; border-bottom: 1px solid var(--border);">
+      <input class="form-input" x-model="commandQuery" @keydown.escape="showCommandPalette = false" x-ref="cmdInput" placeholder="Buscar acao, tab ou peca..." style="border: none; background: transparent; font-size: 0.95rem; width: 100%; padding: 4px 0;" autofocus x-init="$watch('showCommandPalette', v => { if(v) $nextTick(() => $refs.cmdInput?.focus()) })">
+    </div>
+    <div style="max-height: 320px; overflow-y: auto; padding: 8px;">
+      <template x-for="cmd in [
+        {label: 'Painel', icon: '&#9638;', action: () => { tab = 'dashboard'; showCommandPalette = false; }},
+        {label: 'Board de Producao', icon: '&#9776;', action: () => { tab = 'board'; showCommandPalette = false; }},
+        {label: 'Calendario', icon: '&#128197;', action: () => { tab = 'calendar'; showCommandPalette = false; }},
+        {label: 'Escrever Textos', icon: '&#9998;', action: () => { tab = 'copy'; showCommandPalette = false; }},
+        {label: 'Estudio NB2', icon: '&#127912;', action: () => { tab = 'studio'; showCommandPalette = false; }},
+        {label: 'Video Pipeline', icon: '&#127909;', action: () => { tab = 'video'; showCommandPalette = false; }},
+        {label: 'Aprovar Conteudo', icon: '&#10003;', action: () => { tab = 'review'; showCommandPalette = false; }},
+        {label: 'Publicar', icon: '&#128640;', action: () => { tab = 'publish'; showCommandPalette = false; }},
+        {label: 'Resultados', icon: '&#128200;', action: () => { tab = 'performance'; showCommandPalette = false; }},
+        {label: 'Custos IA', icon: '&#128176;', action: () => { tab = 'budget'; showCommandPalette = false; }},
+        {label: 'Configuracoes', icon: '&#9881;', action: () => { tab = 'settings'; showCommandPalette = false; }},
+        {label: 'Nova Peca', icon: '+', action: () => { tab = 'board'; showNewPiece = true; showCommandPalette = false; }},
+        {label: 'Produzir Peca Automatica', icon: '&#9889;', action: () => { showQuickProduce = true; showCommandPalette = false; }},
+        {label: 'Exportar Pecas CSV', icon: '&#128229;', action: () => { exportPiecesCSV(); showCommandPalette = false; }},
+      ].filter(c => !commandQuery || c.label.toLowerCase().includes(commandQuery.toLowerCase()))">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s;"
+             @click="cmd.action()" @mouseenter="$el.style.background='var(--accent-dim)'" @mouseleave="$el.style.background='transparent'">
+          <span style="width: 28px; text-align: center; font-size: 0.9rem;" x-html="cmd.icon"></span>
+          <span style="font-size: 0.85rem;" x-text="cmd.label"></span>
+        </div>
+      </template>
+    </div>
+    <div style="padding: 8px 16px; border-top: 1px solid var(--border); font-size: 0.68rem; color: var(--text-muted); display: flex; gap: 12px;">
+      <span><kbd style="background: var(--bg-darker); padding: 1px 5px; border-radius: 3px; font-size: 0.62rem;">Esc</kbd> fechar</span>
+      <span><kbd style="background: var(--bg-darker); padding: 1px 5px; border-radius: 3px; font-size: 0.62rem;">?</kbd> atalhos</span>
+    </div>
+  </div>
 </div>
 
 <!-- ============================================= -->
@@ -1761,6 +1830,40 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
     <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'">+ Nova Peca</button>
     <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Nova Ficha</button>
+    <div style="position: relative;">
+      <button class="btn" @click="showNotifPanel = !showNotifPanel" style="position: relative;">
+        &#128276;
+        <span x-show="notifications.filter(n => !n.read).length > 0"
+              style="position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--red); color: white; font-size: 0.55rem; display: flex; align-items: center; justify-content: center; font-weight: 800;"
+              x-text="Math.min(99, notifications.filter(n => !n.read).length)"></span>
+      </button>
+      <!-- Notification Panel -->
+      <div x-show="showNotifPanel" @click.outside="showNotifPanel = false" x-cloak
+           style="position: absolute; right: 0; top: 100%; margin-top: 8px; width: 340px; max-height: 400px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 100; overflow: hidden;">
+        <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 700; font-size: 0.85rem;">Notificacoes</span>
+          <button class="btn btn-sm" style="font-size: 0.68rem; padding: 2px 8px;" @click="notifications.forEach(n => n.read = true)">Marcar lidas</button>
+        </div>
+        <div style="max-height: 340px; overflow-y: auto;">
+          <template x-if="notifications.length === 0">
+            <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.82rem;">Nenhuma notificacao</div>
+          </template>
+          <template x-for="(n, idx) in notifications.slice(0, 30)" :key="idx">
+            <div style="padding: 10px 16px; border-bottom: 1px solid var(--border); transition: all 0.15s; cursor: default;"
+                 :style="!n.read ? 'background: rgba(79,142,255,0.04)' : ''" @click="n.read = true">
+              <div style="display: flex; align-items: start; gap: 8px;">
+                <span style="font-size: 0.85rem; flex-shrink: 0; margin-top: 1px;" :style="n.type === 'error' ? 'color: var(--red)' : 'color: var(--green)'" x-text="n.type === 'error' ? '&#10007;' : '&#10003;'"></span>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.78rem; color: var(--text-secondary);" x-text="n.message"></div>
+                  <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;" x-text="n.time"></div>
+                </div>
+                <div x-show="!n.read" style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 6px;"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
     <button class="btn" @click="refreshData()">&#8635;</button>
   </div>
 </div>
@@ -1836,6 +1939,13 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="kpi-data">
         <div class="kpi-value" x-text="stats.claims_available || 0">0</div>
         <div class="kpi-label">Argumentos</div>
+      </div>
+    </div>
+    <div class="kpi-card" @click="tab = 'budget'" style="cursor: pointer;">
+      <div class="kpi-icon" style="background: var(--amber-bg); color: var(--amber);">$</div>
+      <div class="kpi-data">
+        <div class="kpi-value" style="color: var(--amber);" x-text="'$' + (budgetSummary.total_usd || 0).toFixed(2)">$0</div>
+        <div class="kpi-label">Gasto Mensal IA</div>
       </div>
     </div>
   </div>
@@ -2012,6 +2122,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <button class="btn btn-sm" @click="batchMoveStage('copy', 'visual')" x-show="piecesInStage('copy').length > 0" title="Mover todas com copy para visual">
       Copy &#8594; Visual (<span x-text="piecesInStage('copy').length"></span>)
     </button>
+    <button class="btn btn-sm" @click="exportPiecesCSV()" title="Exportar pecas como CSV" style="margin-left: auto;">&#128229; CSV</button>
     <span style="font-size: 0.75rem; color: var(--text-muted);" x-text="pieces.length + ' pecas total'"></span>
   </div>
 
@@ -2060,6 +2171,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <button class="btn" @click="loadCalendar()">Carregar</button>
     <button class="btn btn-primary" @click="await generateCalendar(); await autoFillCalendar()">Nova Semana</button>
     <button class="btn btn-success" @click="saveCalendar()" x-show="calSlots.length > 0">Salvar Ajustes</button>
+      <button class="btn btn-sm" @click="exportCalendarCSV()" x-show="calSlots.length > 0" title="Exportar calendario">&#128229; CSV</button>
     <button class="btn" style="background: var(--green); color: #000; font-weight: 600;" @click="produceWeek()" x-show="calSlots.length > 0" :disabled="weekProducing">
       <span x-show="!weekProducing">Gerar Conteudo da Semana</span>
       <span x-show="weekProducing">Gerando conteudo...</span>
@@ -3133,7 +3245,10 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 
   <!-- Metrics Table -->
   <div class="card" x-show="metrics.length > 0">
-    <div class="card-title">Historico</div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div class="card-title" style="margin: 0;">Historico</div>
+      <button class="btn btn-sm" @click="exportMetricsCSV()" x-show="metrics.length > 0">&#128229; CSV</button>
+    </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Peca</th><th>Plataforma</th><th>Data</th><th>Impressoes</th><th>Alcance</th><th>Engajamento</th><th>Clicks</th></tr></thead>
@@ -4091,6 +4206,17 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         </div>
       </template>
 
+      <!-- Editable Notes -->
+      <div class="card" style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div class="card-title" style="font-size: 0.75rem; margin: 0;">Adicionar Nota</div>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <input class="form-input" style="flex: 1; font-size: 0.78rem;" x-model="pieceNewNote" placeholder="Adicionar nota ou comentario..." @keydown.enter="addPieceNote()">
+          <button class="btn btn-sm btn-primary" @click="addPieceNote()" :disabled="!pieceNewNote?.trim()">Salvar</button>
+        </div>
+      </div>
+
       <!-- Quick Copy Preview -->
       <div class="card" style="margin-bottom: 12px;" x-show="selectedPiece?.copy_text">
         <div class="card-title" style="font-size: 0.75rem; display: flex; justify-content: space-between;">
@@ -4218,6 +4344,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <button class="btn btn-success" @click="movePieceStage(selectedPiece?.id, 'approved'); notify('Peca aprovada!');">&#9989; Aprovar</button>
         <button class="btn" style="border-color: var(--amber); color: var(--amber);" @click="rejectPiece(selectedPiece?.id)">&#10060; Rejeitar</button>
         <button class="btn" @click="sendToReview(selectedPiece?.id)">Enviar para Revisao</button>
+        <button class="btn" @click="clonePiece(selectedPiece)" style="border-color: var(--cyan); color: var(--cyan);">&#128203; Duplicar</button>
         <button class="btn btn-danger" style="margin-left: auto;" @click="if(confirm('Tem certeza que deseja excluir esta peca?')) { deletePiece(selectedPiece?.id); }">Excluir</button>
       </div>
     </div>
@@ -4821,6 +4948,15 @@ function studioApp() {
     feedbackLoading: false,
     recsLoading: false,
 
+    // Command palette & shortcuts
+    showCommandPalette: false,
+    showShortcuts: false,
+    commandQuery: '',
+    pieceNewNote: '',
+    // Notifications
+    notifications: [],
+    showNotifPanel: false,
+
     // Settings
     settingsList: [],
     settingsGroups: [],
@@ -4869,6 +5005,17 @@ function studioApp() {
         if (val === 'publish') { this.loadApprovedPieces(); this.loadPublishStatus(); }
         if (val === 'settings') { this.loadSettings(); this.loadLLMUsage(); }
         if (val === 'budget') this.loadBudgetData();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+        if (e.ctrlKey || e.metaKey) {
+          if (e.key === 'k') { e.preventDefault(); this.showCommandPalette = !this.showCommandPalette; }
+          if (e.key === 'n') { e.preventDefault(); this.showNewPiece = true; this.tab = 'board'; }
+          if (e.key === 'b') { e.preventDefault(); this.tab = 'board'; }
+        }
+        if (e.key === '?') { this.showShortcuts = !this.showShortcuts; }
       });
     },
 
@@ -4932,6 +5079,7 @@ function studioApp() {
       }
       this.loadVideoStatus();
       this.loadPublishStatus();
+      this.loadBudgetData();
       this.dataLoading = false;
     },
 
@@ -4966,6 +5114,8 @@ function studioApp() {
       this.toastMessage = message;
       this.toastType = type;
       this.toastVisible = true;
+      this.notifications.unshift({ message, type, time: new Date().toLocaleTimeString(), read: false });
+      if (this.notifications.length > 50) this.notifications.pop();
       if (this._toastTimer) clearTimeout(this._toastTimer);
       this._toastTimer = setTimeout(() => { this.toastVisible = false; }, 3500);
     },
@@ -6069,6 +6219,76 @@ function studioApp() {
         this.metricShares = 0;
         this.notify('Metrica salva');
       } catch(e) { this.notify('Erro ao salvar metrica: ' + e.message, 'error'); }
+    },
+
+    // CSV Export
+    exportCSV(filename, headers, rows) {
+      const csvContent = [headers.join(','), ...rows.map(r => r.map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(','))].join('\n');
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      this.notify(filename + ' exportado!');
+    },
+
+    exportPiecesCSV() {
+      const headers = ['ID', 'Titulo', 'Marca', 'Produto', 'Plataforma', 'Formato', 'Pilar', 'Estagio', 'Criado'];
+      const rows = this.pieces.map(p => [p.id, p.title, p.brand, p.product, p.platform, p.format, p.pillar, p.stage, (p.created_at || '').substring(0, 10)]);
+      this.exportCSV('pecas_' + new Date().toISOString().substring(0, 10) + '.csv', headers, rows);
+    },
+
+    exportMetricsCSV() {
+      const headers = ['Peca', 'Plataforma', 'Data', 'Impressoes', 'Alcance', 'Engajamento', 'Clicks', 'Saves', 'Shares'];
+      const rows = this.metrics.map(m => [m.piece_id, m.platform, m.published_at, m.impressions, m.reach, m.engagement, m.clicks, m.saves, m.shares]);
+      this.exportCSV('metricas_' + new Date().toISOString().substring(0, 10) + '.csv', headers, rows);
+    },
+
+    exportCalendarCSV() {
+      const headers = ['Dia', 'Horario', 'Plataforma', 'Formato', 'Produto', 'Pilar', 'Status'];
+      const rows = this.calSlots.map(s => [s.day, s.time, s.platform, s.format, s.product, s.pillar, s.status]);
+      this.exportCSV('calendario_' + this.calWeekId + '.csv', headers, rows);
+    },
+
+    async clonePiece(piece) {
+      if (!piece) return;
+      try {
+        const clone = {
+          title: (piece.title || '') + ' (copia)',
+          brand: piece.brand,
+          product: piece.product,
+          pillar: piece.pillar,
+          platform: piece.platform,
+          format: piece.format,
+          persona_target: piece.persona_target,
+          notes: piece.notes || '',
+        };
+        await this.api('/api/production/pieces', {
+          method: 'POST',
+          body: JSON.stringify(clone),
+        });
+        await this.loadPieces();
+        this.notify('Peca duplicada com sucesso');
+      } catch(e) { this.notify('Erro ao duplicar: ' + e.message, 'error'); }
+    },
+
+    async addPieceNote() {
+      if (!this.selectedPiece?.id || !this.pieceNewNote?.trim()) return;
+      try {
+        const currentNotes = this.selectedPiece.notes || '';
+        const timestamp = new Date().toLocaleString('pt-BR');
+        const newNotes = currentNotes + (currentNotes ? '\n' : '') + '[' + timestamp + '] ' + this.pieceNewNote;
+        await this.api('/api/production/pieces/' + this.selectedPiece.id, {
+          method: 'PUT',
+          body: JSON.stringify({ notes: newNotes }),
+        });
+        this.selectedPiece.notes = newNotes;
+        this.pieceNewNote = '';
+        this.notify('Nota adicionada');
+        await this.loadPieces();
+        this.selectedPiece = this.pieces.find(p => p.id === this.selectedPiece.id) || this.selectedPiece;
+      } catch(e) { this.notify('Erro ao salvar nota: ' + e.message, 'error'); }
     },
 
     formatNumber(n) {
