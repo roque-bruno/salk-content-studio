@@ -2840,6 +2840,123 @@ body.zen-mode .tab-bar { display: none !important; }
 /* =================================================================== */
 /* === END MOBILE-FIRST RESPONSIVE OVERHAUL ========================= */
 /* =================================================================== */
+
+/* === PRODUCTION WIZARD === */
+.wizard-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(8,10,15,0.92); backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.25s ease;
+}
+.wizard-container {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); width: 100%; max-width: 720px;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+}
+.wizard-header {
+  padding: 28px 32px 20px; border-bottom: 1px solid var(--border);
+}
+.wizard-header h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+.wizard-header p { font-size: 0.78rem; color: var(--text-muted); }
+
+/* Progress Steps */
+.wizard-steps {
+  display: flex; align-items: center; gap: 0; padding: 0 32px;
+  margin-top: 16px;
+}
+.wizard-step {
+  display: flex; align-items: center; gap: 8px; flex: 1;
+  position: relative;
+}
+.wizard-step-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg-secondary); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+  transition: all 0.3s ease; flex-shrink: 0;
+}
+.wizard-step.active .wizard-step-dot {
+  background: var(--accent); border-color: var(--accent);
+  color: white; box-shadow: 0 0 16px var(--accent-glow);
+}
+.wizard-step.completed .wizard-step-dot {
+  background: var(--green); border-color: var(--green); color: white;
+}
+.wizard-step-label {
+  font-size: 0.72rem; color: var(--text-muted); white-space: nowrap;
+}
+.wizard-step.active .wizard-step-label { color: var(--accent); font-weight: 600; }
+.wizard-step.completed .wizard-step-label { color: var(--green); }
+.wizard-step-line {
+  flex: 1; height: 2px; background: var(--border); margin: 0 4px;
+}
+.wizard-step.completed + .wizard-step-line,
+.wizard-step.completed ~ .wizard-step-line { background: var(--green); }
+
+.wizard-body { padding: 28px 32px; }
+.wizard-footer {
+  padding: 16px 32px 24px; display: flex; justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+
+/* Piece Progress Bar (for drawer) */
+.piece-progress {
+  display: flex; align-items: center; gap: 0; padding: 12px 0;
+  margin-bottom: 16px;
+}
+.piece-progress-step {
+  display: flex; align-items: center; gap: 4px; flex: 1;
+}
+.piece-progress-dot {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg-secondary); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; color: var(--text-muted); flex-shrink: 0;
+}
+.piece-progress-step.done .piece-progress-dot {
+  background: var(--green); border-color: var(--green); color: white;
+}
+.piece-progress-step.current .piece-progress-dot {
+  background: var(--accent); border-color: var(--accent); color: white;
+  animation: pipelinePulse 2s ease infinite;
+}
+.piece-progress-line { flex: 1; height: 2px; background: var(--border); }
+.piece-progress-step.done ~ .piece-progress-line { background: var(--green); }
+.piece-progress-label { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; }
+
+/* Pending Actions Widget */
+.pending-actions {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+}
+.pending-action-card {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px; cursor: pointer;
+  transition: var(--transition); text-align: center;
+}
+.pending-action-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.pending-action-count { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+.pending-action-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+.pending-action-icon { font-size: 1.2rem; margin-bottom: 4px; }
+
+/* Batch Toolbar */
+.batch-toolbar {
+  position: sticky; bottom: 0; left: 0; right: 0;
+  background: var(--bg-card); border-top: 1px solid var(--accent);
+  padding: 12px 20px; display: flex; align-items: center; gap: 12px;
+  z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.batch-toolbar .batch-count { font-weight: 700; color: var(--accent); font-size: 0.85rem; }
+
+@media (max-width: 768px) {
+  .wizard-container { margin: 8px; max-width: calc(100vw - 16px); }
+  .wizard-header, .wizard-body, .wizard-footer { padding-left: 16px; padding-right: 16px; }
+  .wizard-steps { flex-wrap: wrap; gap: 8px; }
+  .wizard-step-label { display: none; }
+  .pending-actions { grid-template-columns: repeat(2, 1fr); }
+  .batch-toolbar { padding: 10px 12px; bottom: 56px; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -3237,7 +3354,7 @@ body.zen-mode .tab-bar { display: none !important; }
     </div>
     <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">Selecione os widgets que deseja exibir:</p>
     <div class="widget-list">
-      <template x-for="key in ['pipeline', 'kpis', 'distribution', 'activity', 'actions', 'brands', 'weekly', 'pieces', 'approval', 'insights']" :key="'wt-' + key">
+      <template x-for="key in ['pending', 'pipeline', 'kpis', 'distribution', 'activity', 'actions', 'brands', 'weekly', 'pieces', 'approval', 'insights']" :key="'wt-' + key">
         <label class="widget-toggle" :class="{ active: dashboardLayout.includes(key) }">
           <input type="checkbox" :value="key" :checked="dashboardLayout.includes(key)" @change="toggleDashboardWidget(key)">
           <span x-text="dashboardWidgetLabels[key] || key"></span>
@@ -3269,6 +3386,41 @@ body.zen-mode .tab-bar { display: none !important; }
       </button>
       <button class="btn" @click="openWeeklyReport()" title="Relatorio Semanal">&#128202; Relatorio</button>
       <button class="btn" @click="dashboardCustomizing = !dashboardCustomizing" :style="dashboardCustomizing ? 'border-color: var(--accent); color: var(--accent)' : ''" title="Personalizar widgets">&#9881; Personalizar</button>
+    </div>
+  </div>
+
+  <!-- Pending Actions -->
+  <div class="card" style="padding:20px; margin-bottom:16px;" x-show="dashboardLayout.includes('pending')">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 style="font-size:0.9rem; font-weight:700;">O que fazer agora?</h3>
+      <button class="btn btn-sm btn-primary" @click="showWizard = true; wizardCurrentStep = 0;">+ Nova Peca</button>
+    </div>
+    <div class="pending-actions">
+      <div class="pending-action-card" @click="tab = 'board'; boardFilter = 'briefing'">
+        <div class="pending-action-icon">&#x1f4dd;</div>
+        <div class="pending-action-count" x-text="pieces.filter(p => p.stage === 'briefing').length"></div>
+        <div class="pending-action-label">Aguardando Briefing</div>
+      </div>
+      <div class="pending-action-card" @click="tab = 'copy'">
+        <div class="pending-action-icon">&#x270d;&#xfe0f;</div>
+        <div class="pending-action-count" x-text="pieces.filter(p => p.stage === 'copy').length"></div>
+        <div class="pending-action-label">Precisam de Copy</div>
+      </div>
+      <div class="pending-action-card" @click="tab = 'studio'">
+        <div class="pending-action-icon">&#x1f3a8;</div>
+        <div class="pending-action-count" x-text="pieces.filter(p => p.stage === 'design').length"></div>
+        <div class="pending-action-label">Precisam de Visual</div>
+      </div>
+      <div class="pending-action-card" @click="tab = 'review'">
+        <div class="pending-action-icon">&#x1f50d;</div>
+        <div class="pending-action-count" x-text="reviews.filter(r => r.verdict === 'pending').length"></div>
+        <div class="pending-action-label">Revisoes Pendentes</div>
+      </div>
+      <div class="pending-action-card" @click="tab = 'approval'">
+        <div class="pending-action-icon">&#x2705;</div>
+        <div class="pending-action-count" x-text="approvedPieces.filter(p => !p.published_at).length"></div>
+        <div class="pending-action-label">Prontas p/ Publicar</div>
+      </div>
     </div>
   </div>
 
@@ -6427,6 +6579,155 @@ body.zen-mode .tab-bar { display: none !important; }
 </nav>
 
 <!-- ============================================= -->
+<!-- PRODUCTION WIZARD & BATCH TOOLBAR -->
+<!-- ============================================= -->
+
+<!-- Production Wizard -->
+<div class="wizard-overlay" x-show="showWizard" x-transition @keydown.escape.window="showWizard = false" style="display:none;">
+  <div class="wizard-container" @click.stop>
+    <div class="wizard-header">
+      <h2>Assistente de Producao</h2>
+      <p>Crie uma peca completa passo a passo</p>
+      <div class="wizard-steps">
+        <template x-for="(step, i) in wizardSteps" :key="i">
+          <div class="wizard-step" :class="{ active: wizardCurrentStep === i, completed: wizardCurrentStep > i }">
+            <div class="wizard-step-dot" x-text="wizardCurrentStep > i ? '&#10003;' : (i+1)"></div>
+            <span class="wizard-step-label" x-text="step.label"></span>
+            <div class="wizard-step-line" x-show="i < wizardSteps.length - 1"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div class="wizard-body">
+      <!-- Step 0: Briefing -->
+      <div x-show="wizardCurrentStep === 0">
+        <label class="form-label">Produto</label>
+        <select class="form-select" x-model="wizardData.product" style="width:100%; margin-bottom:12px;">
+          <option value="">Selecione...</option>
+          <option value="LEV">LEV</option>
+          <option value="KRATUS">KRATUS</option>
+          <option value="OSTUS">OSTUS</option>
+          <option value="KRONUS">KRONUS</option>
+          <option value="COMMAND">COMMAND</option>
+        </select>
+        <label class="form-label">Marca</label>
+        <select class="form-select" x-model="wizardData.brand" style="width:100%; margin-bottom:12px;">
+          <option value="salk">Salk Medical</option><option value="mendel">Mendel Medical</option>
+          <option value="manager">Manager Grupo</option><option value="dayho">Dayho</option>
+        </select>
+        <label class="form-label">Tipo de Conteudo</label>
+        <select class="form-select" x-model="wizardData.contentType" style="width:100%; margin-bottom:12px;">
+          <option value="hero_shot">Hero Shot (Imagem)</option><option value="carousel">Carrossel</option>
+          <option value="video_short">Video Curto</option><option value="educational">Educativo</option>
+          <option value="testimonial">Depoimento</option><option value="institutional">Institucional</option>
+        </select>
+        <label class="form-label">Plataforma</label>
+        <select class="form-select" x-model="wizardData.platform" style="width:100%; margin-bottom:12px;">
+          <option value="instagram_feed">Instagram Feed</option><option value="instagram_stories">Instagram Stories</option>
+          <option value="linkedin">LinkedIn</option><option value="facebook">Facebook</option>
+          <option value="youtube">YouTube</option>
+        </select>
+        <label class="form-label">Objetivo</label>
+        <textarea class="form-textarea" x-model="wizardData.objective" placeholder="Ex: Gerar leads para demonstracao do LEV 4LEV em hospitais do Sul" style="min-height:60px;width:100%;"></textarea>
+      </div>
+      <!-- Step 1: Copy -->
+      <div x-show="wizardCurrentStep === 1">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <label class="form-label" style="margin:0;">Copy da Peca</label>
+          <button class="btn btn-sm" @click="wizardGenerateCopy()" :disabled="wizardLoading">
+            <span x-show="!wizardLoading">Gerar com IA</span>
+            <span x-show="wizardLoading">Gerando...</span>
+          </button>
+        </div>
+        <input class="form-input" x-model="wizardData.headline" placeholder="Headline..." style="width:100%;margin-bottom:8px;">
+        <textarea class="form-textarea" x-model="wizardData.copyText" placeholder="Texto da copy..." style="min-height:160px;width:100%;"></textarea>
+        <input class="form-input" x-model="wizardData.cta" placeholder="CTA: Ex: Solicite uma demonstracao" style="width:100%;margin-top:8px;">
+        <input class="form-input" x-model="wizardData.hashtags" placeholder="Hashtags: #SalkMedical #FocoCirurgico" style="width:100%;margin-top:8px;">
+      </div>
+      <!-- Step 2: Visual -->
+      <div x-show="wizardCurrentStep === 2">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <label class="form-label" style="margin:0;">Prompt Visual (NB2)</label>
+          <button class="btn btn-sm" @click="wizardGeneratePrompt()" :disabled="wizardLoading">
+            <span x-show="!wizardLoading">Gerar Prompt</span>
+            <span x-show="wizardLoading">Gerando...</span>
+          </button>
+        </div>
+        <textarea class="form-textarea" x-model="wizardData.visualPrompt" placeholder="Prompt para geracao de imagem NB2..." style="min-height:140px;width:100%;font-family:var(--mono);font-size:0.78rem;"></textarea>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm" @click="wizardGenerateImage()" :disabled="wizardLoading || !wizardData.visualPrompt">
+            <span x-show="!wizardLoading">Gerar Imagem</span><span x-show="wizardLoading">Gerando...</span>
+          </button>
+        </div>
+        <div x-show="wizardData.generatedImage" style="margin-top:16px; text-align:center;">
+          <img :src="wizardData.generatedImage" style="max-width:100%; max-height:300px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        </div>
+      </div>
+      <!-- Step 3: Review -->
+      <div x-show="wizardCurrentStep === 3">
+        <h3 style="font-size:0.95rem; margin-bottom:16px;">Revisao Final</h3>
+        <div class="card" style="padding:16px; margin-bottom:12px;">
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Produto / Marca</div>
+          <div style="font-weight:600;" x-text="wizardData.product + ' — ' + wizardData.brand"></div>
+        </div>
+        <div class="card" style="padding:16px; margin-bottom:12px;">
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Headline</div>
+          <div style="font-weight:600;" x-text="wizardData.headline || '(sem headline)'"></div>
+          <div style="margin-top:8px; font-size:0.85rem; color:var(--text-secondary); white-space: pre-wrap;" x-text="wizardData.copyText || '(sem copy)'"></div>
+          <div x-show="wizardData.cta" style="margin-top:8px;"><span class="badge badge-accent" x-text="wizardData.cta"></span></div>
+        </div>
+        <div class="card" style="padding:16px; margin-bottom:12px;" x-show="wizardData.generatedImage">
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Visual Gerado</div>
+          <img :src="wizardData.generatedImage" style="max-width:100%; max-height:200px; border-radius:var(--radius-sm);">
+        </div>
+      </div>
+      <!-- Step 4: Publish -->
+      <div x-show="wizardCurrentStep === 4">
+        <h3 style="font-size:0.95rem; margin-bottom:16px;">Publicacao</h3>
+        <div class="card" style="padding:16px; margin-bottom:12px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px;">
+            <input type="checkbox" x-model="wizardData.scheduleNow"> Agendar publicacao imediata
+          </label>
+          <div x-show="!wizardData.scheduleNow" style="margin-top:8px;">
+            <label class="form-label">Data/Hora agendada</label>
+            <input type="datetime-local" class="form-input" x-model="wizardData.scheduledAt" style="width:100%;">
+          </div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Plataformas</div>
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:6px;" x-for="plat in ['instagram','linkedin','facebook','youtube']" :key="plat">
+            <input type="checkbox" :value="plat" x-model="wizardData.platforms">
+            <span style="text-transform:capitalize;" x-text="plat"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-footer">
+      <button class="btn" @click="wizardCurrentStep > 0 ? wizardCurrentStep-- : showWizard = false" x-text="wizardCurrentStep > 0 ? 'Voltar' : 'Cancelar'"></button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" @click="showWizard = false">Salvar Rascunho</button>
+        <template x-if="wizardCurrentStep < 4">
+          <button class="btn btn-primary" @click="wizardCurrentStep++">Proximo</button>
+        </template>
+        <template x-if="wizardCurrentStep === 4">
+          <button class="btn btn-primary" @click="wizardFinish()">Criar Peca</button>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Toolbar -->
+<div class="batch-toolbar" x-show="selectedPieces.length > 0" x-transition style="display:none;">
+  <span class="batch-count" x-text="selectedPieces.length + ' selecionada(s)'"></span>
+  <button class="btn btn-sm" @click="batchChangeStage()">Mover Estagio</button>
+  <button class="btn btn-sm" @click="batchGenerateCopy()">Gerar Copy</button>
+  <button class="btn btn-sm" @click="batchGeneratePrompt()">Gerar Prompts</button>
+  <button class="btn btn-sm" style="color:var(--red);" @click="batchDelete()">Excluir</button>
+  <button class="btn btn-sm" @click="selectedPieces = []" style="margin-left:auto;">Cancelar</button>
+</div>
+
+<!-- ============================================= -->
 <!-- MODALS -->
 <!-- ============================================= -->
 
@@ -6565,6 +6866,20 @@ body.zen-mode .tab-bar { display: none !important; }
       </div>
     </div>
     <button class="modal-close" @click="showPieceDetail = false">&times;</button>
+  </div>
+
+  <!-- Piece Progress -->
+  <div class="piece-progress" x-show="selectedPiece" style="padding: 12px 20px 0;">
+    <template x-for="(stage, i) in ['briefing','copy','design','review','approved','published']" :key="stage">
+      <div class="piece-progress-step"
+           :class="{
+             done: selectedPiece && ['briefing','copy','design','review','approved','published'].indexOf(selectedPiece.stage) > i,
+             current: selectedPiece && selectedPiece.stage === stage
+           }">
+        <div class="piece-progress-dot" x-text="selectedPiece && ['briefing','copy','design','review','approved','published'].indexOf(selectedPiece.stage) > i ? '&#10003;' : (i+1)"></div>
+        <div class="piece-progress-line" x-show="i < 5"></div>
+      </div>
+    </template>
   </div>
 
   <!-- Drawer Tabs -->
@@ -7501,9 +7816,30 @@ function studioApp() {
     studioHistoryOpen: false,
 
     // Dashboard Layout
-    dashboardLayout: JSON.parse(localStorage.getItem('studio_dashboard_layout') || 'null') || ['pipeline', 'kpis', 'distribution', 'activity', 'actions', 'brands', 'weekly', 'pieces', 'approval', 'insights'],
+    dashboardLayout: JSON.parse(localStorage.getItem('studio_dashboard_layout') || 'null') || ['pending', 'pipeline', 'kpis', 'distribution', 'activity', 'actions', 'brands', 'weekly', 'pieces', 'approval', 'insights'],
     dashboardCustomizing: false,
-    dashboardWidgetLabels: { pipeline: 'Pipeline', kpis: 'KPIs', distribution: 'Distribuicao', activity: 'Atividade', actions: 'Acoes Rapidas', brands: 'Marcas', weekly: 'Semana', pieces: 'Pecas', approval: 'Aprovacao', insights: 'Insights' },
+    dashboardWidgetLabels: { pending: 'Acoes Pendentes', pipeline: 'Pipeline', kpis: 'KPIs', distribution: 'Distribuicao', activity: 'Atividade', actions: 'Acoes Rapidas', brands: 'Marcas', weekly: 'Semana', pieces: 'Pecas', approval: 'Aprovacao', insights: 'Insights' },
+
+    // Wizard
+    showWizard: false,
+    wizardCurrentStep: 0,
+    wizardLoading: false,
+    wizardSteps: [
+      { label: 'Briefing', icon: '' },
+      { label: 'Copy', icon: '' },
+      { label: 'Visual', icon: '' },
+      { label: 'Revisao', icon: '' },
+      { label: 'Publicar', icon: '' },
+    ],
+    wizardData: {
+      product: '', brand: 'salk', contentType: 'hero_shot', platform: 'instagram_feed',
+      objective: '', headline: '', copyText: '', cta: '', hashtags: '',
+      visualPrompt: '', generatedImage: null, scheduleNow: false, scheduledAt: '',
+      platforms: ['instagram'],
+    },
+
+    // Batch selection
+    selectedPieces: [],
 
     // Piece Quick Menu
     quickMenuPiece: null,
@@ -9579,6 +9915,137 @@ function studioApp() {
         if (!b.scheduled_at) return -1;
         return new Date(a.scheduled_at) - new Date(b.scheduled_at);
       });
+    },
+
+    // === PRODUCTION WIZARD ===
+    async wizardGenerateCopy() {
+      if (!this.wizardData.product) { this.notify('Selecione um produto primeiro', 'error'); return; }
+      this.wizardLoading = true;
+      try {
+        const result = await this.api('/api/automation/copy/write', {
+          method: 'POST',
+          body: JSON.stringify({
+            product: this.wizardData.product,
+            brand: this.wizardData.brand,
+            content_type: this.wizardData.contentType,
+            platform: this.wizardData.platform,
+            objective: this.wizardData.objective,
+          }),
+        });
+        this.wizardData.headline = result.headline || '';
+        this.wizardData.copyText = result.copy_text || result.text || '';
+        this.wizardData.cta = result.cta || '';
+        this.wizardData.hashtags = result.hashtags || '';
+        this.notify('Copy gerada com sucesso');
+      } catch(e) { this.notify('Erro ao gerar copy: ' + e.message, 'error'); }
+      this.wizardLoading = false;
+    },
+
+    async wizardGeneratePrompt() {
+      if (!this.wizardData.product) { this.notify('Selecione um produto primeiro', 'error'); return; }
+      this.wizardLoading = true;
+      try {
+        const result = await this.api('/api/automation/prompt/generate', {
+          method: 'POST',
+          body: JSON.stringify({
+            product_type: this.wizardData.product,
+            concept: 'dramatic studio',
+            brand: this.wizardData.brand,
+          }),
+        });
+        this.wizardData.visualPrompt = result.prompt || result.prompt_nb2 || '';
+        this.notify('Prompt visual gerado');
+      } catch(e) { this.notify('Erro ao gerar prompt: ' + e.message, 'error'); }
+      this.wizardLoading = false;
+    },
+
+    async wizardGenerateImage() {
+      if (!this.wizardData.visualPrompt) return;
+      this.wizardLoading = true;
+      try {
+        const result = await this.api('/api/automation/generate-image', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: this.wizardData.visualPrompt, product_type: this.wizardData.product }),
+        });
+        this.wizardData.generatedImage = result.image_url || result.url || null;
+        this.notify('Imagem gerada');
+      } catch(e) { this.notify('Erro ao gerar imagem: ' + e.message, 'error'); }
+      this.wizardLoading = false;
+    },
+
+    async wizardFinish() {
+      try {
+        const piece = await this.api('/api/production/pieces', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: this.wizardData.headline || this.wizardData.product + ' — ' + this.wizardData.contentType,
+            product: this.wizardData.product,
+            brand: this.wizardData.brand,
+            content_type: this.wizardData.contentType,
+            platform: this.wizardData.platform,
+            copy_text: this.wizardData.copyText,
+            headline: this.wizardData.headline,
+            cta: this.wizardData.cta,
+            hashtags: this.wizardData.hashtags,
+            prompt_nb2: this.wizardData.visualPrompt,
+            image_url: this.wizardData.generatedImage,
+            stage: this.wizardData.generatedImage ? 'review' : (this.wizardData.copyText ? 'design' : 'copy'),
+          }),
+        });
+        this.showWizard = false;
+        this.wizardCurrentStep = 0;
+        this.wizardData = { product: '', brand: 'salk', contentType: 'hero_shot', platform: 'instagram_feed', objective: '', headline: '', copyText: '', cta: '', hashtags: '', visualPrompt: '', generatedImage: null, scheduleNow: false, scheduledAt: '', platforms: ['instagram'] };
+        await this.loadPieces();
+        this.notify('Peca criada com sucesso via wizard!');
+      } catch(e) { this.notify('Erro ao criar peca: ' + e.message, 'error'); }
+    },
+
+    // === BATCH OPERATIONS ===
+    togglePieceSelection(pieceId) {
+      const idx = this.selectedPieces.indexOf(pieceId);
+      if (idx >= 0) this.selectedPieces.splice(idx, 1);
+      else this.selectedPieces.push(pieceId);
+    },
+
+    async batchChangeStage() {
+      const stage = prompt('Novo estagio (briefing, copy, design, review, approved, published):');
+      if (!stage) return;
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid + '/stage', { method: 'PUT', body: JSON.stringify({ stage }) }); } catch(e) {}
+      }
+      this.selectedPieces = [];
+      await this.loadPieces();
+      this.notify('Pecas movidas para ' + stage);
+    },
+
+    async batchDelete() {
+      if (!confirm('Excluir ' + this.selectedPieces.length + ' pecas?')) return;
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid, { method: 'DELETE' }); } catch(e) {}
+      }
+      this.selectedPieces = [];
+      await this.loadPieces();
+      this.notify('Pecas excluidas');
+    },
+
+    async batchGenerateCopy() {
+      this.notify('Gerando copy para ' + this.selectedPieces.length + ' pecas...');
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid + '/generate-copy', { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
+      }
+      this.selectedPieces = [];
+      await this.loadPieces();
+      this.notify('Copies geradas em batch');
+    },
+
+    async batchGeneratePrompt() {
+      this.notify('Gerando prompts para ' + this.selectedPieces.length + ' pecas...');
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid + '/generate-prompt', { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
+      }
+      this.selectedPieces = [];
+      await this.loadPieces();
+      this.notify('Prompts gerados em batch');
     },
 
     formatNumber(n) {
