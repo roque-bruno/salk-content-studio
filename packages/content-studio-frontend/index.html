@@ -3032,6 +3032,100 @@ body.zen-mode .tab-bar { display: none !important; }
 @media (max-width: 768px) {
   .notif-center { width: 100%; }
 }
+
+/* === SOCIAL MEDIA PREVIEWS === */
+.social-preview-container {
+  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+}
+.social-preview-card {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; width: 100%; max-width: 400px;
+}
+.social-preview-card h4 {
+  padding: 12px 16px 8px; font-size: 0.78rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* Instagram Feed Preview */
+.ig-preview { background: #000; color: #fff; max-width: 380px; border-radius: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+.ig-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.ig-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); display: flex; align-items: center; justify-content: center; }
+.ig-avatar-inner { width: 28px; height: 28px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; }
+.ig-username { font-size: 0.82rem; font-weight: 600; }
+.ig-image { width: 100%; aspect-ratio: 1/1; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ig-image img { width: 100%; height: 100%; object-fit: cover; }
+.ig-image-placeholder { color: #666; font-size: 0.8rem; }
+.ig-actions { display: flex; gap: 16px; padding: 10px 12px; }
+.ig-action-icon { font-size: 1.3rem; cursor: pointer; }
+.ig-likes { padding: 0 12px; font-size: 0.82rem; font-weight: 600; }
+.ig-caption { padding: 4px 12px 12px; font-size: 0.82rem; line-height: 1.4; }
+.ig-caption .ig-cap-user { font-weight: 600; margin-right: 4px; }
+.ig-caption .ig-hashtags { color: #3897f0; }
+.ig-time { padding: 0 12px 12px; font-size: 0.65rem; color: #8e8e8e; text-transform: uppercase; }
+
+/* Instagram Stories Preview */
+.ig-story-preview { width: 240px; height: 426px; background: #000; border-radius: 16px; overflow: hidden; position: relative; }
+.ig-story-image { width: 100%; height: 100%; object-fit: cover; }
+.ig-story-header { position: absolute; top: 0; left: 0; right: 0; padding: 16px 12px 8px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); display: flex; align-items: center; gap: 8px; }
+.ig-story-progress { display: flex; gap: 3px; position: absolute; top: 8px; left: 8px; right: 8px; }
+.ig-story-progress-bar { flex: 1; height: 2px; background: rgba(255,255,255,0.35); border-radius: 1px; }
+.ig-story-cta { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); color: #000; padding: 8px 24px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+
+/* LinkedIn Preview */
+.li-preview { background: #1b1f23; color: #fff; max-width: 520px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; border-radius: 8px; border: 1px solid #38434f; }
+.li-header { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; }
+.li-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+.li-meta { flex: 1; }
+.li-name { font-size: 0.85rem; font-weight: 600; }
+.li-headline { font-size: 0.72rem; color: rgba(255,255,255,0.6); }
+.li-time { font-size: 0.65rem; color: rgba(255,255,255,0.45); }
+.li-body { padding: 0 16px 12px; font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; }
+.li-image { width: 100%; aspect-ratio: 1.91/1; background: #0a0a0a; overflow: hidden; }
+.li-image img { width: 100%; height: 100%; object-fit: cover; }
+.li-reactions { display: flex; align-items: center; gap: 4px; padding: 8px 16px; font-size: 0.72rem; color: rgba(255,255,255,0.6); border-top: 1px solid #38434f; }
+.li-actions { display: flex; justify-content: space-around; padding: 4px 16px 8px; border-top: 1px solid #38434f; }
+.li-action-btn { font-size: 0.75rem; color: rgba(255,255,255,0.6); padding: 8px; cursor: default; }
+
+/* Facebook Preview */
+.fb-preview { background: #242526; color: #e4e6eb; max-width: 500px; font-family: Helvetica, Arial, sans-serif; border-radius: 8px; }
+.fb-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+.fb-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; flex-shrink: 0; }
+.fb-name { font-size: 0.88rem; font-weight: 700; }
+.fb-time { font-size: 0.72rem; color: #b0b3b8; }
+.fb-body { padding: 0 16px 12px; font-size: 0.88rem; line-height: 1.4; }
+.fb-image { width: 100%; aspect-ratio: 1.91/1; background: #18191a; overflow: hidden; }
+.fb-image img { width: 100%; height: 100%; object-fit: cover; }
+.fb-reactions { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; font-size: 0.78rem; color: #b0b3b8; border-bottom: 1px solid #3e4042; }
+.fb-actions { display: flex; justify-content: space-around; padding: 4px 16px 8px; }
+.fb-action-btn { font-size: 0.82rem; color: #b0b3b8; padding: 8px 12px; cursor: default; }
+
+/* Instagram Grid Preview */
+.ig-grid-preview { max-width: 420px; }
+.ig-grid-header { display: flex; align-items: center; gap: 12px; padding: 16px; }
+.ig-grid-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); display: flex; align-items: center; justify-content: center; }
+.ig-grid-avatar-inner { width: 60px; height: 60px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.ig-grid-stats { display: flex; gap: 24px; }
+.ig-grid-stat-num { font-weight: 700; font-size: 1rem; }
+.ig-grid-stat-label { font-size: 0.7rem; color: #8e8e8e; }
+.ig-grid-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+.ig-grid-photo { aspect-ratio: 1/1; background: #1a1a1a; overflow: hidden; cursor: pointer; position: relative; }
+.ig-grid-photo img { width: 100%; height: 100%; object-fit: cover; }
+.ig-grid-photo-new { border: 2px dashed var(--accent); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 0.7rem; text-align: center; }
+
+/* Carousel Preview */
+.carousel-preview { max-width: 380px; position: relative; }
+.carousel-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+.carousel-slide { min-width: 100%; scroll-snap-align: start; aspect-ratio: 1/1; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+.carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+.carousel-dots { display: flex; justify-content: center; gap: 4px; padding: 8px; }
+.carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+.carousel-dot.active { background: #3897f0; }
+.carousel-counter { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; }
+
+@media (max-width: 768px) {
+  .social-preview-container { flex-direction: column; align-items: center; }
+  .ig-story-preview { width: 200px; height: 355px; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -3124,7 +3218,7 @@ body.zen-mode .tab-bar { display: none !important; }
             return ((p.title||'')+' '+(p.product||'')+' '+(p.brand||'')).toLowerCase().includes(q);
           }).slice(0, 8)" :key="'cmd-p-' + piece.id">
             <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s;"
-                 @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board'; showCommandPalette = false;"
+                 @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board'; showCommandPalette = false; updatePreviewFromPiece(piece);"
                  @mouseenter="$el.style.background='var(--accent-dim)'" @mouseleave="$el.style.background='transparent'">
               <span style="width: 28px; text-align: center;">
                 <span style="width: 8px; height: 8px; border-radius: 2px; display: inline-block;" :style="'background:' + stageColors[piece.stage]"></span>
@@ -3644,7 +3738,7 @@ body.zen-mode .tab-bar { display: none !important; }
         <thead><tr><th>Titulo</th><th>Marca</th><th>Estagio</th><th>Plataforma</th><th>Criada em</th></tr></thead>
         <tbody>
           <template x-for="p in pieces.slice(0, 10)">
-            <tr style="cursor: pointer;" @click="selectedPiece = p; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board';">
+            <tr style="cursor: pointer;" @click="selectedPiece = p; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board'; updatePreviewFromPiece(p);">
               <td x-text="p.title || p.id"></td>
               <td><span class="badge" :class="'badge-' + p.brand" x-text="p.brand"></span></td>
               <td><span class="badge" :style="'background:' + stageColors[p.stage] + '22; color:' + stageColors[p.stage]" x-text="stageLabels[p.stage]"></span></td>
@@ -3842,7 +3936,7 @@ body.zen-mode .tab-bar { display: none !important; }
                  :style="'border-top: 3px solid ' + stageColors[stage]"
                  @dragstart="dragPiece = piece; $event.dataTransfer.effectAllowed = 'move'; $el.classList.add('dragging'); document.querySelectorAll('.kanban-column').forEach(c => c.classList.add('drag-dim'))"
                  @dragend="dragPiece = null; $el.classList.remove('dragging'); document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('drag-dim'))"
-                 @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true">
+                 @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true; updatePreviewFromPiece(piece);">
               <div x-show="boardSelectMode" style="position: absolute; top: 6px; right: 6px; z-index: 2;" @click.stop>
                 <input type="checkbox" :value="piece.id" x-model="boardSelected" style="width: 16px; height: 16px; accent-color: var(--accent);">
               </div>
@@ -3935,7 +4029,7 @@ body.zen-mode .tab-bar { display: none !important; }
             <div class="compare-field-label">Copy</div>
             <div class="compare-copy-text" x-text="cp?.copy_text || ''"></div>
           </div>
-          <button class="btn btn-sm" style="margin-top: 8px; width: 100%; font-size: 0.7rem;" @click="selectedPiece = cp; drawerTab = 'resumo'; showPieceDetail = true;">Abrir Detalhe</button>
+          <button class="btn btn-sm" style="margin-top: 8px; width: 100%; font-size: 0.7rem;" @click="selectedPiece = cp; drawerTab = 'resumo'; showPieceDetail = true; updatePreviewFromPiece(cp);">Abrir Detalhe</button>
         </div>
       </template>
     </div>
@@ -5893,7 +5987,7 @@ body.zen-mode .tab-bar { display: none !important; }
           </div>
           <div class="lane-items">
             <template x-for="p in scheduledPieces().filter(x => x.platform === platform || (x.publishPlatforms || []).includes(platform))" :key="'sq-' + p.id">
-              <div class="schedule-item" @click="selectedPiece = p; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board';">
+              <div class="schedule-item" @click="selectedPiece = p; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board'; updatePreviewFromPiece(p);">
                 <div class="si-time" x-text="p.scheduled_at ? new Date(p.scheduled_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Sem data'"></div>
                 <div class="si-title" x-text="p.title || p.id"></div>
                 <span class="si-status" :style="p.scheduled_at ? 'background: var(--green-bg); color: var(--green)' : 'background: var(--amber-bg); color: var(--amber)'" x-text="p.scheduled_at ? 'Agendada' : 'Pendente'"></span>
@@ -5971,6 +6065,155 @@ body.zen-mode .tab-bar { display: none !important; }
         <p style="font-size: 0.75rem; color: var(--text-muted);">Aprove pecas no Board (arraste para "Aprovado") ou use a aba "Aprovar Conteudo".</p>
       </div>
     </template>
+  </div>
+
+  <!-- Social Media Previews -->
+  <div class="card" style="padding:20px; margin-top:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+      <h3 style="font-size:0.9rem; font-weight:700;">Preview nas Redes Sociais</h3>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button class="tab-btn" :class="{ active: previewPlatform === 'instagram' }" @click="previewPlatform = 'instagram'" style="font-size:0.72rem;">Instagram</button>
+        <button class="tab-btn" :class="{ active: previewPlatform === 'linkedin' }" @click="previewPlatform = 'linkedin'" style="font-size:0.72rem;">LinkedIn</button>
+        <button class="tab-btn" :class="{ active: previewPlatform === 'facebook' }" @click="previewPlatform = 'facebook'" style="font-size:0.72rem;">Facebook</button>
+        <button class="tab-btn" :class="{ active: previewPlatform === 'stories' }" @click="previewPlatform = 'stories'" style="font-size:0.72rem;">Stories</button>
+        <button class="tab-btn" :class="{ active: previewPlatform === 'grid' }" @click="previewPlatform = 'grid'" style="font-size:0.72rem;">Grid</button>
+      </div>
+    </div>
+
+    <!-- Piece selector for preview -->
+    <div style="margin-bottom:12px;">
+      <label class="form-label">Selecionar peca para preview</label>
+      <select class="form-select" style="width:100%;" @change="updatePreviewFromPiece(pieces.find(p => p.id == $event.target.value))">
+        <option value="">Selecione uma peca...</option>
+        <template x-for="p in pieces.filter(x => x.stage === 'approved' || x.stage === 'published')" :key="'prev-' + p.id">
+          <option :value="p.id" x-text="p.title + ' (' + p.brand + ')'"></option>
+        </template>
+      </select>
+    </div>
+
+    <!-- Instagram Feed Preview -->
+    <div class="social-preview-container" x-show="previewPlatform === 'instagram'">
+      <div class="ig-preview">
+        <div class="ig-header">
+          <div class="ig-avatar"><div class="ig-avatar-inner" x-text="(previewBrand || 'S')[0].toUpperCase()"></div></div>
+          <div>
+            <div class="ig-username" x-text="previewBrandHandle()"></div>
+            <div style="font-size:0.65rem;color:#8e8e8e;">Patrocinado</div>
+          </div>
+        </div>
+        <div class="ig-image">
+          <img x-show="previewImageUrl" :src="previewImageUrl" alt="Preview">
+          <div class="ig-image-placeholder" x-show="!previewImageUrl">1080 x 1080 — Sem imagem</div>
+        </div>
+        <div class="ig-actions">
+          <span class="ig-action-icon">&#x2661;</span>
+          <span class="ig-action-icon">&#x1f4ac;</span>
+          <span class="ig-action-icon">&#x2709;</span>
+          <span class="ig-action-icon" style="margin-left:auto;">&#x1f516;</span>
+        </div>
+        <div class="ig-likes">142 curtidas</div>
+        <div class="ig-caption">
+          <span class="ig-cap-user" x-text="previewBrandHandle()"></span>
+          <span x-text="(previewCopyText || 'Texto da copy aparecera aqui...').substring(0, 200)"></span>
+          <span x-show="previewCopyText && previewCopyText.length > 200" style="color:#8e8e8e;">... mais</span>
+          <div class="ig-hashtags" x-text="previewHashtags" style="margin-top:4px;"></div>
+        </div>
+        <div class="ig-time" x-text="previewSchedule || 'Agora'"></div>
+      </div>
+    </div>
+
+    <!-- LinkedIn Preview -->
+    <div class="social-preview-container" x-show="previewPlatform === 'linkedin'">
+      <div class="li-preview">
+        <div class="li-header">
+          <div class="li-avatar" x-text="(previewBrand || 'S')[0].toUpperCase()"></div>
+          <div class="li-meta">
+            <div class="li-name" x-text="previewBrandName()"></div>
+            <div class="li-headline">Equipamentos medicos de alta performance</div>
+            <div class="li-time">Agora &bull; &#x1f310;</div>
+          </div>
+        </div>
+        <div class="li-body" x-text="previewCopyText || 'Texto da copy aparecera aqui...'"></div>
+        <div class="li-image">
+          <img x-show="previewImageUrl" :src="previewImageUrl" alt="Preview">
+        </div>
+        <div class="li-reactions">
+          <span>&#x1f44d; &#x1f4a1; 23</span>
+          <span>4 comentarios &bull; 2 compartilhamentos</span>
+        </div>
+        <div class="li-actions">
+          <span class="li-action-btn">&#x1f44d; Gostei</span>
+          <span class="li-action-btn">&#x1f4ac; Comentar</span>
+          <span class="li-action-btn">&#x1f501; Compartilhar</span>
+          <span class="li-action-btn">&#x2709; Enviar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Facebook Preview -->
+    <div class="social-preview-container" x-show="previewPlatform === 'facebook'">
+      <div class="fb-preview">
+        <div class="fb-header">
+          <div class="fb-avatar" x-text="(previewBrand || 'S')[0].toUpperCase()"></div>
+          <div>
+            <div class="fb-name" x-text="previewBrandName()"></div>
+            <div class="fb-time">Agora &bull; &#x1f310;</div>
+          </div>
+        </div>
+        <div class="fb-body" x-text="previewCopyText || 'Texto da copy aparecera aqui...'"></div>
+        <div class="fb-image">
+          <img x-show="previewImageUrl" :src="previewImageUrl" alt="Preview">
+        </div>
+        <div class="fb-reactions">
+          <span>&#x1f44d; &#x2764; 38</span>
+          <span>6 comentarios &bull; 3 compartilhamentos</span>
+        </div>
+        <div class="fb-actions">
+          <span class="fb-action-btn">&#x1f44d; Curtir</span>
+          <span class="fb-action-btn">&#x1f4ac; Comentar</span>
+          <span class="fb-action-btn">&#x21a9; Compartilhar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stories Preview -->
+    <div class="social-preview-container" x-show="previewPlatform === 'stories'">
+      <div class="ig-story-preview">
+        <div class="ig-story-progress"><div class="ig-story-progress-bar"></div></div>
+        <img class="ig-story-image" x-show="previewImageUrl" :src="previewImageUrl" alt="Story">
+        <div x-show="!previewImageUrl" style="width:100%;height:100%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.8rem;">1080 x 1920</div>
+        <div class="ig-story-header">
+          <div class="ig-avatar" style="width:28px;height:28px;"><div class="ig-avatar-inner" style="width:24px;height:24px;font-size:0.5rem;" x-text="(previewBrand || 'S')[0].toUpperCase()"></div></div>
+          <span style="font-size:0.75rem;color:#fff;font-weight:600;" x-text="previewBrandHandle()"></span>
+        </div>
+        <div class="ig-story-cta" x-show="previewCTA" x-text="previewCTA || 'Saiba mais'"></div>
+      </div>
+    </div>
+
+    <!-- Instagram Grid Preview -->
+    <div class="social-preview-container" x-show="previewPlatform === 'grid'">
+      <div class="ig-grid-preview" style="background:#000;color:#fff;border-radius:8px;overflow:hidden;">
+        <div class="ig-grid-header">
+          <div class="ig-grid-avatar"><div class="ig-grid-avatar-inner" x-text="(previewBrand || 'S')[0].toUpperCase()"></div></div>
+          <div class="ig-grid-stats">
+            <div style="text-align:center;"><div class="ig-grid-stat-num">47</div><div class="ig-grid-stat-label">publicacoes</div></div>
+            <div style="text-align:center;"><div class="ig-grid-stat-num">1.2K</div><div class="ig-grid-stat-label">seguidores</div></div>
+            <div style="text-align:center;"><div class="ig-grid-stat-num">89</div><div class="ig-grid-stat-label">seguindo</div></div>
+          </div>
+        </div>
+        <div class="ig-grid-photos">
+          <!-- New post (highlighted) -->
+          <div class="ig-grid-photo" style="border:2px solid var(--accent);">
+            <img x-show="previewImageUrl" :src="previewImageUrl" alt="New post">
+            <div x-show="!previewImageUrl" style="width:100%;height:100%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.7rem;">NOVO</div>
+          </div>
+          <!-- Existing grid placeholders -->
+          <template x-for="i in 8" :key="'grid-' + i">
+            <div class="ig-grid-photo" style="background:#1a1a1a;"></div>
+          </template>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -7841,6 +8084,15 @@ function studioApp() {
     approvedPieces: [],
     publishingPiece: null,
     publishResults: {},
+
+    // Social Preview
+    previewPlatform: 'instagram',
+    previewBrand: 'salk',
+    previewCopyText: '',
+    previewImageUrl: '',
+    previewHashtags: '',
+    previewCTA: '',
+    previewSchedule: '',
 
     // Budget
     budgetSummary: {},
@@ -9846,6 +10098,27 @@ function studioApp() {
       const ok = Object.values(results).filter(r => r.success).length;
       this.notify(ok + ' de ' + platforms.length + ' plataformas publicadas');
       this.publishingPiece = null;
+    },
+
+    // Social Preview helpers
+    previewBrandHandle() {
+      const handles = { salk: 'salkmedical', mendel: 'mendelmedical', manager: 'managergrupo', dayho: 'dayho.oficial' };
+      return handles[this.previewBrand] || 'salkmedical';
+    },
+
+    previewBrandName() {
+      const names = { salk: 'Salk Medical', mendel: 'Mendel Medical', manager: 'Manager Grupo', dayho: 'Dayho' };
+      return names[this.previewBrand] || 'Salk Medical';
+    },
+
+    updatePreviewFromPiece(piece) {
+      if (!piece) return;
+      this.previewBrand = piece.brand || 'salk';
+      this.previewCopyText = piece.copy_text || '';
+      this.previewImageUrl = piece.image_url || '';
+      this.previewHashtags = Array.isArray(piece.hashtags) ? piece.hashtags.join(' ') : (piece.hashtags || '');
+      this.previewCTA = piece.cta || '';
+      this.previewSchedule = piece.scheduled_at ? new Date(piece.scheduled_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
     },
 
     async bulkMoveStage(stage) {
