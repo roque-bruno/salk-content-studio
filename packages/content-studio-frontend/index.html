@@ -3224,6 +3224,120 @@ body.zen-mode .tab-bar { display: none !important; }
   .export-btn-group { flex-direction: column; }
   .report-header { flex-direction: column; gap: 12px; align-items: flex-start; }
 }
+
+/* === ONBOARDING TOUR === */
+.tour-overlay {
+  position: fixed; inset: 0; z-index: 5000;
+  background: rgba(8,10,15,0.85);
+  pointer-events: all;
+}
+.tour-spotlight {
+  position: fixed; z-index: 5001;
+  box-shadow: 0 0 0 9999px rgba(8,10,15,0.85);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  transition: all 0.4s ease;
+}
+.tour-tooltip {
+  position: fixed; z-index: 5002;
+  background: var(--bg-card); border: 1px solid var(--accent);
+  border-radius: var(--radius); padding: 20px;
+  max-width: 360px; box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 24px var(--accent-glow);
+  animation: fadeIn 0.3s ease;
+}
+.tour-tooltip h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; color: var(--accent); }
+.tour-tooltip p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px; }
+.tour-tooltip-footer { display: flex; justify-content: space-between; align-items: center; }
+.tour-dots { display: flex; gap: 4px; }
+.tour-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.tour-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+.tour-step-counter { font-size: 0.7rem; color: var(--text-muted); }
+
+/* === HELP PAGE === */
+.help-container { max-width: 800px; margin: 0 auto; }
+.help-section { margin-bottom: 24px; }
+.help-section h3 {
+  font-size: 0.9rem; font-weight: 700; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.help-faq { margin-bottom: 8px; }
+.help-faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--bg-secondary);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 0.82rem; font-weight: 600;
+  transition: var(--transition);
+}
+.help-faq-q:hover { border-color: var(--accent); }
+.help-faq-a {
+  padding: 12px 16px; font-size: 0.78rem; color: var(--text-secondary);
+  line-height: 1.6; border-left: 2px solid var(--accent);
+  margin: 4px 0 4px 8px;
+}
+.help-kbd {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 8px; font-size: 0.72rem;
+  font-family: var(--mono); color: var(--text-muted);
+}
+.help-shortcut-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;
+}
+.help-shortcut-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--bg-secondary);
+  border-radius: var(--radius-sm); font-size: 0.78rem;
+}
+
+/* === TAB TRANSITIONS === */
+.tab-content { animation: tabFadeIn 0.25s ease; }
+@keyframes tabFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === MICRO-ANIMATIONS === */
+.btn:active { transform: scale(0.96); }
+.card-animate-in { animation: cardSlideIn 0.3s ease; }
+@keyframes cardSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Status pills with icons */
+.stage-pill-icon { margin-right: 4px; font-size: 0.7rem; }
+
+/* === ERROR BOUNDARY === */
+.error-boundary {
+  background: var(--red-bg); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius); padding: 24px; text-align: center;
+  margin: 16px 0;
+}
+.error-boundary-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.6; }
+.error-boundary-title { font-size: 0.9rem; font-weight: 700; color: var(--red); margin-bottom: 4px; }
+.error-boundary-msg { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px; }
+
+/* Glossary */
+.glossary-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px;
+}
+.glossary-item {
+  padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-sm);
+}
+.glossary-term { font-weight: 700; font-size: 0.82rem; color: var(--accent); margin-bottom: 2px; }
+.glossary-def { font-size: 0.74rem; color: var(--text-secondary); line-height: 1.4; }
+
+/* Contextual tooltip on hover */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 6px 12px; border-radius: 6px; font-size: 0.7rem;
+  color: var(--text-secondary); white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3); z-index: 999;
+  animation: fadeIn 0.15s ease;
+}
+
+@media (max-width: 768px) {
+  .tour-tooltip { max-width: calc(100vw - 32px); left: 16px !important; right: 16px !important; }
+  .help-shortcut-grid { grid-template-columns: 1fr; }
+  [data-tip]:hover::after { display: none; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -3465,6 +3579,9 @@ body.zen-mode .tab-bar { display: none !important; }
     <div class="sidebar-item" :class="{ active: tab === 'reference' }" :aria-current="tab === 'reference' ? 'page' : false" role="button" @click="tab='reference'; sidebarOpen=false" title="Referencia">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Referencia
     </div>
+    <div class="sidebar-item" :class="{ active: tab === 'help' }" :aria-current="tab === 'help' ? 'page' : false" role="button" @click="tab='help'; sidebarOpen=false" title="Central de Ajuda" data-tip="Central de Ajuda">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M6 6a2 2 0 1 1 2 2v1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="12" r="0.5" fill="currentColor"/></svg></span> Ajuda
+    </div>
     <div class="sidebar-item" :class="{ active: tab === 'settings' }" :aria-current="tab === 'settings' ? 'page' : false" role="button" @click="tab='settings'; sidebarOpen=false" title="Config">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6l1.4 1.4M13 3l-1.4 1.4M4.4 11.6L3 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Config
     </div>
@@ -3504,7 +3621,7 @@ body.zen-mode .tab-bar { display: none !important; }
       <span class="search-icon">&#128269;</span>
       <input type="text" x-model="globalSearch" placeholder="Buscar pecas, produtos...">
     </div>
-    <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'">+ Nova Peca</button>
+    <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'" data-tip="Criar nova peca de conteudo">+ Nova Peca</button>
     <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Nova Ficha</button>
     <div style="position: relative;">
       <button class="btn" @click="notifCenterOpen = !notifCenterOpen; if(notifCenterOpen) loadNotifications()" style="position: relative;">
@@ -3523,7 +3640,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <div style="display: flex; align-items: center; gap: 4px;">
       <span style="width: 8px; height: 8px; border-radius: 50%;" :style="connectionOk ? 'background: var(--green)' : 'background: var(--red)'"></span>
       <button class="btn" @click="refreshData()" title="Atualizar dados">&#8635;</button>
-      <button class="btn" @click="toggleAutoRefresh()" :style="autoRefresh ? 'color: var(--green); border-color: var(--green)' : ''" :title="autoRefresh ? 'Auto-refresh LIGADO (30s)' : 'Auto-refresh desligado'">
+      <button class="btn" @click="toggleAutoRefresh()" :style="autoRefresh ? 'color: var(--green); border-color: var(--green)' : ''" :title="autoRefresh ? 'Auto-refresh LIGADO (30s)' : 'Auto-refresh desligado'" data-tip="Atualizar dados automaticamente">
         <span x-show="!autoRefresh">&#9201;</span>
         <span x-show="autoRefresh">&#9200;</span>
       </button>
@@ -3568,7 +3685,7 @@ body.zen-mode .tab-bar { display: none !important; }
   <div class="skeleton skeleton-card" style="height:200px;margin-bottom:12px;"></div>
   <div class="skeleton skeleton-card" style="height:160px;"></div>
 </div>
-<div x-show="tab === 'dashboard' && !dataLoading">
+<div x-show="tab === 'dashboard' && !dataLoading" class="tab-content">
 
   <!-- Onboarding -->
   <div x-show="showOnboarding" x-transition style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(79,142,255,0.08) 0%, rgba(139,92,246,0.05) 100%); border: 1px solid var(--accent); border-radius: var(--radius-lg); padding: 24px; position: relative;">
@@ -3974,7 +4091,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: PRODUCTION BOARD (Tempo) -->
 <!-- ===================================================== -->
-<div x-show="tab === 'board'">
+<div x-show="tab === 'board'" class="tab-content">
   <!-- Filters + Batch Actions -->
   <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
     <select class="form-select" style="width: 150px;" x-model="boardBrandFilter" @change="loadPieces()">
@@ -4049,7 +4166,7 @@ body.zen-mode .tab-bar { display: none !important; }
              @dragleave="$el.classList.remove('drag-over')"
              @drop.prevent="$el.classList.remove('drag-over'); if(dragPiece) movePieceToStage(dragPiece, stage)">
         <div class="kanban-header" :style="'border-top: 3px solid ' + stageColors[stage]">
-          <span x-text="stageLabels[stage]"></span>
+          <span><span class="stage-pill-icon" x-html="stageIcon(stage)"></span><span x-text="stageLabels[stage]"></span></span>
           <span class="count" x-text="piecesInStage(stage).length"></span>
         </div>
         <div class="kanban-body">
@@ -4171,7 +4288,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <template x-for="i in 21"><div class="skeleton skeleton-card" style="height:60px;"></div></template>
   </div>
 </div>
-<div x-show="tab === 'calendar'">
+<div x-show="tab === 'calendar'" class="tab-content">
   <div style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center;">
     <input class="form-input" style="width: 160px;" x-model="calWeekId" placeholder="2026-W14">
     <select class="form-select" style="width: 150px;" x-model="calBrand">
@@ -4302,7 +4419,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <div style="width:300px;"><div class="skeleton skeleton-card" style="height:300px;"></div></div>
   </div>
 </div>
-<div x-show="tab === 'copy'">
+<div x-show="tab === 'copy'" class="tab-content">
   <div class="form-row" style="grid-template-columns: 1fr 360px;">
     <div>
       <!-- Step 1: Briefing + Geração IA -->
@@ -4582,7 +4699,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: VDPs -->
 <!-- ===================================================== -->
-<div x-show="tab === 'vdp'">
+<div x-show="tab === 'vdp'" class="tab-content">
   <div class="table-wrap">
     <table>
       <thead>
@@ -4632,7 +4749,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <div><div class="skeleton skeleton-card" style="height:60px;margin-bottom:8px;"></div><div class="skeleton skeleton-card" style="height:200px;"></div></div>
   </div>
 </div>
-<div x-show="tab === 'studio'">
+<div x-show="tab === 'studio'" class="tab-content">
   <div class="form-row">
     <div>
       <div class="card">
@@ -4874,7 +4991,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: COMPLIANCE (Shield) -->
 <!-- ===================================================== -->
-<div x-show="tab === 'compliance'">
+<div x-show="tab === 'compliance'" class="tab-content">
   <div class="form-row">
     <div>
       <div class="card">
@@ -5033,7 +5150,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <div x-show="tab === 'review' && tabLoading.review" style="padding:16px;">
   <template x-for="i in 3"><div class="skeleton skeleton-card" style="height:100px;margin-bottom:8px;"></div></template>
 </div>
-<div x-show="tab === 'review'">
+<div x-show="tab === 'review'" class="tab-content">
   <div class="tabs">
     <button class="tab-btn" :class="{ active: reviewFilter === '' }" @click="reviewFilter = ''">Todos <span class="badge badge-muted" style="font-size:0.6rem; margin-left:2px;" x-text="reviews.length"></span></button>
     <button class="tab-btn" :class="{ active: reviewFilter === 'pending' }" @click="reviewFilter = 'pending'">Pendentes <span class="badge badge-amber" style="font-size:0.6rem; margin-left:2px;" x-text="reviews.filter(r=>r.verdict==='pending').length"></span></button>
@@ -5109,7 +5226,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: ASSETS (Biblioteca) -->
 <!-- ===================================================== -->
-<div x-show="tab === 'assets'">
+<div x-show="tab === 'assets'" class="tab-content">
   <div class="tabs">
     <button class="tab-btn" :class="{ active: assetTab === 'products' }" @click="assetTab = 'products'">
       Produtos <span class="badge badge-blue" style="font-size:0.6rem; margin-left:4px;" x-text="assetTotalProducts()"></span>
@@ -5236,7 +5353,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: CLAIMS BANK -->
 <!-- ===================================================== -->
-<div x-show="tab === 'claims'">
+<div x-show="tab === 'claims'" class="tab-content">
   <div style="margin-bottom: 14px;">
     <select class="form-select" style="width: 200px;" x-model="claimsFilter">
       <option value="">Todos os Produtos</option>
@@ -5267,7 +5384,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: HASHTAGS -->
 <!-- ===================================================== -->
-<div x-show="tab === 'hashtags'">
+<div x-show="tab === 'hashtags'" class="tab-content">
   <!-- Filtros -->
   <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
     <select class="form-select" style="width: 150px;" x-model="hashtagBrand" @change="loadHashtags()">
@@ -5354,7 +5471,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: PERSONAS -->
 <!-- ===================================================== -->
-<div x-show="tab === 'personas'">
+<div x-show="tab === 'personas'" class="tab-content">
   <div x-show="personas.length === 0" class="empty-state">
     <div class="icon">&#128100;</div>
     <p>Nenhuma persona carregada. Verifique o arquivo de buyer-personas nos dados do squad.</p>
@@ -5410,7 +5527,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: PERFORMANCE (Pulse) -->
 <!-- ===================================================== -->
-<div x-show="tab === 'performance'">
+<div x-show="tab === 'performance'" class="tab-content">
   <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px;">
     <template x-if="metricsCollectorStatus.last_run">
       <span style="font-size: 0.7rem; color: var(--text-muted);" x-text="'Ultima coleta: ' + metricsCollectorStatus.last_run"></span>
@@ -5876,7 +5993,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: CRIAR VIDEO -->
 <!-- ===================================================== -->
-<div x-show="tab === 'video'">
+<div x-show="tab === 'video'" class="tab-content">
 
   <!-- Header com status inline -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
@@ -6201,7 +6318,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: PUBLICAR -->
 <!-- ===================================================== -->
-<div x-show="tab === 'publish'">
+<div x-show="tab === 'publish'" class="tab-content">
   <!-- Publisher Status -->
   <div class="card" style="margin-bottom: 16px;">
     <div class="card-title">Status das Plataformas</div>
@@ -6471,7 +6588,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: VIDEO EDITOR -->
 <!-- ===================================================== -->
-<div x-show="tab === 'editor'">
+<div x-show="tab === 'editor'" class="tab-content">
 
   <!-- Header -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
@@ -6685,7 +6802,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: CUSTOS IA (Budget) -->
 <!-- ===================================================== -->
-<div x-show="tab === 'budget'">
+<div x-show="tab === 'budget'" class="tab-content">
   <!-- Summary Cards -->
   <div class="stats-grid">
     <div class="stat-card">
@@ -6806,7 +6923,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: APROVACOES EM LOTE -->
 <!-- ===================================================== -->
-<div x-show="tab === 'approval'">
+<div x-show="tab === 'approval'" class="tab-content">
   <!-- Summary cards -->
   <div class="stats-grid">
     <div class="stat-card">
@@ -6873,7 +6990,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: BIBLIOTECA DE REFERENCIA -->
 <!-- ===================================================== -->
-<div x-show="tab === 'reference'">
+<div x-show="tab === 'reference'" class="tab-content">
   <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
     <template x-for="sec in [{key:'specs',label:'Specs Plataforma'},{key:'guidelines',label:'Diretrizes Marca'},{key:'brandbooks',label:'Brandbooks'},{key:'editorial',label:'Template Editorial'},{key:'prohibited',label:'Termos Proibidos'},{key:'hashbank',label:'Banco Hashtags'}]">
       <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; loadRefSection(sec.key)" style="font-size: 0.75rem; padding: 6px 14px;" x-text="sec.label"></button>
@@ -6948,7 +7065,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: CONFIGURACOES -->
 <!-- ===================================================== -->
-<div x-show="tab === 'settings'">
+<div x-show="tab === 'settings'" class="tab-content">
 
   <!-- Status resumo -->
   <div class="card" style="margin-bottom: 16px; background: linear-gradient(135deg, rgba(79,142,255,0.08) 0%, rgba(99,102,241,0.05) 100%);">
@@ -7060,6 +7177,97 @@ body.zen-mode .tab-bar { display: none !important; }
         <input class="form-input" style="width: 200px;" type="password" x-model="settingsPass" placeholder="Nova senha...">
       </div>
       <button class="btn" @click="updateAuth()" :disabled="!settingsUser || !settingsPass" :style="(!settingsUser || !settingsPass) ? 'opacity: 0.4; cursor: default' : ''">Atualizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: AJUDA -->
+<!-- ===================================================== -->
+<div x-show="tab === 'help'" class="tab-content">
+  <div class="help-container">
+    <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:4px;">Central de Ajuda</h2>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:24px;">Guia completo do Salk Content Studio v2.0</p>
+
+    <div class="help-section">
+      <h3>Atalhos de Teclado</h3>
+      <div class="help-shortcut-grid">
+        <div class="help-shortcut-item"><span>Busca global</span><span class="help-kbd">Ctrl + K</span></div>
+        <div class="help-shortcut-item"><span>Nova peca</span><span class="help-kbd">Ctrl + N</span></div>
+        <div class="help-shortcut-item"><span>Salvar rascunho</span><span class="help-kbd">Ctrl + S</span></div>
+        <div class="help-shortcut-item"><span>Modo Zen</span><span class="help-kbd">Ctrl + Shift + Z</span></div>
+        <div class="help-shortcut-item"><span>Fechar modal</span><span class="help-kbd">Esc</span></div>
+        <div class="help-shortcut-item"><span>Dashboard</span><span class="help-kbd">Alt + 1</span></div>
+        <div class="help-shortcut-item"><span>Board</span><span class="help-kbd">Alt + 2</span></div>
+        <div class="help-shortcut-item"><span>Calendario</span><span class="help-kbd">Alt + 3</span></div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Perguntas Frequentes</h3>
+      <div class="help-faq" x-data="{ open: false }">
+        <div class="help-faq-q" @click="open = !open">Como criar uma peca do zero?<span x-text="open ? '&#x25B2;' : '&#x25BC;'"></span></div>
+        <div class="help-faq-a" x-show="open" x-transition>Use o botao "+ Nova Peca" no Dashboard ou o Assistente de Producao (botao no card "O que fazer agora?"). O assistente guia voce passo a passo: Briefing > Copy > Visual > Revisao > Publicacao.</div>
+      </div>
+      <div class="help-faq" x-data="{ open: false }">
+        <div class="help-faq-q" @click="open = !open">Como funciona o NB2 (Nano Banana 2)?<span x-text="open ? '&#x25B2;' : '&#x25BC;'"></span></div>
+        <div class="help-faq-a" x-show="open" x-transition>NB2 e a ferramenta de geracao de imagens. Voce faz upload do PNG do produto real e a IA renderiza ele dentro de um cenario criado. Importante: descreva APENAS o cenario no prompt, nunca o produto. O produto e referenciado pelo PNG uploadado.</div>
+      </div>
+      <div class="help-faq" x-data="{ open: false }">
+        <div class="help-faq-q" @click="open = !open">Qual a diferenca entre marcas Salk e Mendel?<span x-text="open ? '&#x25B2;' : '&#x25BC;'"></span></div>
+        <div class="help-faq-a" x-show="open" x-transition>Salk Medical e a marca comercial (foco em vendas, leads, demonstracoes). Mendel Medical e a marca fabricante (foco em autoridade tecnica, specs, ANVISA). Conteudo Mendel usa logo Mendel e tom mais tecnico. Conteudo Salk usa logo Salk e tom consultivo.</div>
+      </div>
+      <div class="help-faq" x-data="{ open: false }">
+        <div class="help-faq-q" @click="open = !open">O que significa cada estagio do pipeline?<span x-text="open ? '&#x25B2;' : '&#x25BC;'"></span></div>
+        <div class="help-faq-a" x-show="open" x-transition>Briefing: definicao do conteudo. Copy: texto sendo criado/revisado. Design: geracao visual (NB2/Canva). Review: revisao de qualidade. Approved: aprovado para publicacao. Published: publicado na rede social.</div>
+      </div>
+      <div class="help-faq" x-data="{ open: false }">
+        <div class="help-faq-q" @click="open = !open">Como exportar relatorios?<span x-text="open ? '&#x25B2;' : '&#x25BC;'"></span></div>
+        <div class="help-faq-a" x-show="open" x-transition>Va na aba Performance e role ate o Relatorio Semanal. La voce pode exportar como PDF (abre impressao), .ics (calendario), JSON com todas as pecas, ou JSON resumido com metricas.</div>
+      </div>
+      <div class="help-faq" x-data="{ open: false }">
+        <div class="help-faq-q" @click="open = !open">Como trocar o tema/marca ativa?<span x-text="open ? '&#x25B2;' : '&#x25BC;'"></span></div>
+        <div class="help-faq-a" x-show="open" x-transition>Va em Configuracoes > Tema de Marca. Cada marca tem seu proprio esquema de cores. O tema selecionado e salvo automaticamente e persiste entre sessoes.</div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Glossario</h3>
+      <div class="glossary-grid">
+        <div class="glossary-item"><div class="glossary-term">NB2</div><div class="glossary-def">Nano Banana 2 — ferramenta de geracao de imagens com produto real integrado via fal.ai</div></div>
+        <div class="glossary-item"><div class="glossary-term">VDP</div><div class="glossary-def">Visual Design Prompt — ficha tecnica com prompt, conceito, estilo e instrucoes de composicao</div></div>
+        <div class="glossary-item"><div class="glossary-term">Pipeline</div><div class="glossary-def">Fluxo de producao: Briefing > Copy > Design > Review > Approved > Published</div></div>
+        <div class="glossary-item"><div class="glossary-term">Claims Bank</div><div class="glossary-def">Banco de afirmacoes tecnicas verificadas sobre produtos (specs ANVISA)</div></div>
+        <div class="glossary-item"><div class="glossary-term">Atomizacao</div><div class="glossary-def">Derivar multiplas pecas de um conteudo master (ex: post > stories > carrossel)</div></div>
+        <div class="glossary-item"><div class="glossary-term">Hero Shot</div><div class="glossary-def">Imagem principal do produto em cenario dramatico (studio escuro + reflexo)</div></div>
+        <div class="glossary-item"><div class="glossary-term">Copy</div><div class="glossary-def">Texto da publicacao (headline + corpo + CTA + hashtags)</div></div>
+        <div class="glossary-item"><div class="glossary-term">CTA</div><div class="glossary-def">Call-to-Action — chamada para acao (ex: "Solicite demonstracao")</div></div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Fluxo de Trabalho Recomendado</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        <span class="badge badge-accent" style="font-size:0.72rem;">1. Dashboard</span>
+        <span style="color:var(--text-muted);">&#x2192;</span>
+        <span class="badge badge-accent" style="font-size:0.72rem;">2. Wizard</span>
+        <span style="color:var(--text-muted);">&#x2192;</span>
+        <span class="badge badge-accent" style="font-size:0.72rem;">3. Copy</span>
+        <span style="color:var(--text-muted);">&#x2192;</span>
+        <span class="badge badge-accent" style="font-size:0.72rem;">4. Studio NB2</span>
+        <span style="color:var(--text-muted);">&#x2192;</span>
+        <span class="badge badge-accent" style="font-size:0.72rem;">5. Review</span>
+        <span style="color:var(--text-muted);">&#x2192;</span>
+        <span class="badge badge-accent" style="font-size:0.72rem;">6. Preview</span>
+        <span style="color:var(--text-muted);">&#x2192;</span>
+        <span class="badge badge-accent" style="font-size:0.72rem;">7. Publicar</span>
+      </div>
+    </div>
+
+    <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.78rem;">
+      <p>Salk Content Studio v2.0 — Manager Grupo</p>
+      <p style="margin-top:4px;">Precisa de ajuda adicional? Fale com a equipe de TI.</p>
+      <button class="btn btn-sm" style="margin-top:8px;" @click="startTour()">Iniciar Tour Guiado</button>
     </div>
   </div>
 </div>
@@ -7250,6 +7458,25 @@ body.zen-mode .tab-bar { display: none !important; }
   <button class="btn btn-sm" @click="batchGeneratePrompt()">Gerar Prompts</button>
   <button class="btn btn-sm" style="color:var(--red);" @click="batchDelete()">Excluir</button>
   <button class="btn btn-sm" @click="selectedPieces = []" style="margin-left:auto;">Cancelar</button>
+</div>
+
+<!-- Onboarding Tour -->
+<div class="tour-overlay" x-show="tourActive" @click="tourNext()" x-transition style="display:none;"></div>
+<div class="tour-tooltip" x-show="tourActive" :style="tourTooltipStyle()" x-transition style="display:none;">
+  <h4 x-text="tourSteps[tourStep]?.title || ''"></h4>
+  <p x-text="tourSteps[tourStep]?.description || ''"></p>
+  <div class="tour-tooltip-footer">
+    <div class="tour-dots">
+      <template x-for="(s, i) in tourSteps" :key="i">
+        <div class="tour-dot" :class="{ active: i === tourStep }"></div>
+      </template>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="tour-step-counter" x-text="(tourStep+1) + '/' + tourSteps.length"></span>
+      <button class="btn btn-sm" @click.stop="tourActive = false">Pular</button>
+      <button class="btn btn-sm btn-primary" @click.stop="tourNext()" x-text="tourStep < tourSteps.length - 1 ? 'Proximo' : 'Concluir'"></button>
+    </div>
+  </div>
 </div>
 
 <!-- ============================================= -->
@@ -8080,6 +8307,20 @@ function studioApp() {
     lastSyncTime: null,
     showOnboarding: !localStorage.getItem('studio_onboarded'),
 
+    // Tour
+    tourActive: false,
+    tourStep: 0,
+    tourSteps: [
+      { title: 'Bem-vinda ao Salk Content Studio!', description: 'Este e seu sistema de producao de conteudo para redes sociais. Vamos dar um tour rapido pelas funcionalidades principais.', target: null },
+      { title: 'Dashboard', description: 'Aqui voce ve o resumo de toda a producao: KPIs, pecas pendentes, e acoes necessarias. O widget "O que fazer agora?" mostra exatamente por onde comecar.', target: 'dashboard' },
+      { title: 'Board Kanban', description: 'Visualize todas as pecas organizadas por estagio. Arraste cards entre colunas para mover pecas no pipeline. Clique em um card para ver detalhes.', target: 'board' },
+      { title: 'Calendario Editorial', description: 'Planeje conteudo por semana. Preencha slots, gere conteudo automaticamente, e veja a distribuicao temporal das publicacoes.', target: 'calendar' },
+      { title: 'Copy Editor', description: 'Escreva e refine textos com assistencia de IA. Use o modo Zen para foco total. A IA sugere copies baseadas no produto e marca selecionados.', target: 'copy' },
+      { title: 'Studio NB2', description: 'Gere imagens profissionais com Nano Banana 2. Upload o PNG do produto e descreva o cenario desejado. A IA integra o produto na cena.', target: 'studio' },
+      { title: 'Preview & Publicacao', description: 'Veja como seu post vai ficar no Instagram, LinkedIn e Facebook antes de publicar. Exporte relatorios e acompanhe metricas.', target: 'publish' },
+      { title: 'Pronta para comecar!', description: 'Use o Assistente de Producao (botao + Nova Peca) para criar sua primeira peca passo a passo. Boa producao!', target: null },
+    ],
+
     // Toast notifications
     toastMessage: '',
     toastType: 'success',
@@ -8554,6 +8795,11 @@ function studioApp() {
       this.$watch('reviewFilter', () => this.saveFilterState());
       this.$watch('assetBrandFilter', () => this.saveFilterState());
 
+      // Tour auto-start for first-time users
+      if (!localStorage.getItem('studio_tour_done') && !localStorage.getItem('studio_onboarded')) {
+        setTimeout(() => { this.startTour(); }, 1500);
+      }
+
       // Notification Center init
       this.loadNotifications();
       this.startNotifPolling();
@@ -8722,6 +8968,33 @@ function studioApp() {
     fmtDate(d) {
       if (!d) return '';
       try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return d; }
+    },
+
+    // Tour methods
+    startTour() {
+      this.tourStep = 0;
+      this.tourActive = true;
+    },
+
+    tourNext() {
+      if (this.tourStep < this.tourSteps.length - 1) {
+        this.tourStep++;
+        const step = this.tourSteps[this.tourStep];
+        if (step.target) this.tab = step.target;
+      } else {
+        this.tourActive = false;
+        localStorage.setItem('studio_tour_done', 'true');
+        this.notify('Tour concluido! Explore o sistema a vontade.');
+      }
+    },
+
+    tourTooltipStyle() {
+      return 'top: 50%; left: 50%; transform: translate(-50%, -50%);';
+    },
+
+    stageIcon(stage) {
+      const icons = { briefing: '\u{1f4dd}', copy: '\u{270d}', visual: '\u{1f3a8}', review: '\u{1f50d}', approved: '\u{2705}', published: '\u{1f680}' };
+      return icons[stage] || '';
     },
 
     notify(message, type = 'success') {
