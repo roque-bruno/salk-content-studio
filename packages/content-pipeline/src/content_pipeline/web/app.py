@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -21,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from starlette.middleware.gzip import GZipMiddleware
 
 from content_pipeline.web.auth import (
     LoginRequest,
@@ -43,7 +45,13 @@ from content_pipeline.web.models import (
 from content_pipeline.automation.copywriter import BrandCopywriter, PersonaClone
 from content_pipeline.web.services import StudioService
 
-logger = logging.getLogger(__name__)
+# Logging configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
+logger = logging.getLogger("content-studio")
 
 _service: Optional[StudioService] = None
 
@@ -138,6 +146,15 @@ async def lifespan(app: FastAPI):
             logger.error("Falha ao inicializar StudioService: %s", exc2)
             _service = None
 
+    # Startup diagnostics
+    app.state.start_time = time.time()
+    logger.info("Salk Content Studio v2.0 starting...")
+    logger.info(f"Static files: {os.path.exists(os.path.join(os.path.dirname(__file__), 'static', 'index.html'))}")
+    if _service and hasattr(_service, 'settings'):
+        configured = sum(1 for k in ["OPENROUTER_API_KEY", "FAL_API_KEY", "ELEVENLABS_API_KEY"] if _service.settings.get(k))
+        logger.info(f"API keys configured: {configured}/3")
+    logger.info("Server ready.")
+
     yield
     _service = None
 
@@ -177,10 +194,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Gzip compression for responses >= 1KB
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 # Rate limiting (slowapi)
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Track server start time
+app.state.start_time = time.time()
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    duration = time.time() - start
+    if not request.url.path.startswith(("/static", "/assets", "/output")):
+        logger.info(f"{request.method} {request.url.path} → {response.status_code} ({duration:.3f}s)")
+    return response
+
 
 # --- Mount static asset directories (must be at module level, not in lifespan) ---
 _project_root = Path.cwd()
@@ -239,16 +273,52 @@ async def root():
 
 @app.get("/api/health")
 async def health():
+    """Comprehensive health check."""
+    checks = {}
+
+    # Service status
     if _service is None:
-        return {"status": "degraded", "version": "2.0.0", "detail": "Service initializing"}
-    db_backend = getattr(_service, "_db_backend", "sqlite")
+        return {
+            "status": "degraded",
+            "checks": {"service": False},
+            "detail": "Service initializing",
+            "version": "2.0.0",
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    # Check API keys via service settings
+    api_keys = {
+        "OPENROUTER_API_KEY": bool(_service.settings.get("OPENROUTER_API_KEY")),
+        "FAL_API_KEY": bool(_service.settings.get("FAL_API_KEY")),
+        "ELEVENLABS_API_KEY": bool(_service.settings.get("ELEVENLABS_API_KEY")),
+        "MINIMAX_API_KEY": bool(_service.settings.get("MINIMAX_API_KEY")),
+    }
+    checks["api_keys"] = api_keys
+    checks["api_keys_configured"] = sum(1 for v in api_keys.values() if v)
+
+    # Check data files
+    import pathlib
+    data_dir = pathlib.Path(__file__).parent.parent.parent.parent.parent / "squads" / "content-production" / "data"
+    data_files_ok = data_dir.exists()
+    checks["data_directory"] = str(data_dir)
+    checks["data_directory_exists"] = data_files_ok
+
+    # System info
+    import sys
+    checks["version"] = "2.0.0"
+    checks["python_version"] = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    checks["uptime_seconds"] = round(time.time() - app.state.start_time, 1) if hasattr(app.state, 'start_time') else 0
+    checks["notifications_count"] = len(notifications_store)
+    checks["pieces_count"] = len(_service.pieces) if hasattr(_service, 'pieces') else 0
+    checks["preview_mode"] = _service.preview_mode
+    checks["database_backend"] = getattr(_service, "_db_backend", "sqlite")
+
+    overall = "healthy" if checks["api_keys_configured"] >= 1 and data_files_ok else "degraded"
+
     return {
-        "status": "ok",
-        "version": "2.0.0",
-        "preview_mode": _service.preview_mode,
-        "api_key_configured": not _service.preview_mode,
-        "database_backend": db_backend,
-        "allowed_origins": allowed_origins,
+        "status": overall,
+        "checks": checks,
+        "timestamp": datetime.now().isoformat(),
     }
 
 

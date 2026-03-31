@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 # Prevent Python from buffering stdout/stderr
 ENV PYTHONUNBUFFERED=1
@@ -14,26 +14,33 @@ RUN groupadd --gid 1000 appuser && \
 
 WORKDIR /app
 
-# Copy project files
-COPY pyproject.toml ./
-# README.md is optional for pip install
-RUN touch README.md
+# Install dependencies first (better caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application source
 COPY src/ ./src/
 
-# Install dependencies
-RUN pip install --no-cache-dir -e .
+# Copy pyproject.toml for editable install metadata
+COPY pyproject.toml ./
+RUN touch README.md && pip install --no-cache-dir -e .
 
 # Create output directories with correct permissions
-RUN mkdir -p /app/output/studio /app/output/video /app/output/logs && \
-    chown -R appuser:appuser /app/output
+RUN mkdir -p /app/output/studio /app/output/video /app/output/logs /app/uploads /app/settings && \
+    chown -R appuser:appuser /app/output /app/uploads /app/settings
 
 # Switch to non-root user
 USER appuser
 
-ENV PORT=8080
+# Environment
+ENV PYTHONPATH=/app/src
+ENV PORT=8000
+
 EXPOSE ${PORT}
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/api/health || exit 1
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
 
-CMD uvicorn content_pipeline.web.app:app --host 0.0.0.0 --port ${PORT}
+# Run with 2 workers for production
+CMD ["python", "-m", "uvicorn", "content_pipeline.web.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

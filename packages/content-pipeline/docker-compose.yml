@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  content-studio:
+    build: .
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - STUDIO_ENV=${STUDIO_ENV:-production}
+    volumes:
+      - ./data:/app/data
+      - studio-uploads:/app/uploads
+      - studio-settings:/app/settings
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  studio-uploads:
+  studio-settings:
