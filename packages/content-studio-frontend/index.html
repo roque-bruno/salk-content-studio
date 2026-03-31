@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Salk Content Studio v2.0 — Manager Grupo</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#080a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -373,6 +376,7 @@ body:has(.sidebar.mini) { --sidebar-w: 60px; }
 /* === MAIN === */
 .main {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
   height: 100vh;
 }
@@ -3694,7 +3698,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <button @click="showOnboarding = false; localStorage.setItem('studio_onboarded', '1')" style="position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem;">&times;</button>
     <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Bem-vinda ao Content Studio!</div>
     <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px;">Siga estes 3 passos para comecar a produzir conteudo:</div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
       <div style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border);">
         <div style="font-size: 1.5rem; margin-bottom: 6px;">1&#65039;&#8419;</div>
         <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 4px;">Configure as APIs</div>
@@ -7486,7 +7490,7 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ============================================= -->
 
 <!-- New Piece Modal -->
-<div class="modal-overlay" x-show="showNewPiece" @click.self="showNewPiece = false" @keydown.escape.window="showNewPiece = false" x-cloak role="dialog" aria-modal="true" aria-labelledby="new-piece-title">
+<div class="modal-overlay" x-show="showNewPiece" @click.self="showNewPiece = false" @keydown.escape.window="showNewPiece = false" x-cloak style="display:none;" role="dialog" aria-modal="true" aria-labelledby="new-piece-title">
   <div class="modal">
     <div class="modal-header">
       <h3 id="new-piece-title">Nova Peca de Conteudo</h3>
@@ -7593,8 +7597,11 @@ body.zen-mode .tab-bar { display: none !important; }
 
 <!-- Piece Detail Modal -->
 <!-- ===== DRAWER: Piece Production Panel ===== -->
-<div class="drawer-overlay" x-show="showPieceDetail" @click="showPieceDetail = false" x-cloak></div>
-<div class="drawer" x-show="showPieceDetail" x-cloak @keydown.escape.window="showPieceDetail = false" role="complementary" aria-label="Detalhes da peca">
+<template x-if="showPieceDetail">
+  <div class="drawer-overlay" @click="showPieceDetail = false"></div>
+</template>
+<template x-if="showPieceDetail">
+  <div class="drawer" @keydown.escape.window="showPieceDetail = false" role="complementary" aria-label="Detalhes da peca">
   <div class="drawer-header">
     <div>
       <h3 x-text="selectedPiece?.title || selectedPiece?.id || 'Peca'"></h3>
@@ -7881,6 +7888,7 @@ body.zen-mode .tab-bar { display: none !important; }
 
   </div>
 </div>
+</template>
 
 <!-- Quick Produce Modal -->
 <div class="modal-overlay" x-show="showQuickProduce" @click.self="showQuickProduce = false" @keydown.escape.window="showQuickProduce = false" x-cloak role="dialog" aria-modal="true" aria-label="Producao rapida">
@@ -8923,6 +8931,7 @@ function studioApp() {
           if (token) headers['Authorization'] = 'Bearer ' + token;
 
           const res = await fetch(fullUrl, { headers, ...opts });
+          // Server responded = connection is OK (even if endpoint returned error)
           this.connectionOk = true;
           this.apiRetryCount = 0;
 
@@ -8944,12 +8953,18 @@ function studioApp() {
         } catch(e) {
           lastError = e;
           if (e.message === '401') { this.apiRetryCount = 0; throw e; }
-          if (method !== 'GET') break;
+          // Network failure (server unreachable) — retry makes sense
+          if (e instanceof TypeError) {
+            this.connectionOk = false;
+            if (method !== 'GET') break;
+            continue;
+          }
+          // HTTP error (server responded but endpoint failed) — no retry needed
+          break;
         }
       }
 
       this.apiRetryCount = 0;
-      if (lastError && lastError.message !== '401') this.connectionOk = false;
       throw lastError;
     },
 
