@@ -223,19 +223,49 @@ for _candidate in [Path.cwd()] + list(Path.cwd().parents):
         _project_root = _candidate
         break
 
+logger.info("Project root: %s", _project_root)
+
 _product_dir = _project_root / "docs_user" / "imagem_produtos"
 if _product_dir.exists():
     app.mount("/assets/produtos", StaticFiles(directory=str(_product_dir)), name="produtos")
+    logger.info("Mounted /assets/produtos → %s (%d categories)", _product_dir, len(list(_product_dir.iterdir())))
+else:
+    logger.warning("Product images dir NOT FOUND: %s", _product_dir)
 
 _logos_dir = _project_root / "docs_user" / "logomarcas"
 if not _logos_dir.exists():
     _logos_dir = _project_root / "docs_user" / "logos"
 if _logos_dir.exists():
     app.mount("/assets/logos", StaticFiles(directory=str(_logos_dir)), name="logos")
+    logger.info("Mounted /assets/logos → %s", _logos_dir)
+else:
+    logger.warning("Logos dir NOT FOUND: %s", _logos_dir)
 
 _output_dir = _project_root / "output"
 _output_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/output", StaticFiles(directory=str(_output_dir)), name="output")
+
+
+# --- Fallback asset serving via API route (if StaticFiles mount failed at startup) ---
+@app.get("/assets/produtos/{category}/{filename}")
+async def serve_product_image(category: str, filename: str):
+    """Fallback: serve product images if StaticFiles mount didn't happen."""
+    file_path = _project_root / "docs_user" / "imagem_produtos" / category / filename
+    if not file_path.exists():
+        raise HTTPException(404, "Imagem não encontrada")
+    from starlette.responses import FileResponse
+    return FileResponse(str(file_path))
+
+
+@app.get("/assets/logos/{brand}/{filename}")
+async def serve_logo_image(brand: str, filename: str):
+    """Fallback: serve logo images if StaticFiles mount didn't happen."""
+    for logos_base in [_project_root / "docs_user" / "logomarcas", _project_root / "docs_user" / "logos"]:
+        file_path = logos_base / brand / filename
+        if file_path.exists():
+            from starlette.responses import FileResponse
+            return FileResponse(str(file_path))
+    raise HTTPException(404, "Logo não encontrado")
 
 
 @app.exception_handler(Exception)
