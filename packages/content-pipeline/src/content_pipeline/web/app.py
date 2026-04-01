@@ -2598,7 +2598,8 @@ async def weekly_report_html(
 # API routes above take precedence; this catch-all handles SPA client-side routing.
 frontend_dir = None
 _candidates = [
-    Path("/app/frontend"),  # Docker container layout
+    Path(__file__).parent / "static",  # Embedded in package (preferred — always up-to-date with code)
+    Path("/app/frontend"),  # Docker container layout (volume mount)
     Path(__file__).parent.parent.parent.parent.parent / "content-studio-frontend",
     Path.cwd() / "frontend",
     Path.cwd() / "packages" / "content-studio-frontend",
