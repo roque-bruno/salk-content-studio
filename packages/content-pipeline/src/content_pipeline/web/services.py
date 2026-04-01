@@ -61,6 +61,21 @@ DatabaseBackend = StudioDatabase  # será substituído em runtime se Supabase co
 logger = logging.getLogger(__name__)
 
 
+def _extract_claim_phrases(claim_text: str) -> list[str]:
+    """Extract key technical phrases from a claim for fuzzy matching."""
+    # Return the full claim and significant subphrases (3+ words)
+    phrases = [claim_text]
+    words = claim_text.split()
+    if len(words) >= 4:
+        # Also match on the first 4 words (e.g. "índice de reprodução de")
+        phrases.append(" ".join(words[:4]))
+    # Match specific numeric patterns in the claim
+    import re
+    numbers = re.findall(r'\d+[\.,]?\d*\s*\w+', claim_text)
+    phrases.extend(numbers)
+    return [p for p in phrases if len(p) > 5]
+
+
 class StudioService:
     """Serviço central do Content Studio v2.0."""
 
@@ -721,6 +736,58 @@ class StudioService:
 
         in_production = sum(1 for p in pieces if p.get("stage") not in ("approved", "published"))
         pending_review = sum(1 for p in pieces if p.get("stage") == "review")
+        approved = sum(1 for p in pieces if p.get("stage") in ("approved", "published"))
+        published = sum(1 for p in pieces if p.get("stage") == "published")
+
+        # Stage breakdown
+        stages = {}
+        for p in pieces:
+            s = p.get("stage", "briefing")
+            stages[s] = stages.get(s, 0) + 1
+
+        # Brand breakdown
+        brands = {}
+        for p in pieces:
+            b = p.get("brand", "salk")
+            brands[b] = brands.get(b, 0) + 1
+
+        # Platform breakdown
+        platforms = {}
+        for p in pieces:
+            pl = p.get("platform", "")
+            if pl:
+                platforms[pl] = platforms.get(pl, 0) + 1
+
+        # Calendar stats
+        cal_week_ids = self.db.list_calendars() if hasattr(self.db, 'list_calendars') else []
+        total_slots = 0
+        filled_slots = 0
+        for wid in cal_week_ids:
+            cal = self.db.load_calendar(wid)
+            if not cal:
+                continue
+            slots = cal.get("slots", [])
+            total_slots += len(slots)
+            filled_slots += sum(1 for s in slots if s.get("piece_id") or s.get("status") == "produced")
+
+        # Compliance stats from prohibited terms YAML
+        prohibited = self.load_prohibited_terms()
+        total_rules = sum(
+            len(v.get("terms", []) + v.get("items", []))
+            for v in prohibited.values()
+            if isinstance(v, dict)
+        )
+
+        # Reviews stats
+        reviews = self.list_reviews()
+        reviews_pending = sum(1 for r in reviews if r.get("verdict") == "pending")
+        reviews_approved = sum(1 for r in reviews if r.get("verdict") == "approved")
+        reviews_rejected = sum(1 for r in reviews if r.get("verdict") == "rejected")
+
+        # Weekly production (pieces created in last 7 days)
+        from datetime import datetime, timedelta
+        week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+        pieces_this_week = sum(1 for p in pieces if p.get("created_at", "") >= week_ago)
 
         return {
             "total_vdps": len(vdps),
@@ -733,6 +800,20 @@ class StudioService:
             "claims_available": len(claims),
             "pieces_in_production": in_production,
             "pieces_pending_review": pending_review,
+            "pieces_approved": approved,
+            "pieces_published": published,
+            "pieces_total": len(pieces),
+            "pieces_this_week": pieces_this_week,
+            "stage_breakdown": stages,
+            "brand_breakdown": brands,
+            "platform_breakdown": platforms,
+            "calendar_weeks": len(calendars),
+            "calendar_total_slots": total_slots,
+            "calendar_filled_slots": filled_slots,
+            "compliance_rules_active": total_rules,
+            "reviews_pending": reviews_pending,
+            "reviews_approved": reviews_approved,
+            "reviews_rejected": reviews_rejected,
         }
 
     def get_recent_log(self, limit: int = 20) -> list[dict]:
@@ -784,48 +865,75 @@ class StudioService:
 
         text_lower = text.lower()
 
-        # Categorias de proibição
-        categories = prohibited.get("categories", prohibited.get("prohibitions", []))
-        if isinstance(categories, list):
-            for cat in categories:
-                if not isinstance(cat, dict):
+        # ── Iterate top-level YAML keys (produtos_bloqueados, superlativos, etc.) ──
+        skip_keys = {"version", "last_updated", "owner", "severity", "safe_translations"}
+        for cat_name, cat_data in prohibited.items():
+            if cat_name in skip_keys or not isinstance(cat_data, dict):
+                continue
+
+            severity = cat_data.get("severity", "HIGH")
+            terms = cat_data.get("terms", [])
+            items = cat_data.get("items", [])
+
+            # Handle 'terms' list (dicts with term/reason/alternative)
+            for term_entry in terms:
+                if isinstance(term_entry, str):
+                    term = term_entry
+                    reason = cat_name
+                    alternative = ""
+                elif isinstance(term_entry, dict):
+                    term = term_entry.get("term", term_entry.get("text", ""))
+                    reason = term_entry.get("reason", cat_name)
+                    alternative = term_entry.get("alternative", term_entry.get("safe", ""))
+                else:
                     continue
-                severity = cat.get("severity", "HIGH")
-                cat_name = cat.get("category", cat.get("name", ""))
-                terms = cat.get("terms", cat.get("items", []))
 
-                for term_entry in terms:
-                    if isinstance(term_entry, str):
-                        term = term_entry
-                        reason = cat_name
-                    elif isinstance(term_entry, dict):
-                        term = term_entry.get("term", term_entry.get("text", ""))
-                        reason = term_entry.get("reason", term_entry.get("why", cat_name))
+                if not term:
+                    continue
+
+                # Skip terms with bracket placeholders like "[marca X]"
+                search_term = term.lower()
+                if "[" in search_term:
+                    # Extract the fixed part before the bracket for matching
+                    fixed_part = search_term.split("[")[0].strip()
+                    if not fixed_part or fixed_part not in text_lower:
+                        continue
+                elif search_term not in text_lower:
+                    continue
+
+                entry = {
+                    "term": term,
+                    "category": cat_name,
+                    "severity": severity,
+                    "reason": reason,
+                    "alternative": alternative,
+                }
+
+                if severity == "CRITICAL":
+                    violations.append(entry)
+                else:
+                    warnings.append(entry)
+
+            # Handle 'items' list (plain strings, e.g. visual_prohibitions)
+            for item in items:
+                if isinstance(item, str) and item.lower() in text_lower:
+                    entry = {
+                        "term": item,
+                        "category": cat_name,
+                        "severity": severity,
+                        "reason": cat_data.get("reference", cat_name),
+                        "alternative": "",
+                    }
+                    if severity == "CRITICAL":
+                        violations.append(entry)
                     else:
-                        continue
+                        warnings.append(entry)
 
-                    if not term:
-                        continue
-
-                    if term.lower() in text_lower:
-                        entry = {
-                            "term": term,
-                            "category": cat_name,
-                            "severity": severity,
-                            "reason": reason,
-                        }
-                        if isinstance(term_entry, dict):
-                            entry["alternative"] = term_entry.get("alternative", term_entry.get("safe", ""))
-
-                        if severity == "CRITICAL":
-                            violations.append(entry)
-                        else:
-                            warnings.append(entry)
-
-        # Check ETRUS (sempre crítico)
+        # ── Check ETRUS (sempre crítico — redundância intencional) ──
         etrus_patterns = ["etrus", "novo foco cirúrgico", "novo foco cirurgico", "new surgical focus"]
+        already_found = {v["term"].lower() for v in violations}
         for pat in etrus_patterns:
-            if pat in text_lower:
+            if pat in text_lower and pat not in already_found:
                 etrus_blocked = True
                 violations.append({
                     "term": pat,
@@ -834,8 +942,13 @@ class StudioService:
                     "reason": "ETRUS NÃO lançado — PROIBIDO publicar",
                     "alternative": "Use LEV",
                 })
+            elif pat in text_lower:
+                etrus_blocked = True
 
-        # Brand Enforcer (Design System como cabresto)
+        # ── Claims validation against claims-bank.yaml ──
+        claims_result = self._validate_claims(text, product)
+
+        # ── Brand Enforcer (Design System como cabresto) ──
         if brand:
             brand_result = self.brand_enforcer.validate(text, brand, context="copy")
             for v in brand_result.violations:
@@ -860,8 +973,88 @@ class StudioService:
             "passed": passed,
             "violations": violations,
             "warnings": warnings,
-            "claims_valid": True,
+            "claims_valid": claims_result["valid"],
+            "claims_detail": claims_result,
             "etrus_blocked": etrus_blocked,
+            "terms_checked": sum(
+                len(v.get("terms", []) + v.get("items", []))
+                for v in prohibited.values()
+                if isinstance(v, dict)
+            ),
+        }
+
+    def _validate_claims(self, text: str, product: str = "") -> dict:
+        """Validate technical claims in text against claims-bank.yaml."""
+        claims_bank = self.load_claims_bank()
+        if not claims_bank:
+            return {"valid": True, "approved_used": [], "unapproved": [], "suggestions": []}
+
+        # Flatten all approved claims from the bank
+        approved_claims = {}
+        for item in claims_bank:
+            if isinstance(item, dict):
+                cid = item.get("id", item.get("claim_id", ""))
+                claim_text = item.get("claim", item.get("texto", ""))
+                status = item.get("status", "APROVADO")
+                prod = item.get("produto", item.get("product", ""))
+                if cid and claim_text:
+                    approved_claims[cid] = {
+                        "claim": claim_text,
+                        "status": status,
+                        "product": prod,
+                        "accessible": item.get("accessible", ""),
+                    }
+
+        text_lower = text.lower()
+        approved_used = []
+        suggestions = []
+
+        # Check which approved claims appear in the text
+        for cid, cdata in approved_claims.items():
+            claim_lower = cdata["claim"].lower()
+            # Check if key technical phrases from the claim appear
+            if any(
+                phrase in text_lower
+                for phrase in _extract_claim_phrases(claim_lower)
+            ):
+                if cdata["status"] == "APROVADO":
+                    approved_used.append(cid)
+                else:
+                    suggestions.append({
+                        "claim_id": cid,
+                        "issue": f"Claim {cid} status: {cdata['status']} (não APROVADO)",
+                    })
+
+        # Check for numeric specs that might be unapproved claims
+        import re
+        spec_patterns = [
+            r'\d+[\.,]?\d*\s*(?:lux|klux)',
+            r'\d+[\.,]?\d*\s*(?:kg|mm|cm)',
+            r'(?:ra|r9|cri)\s*[=≥>]\s*\d+',
+            r'ip\s*\d{2}',
+            r'\d+[\.,]?\d*\s*(?:k|kelvin)',
+        ]
+        unapproved = []
+        for pat in spec_patterns:
+            matches = re.findall(pat, text_lower)
+            for match in matches:
+                # Check if this spec is part of any approved claim
+                found_in_approved = any(
+                    match in cdata["claim"].lower()
+                    for cdata in approved_claims.values()
+                )
+                if not found_in_approved:
+                    unapproved.append({
+                        "spec": match,
+                        "issue": "Especificação técnica não encontrada no banco de claims aprovados",
+                    })
+
+        return {
+            "valid": len(unapproved) == 0,
+            "approved_used": approved_used,
+            "unapproved": unapproved,
+            "suggestions": suggestions,
+            "total_approved_claims": len(approved_claims),
         }
 
     # =========================================================================

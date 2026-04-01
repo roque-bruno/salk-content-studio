@@ -795,6 +795,101 @@ async def list_uploads(purpose: str = Query("")):
     return results
 
 
+@app.delete("/api/uploads/{purpose}/{filename}")
+async def delete_upload(purpose: str, filename: str):
+    """Delete an uploaded file."""
+    file_path = _project_root / "output" / "uploads" / purpose / filename
+    if not file_path.exists():
+        raise HTTPException(404, "Arquivo não encontrado")
+    # Prevent path traversal
+    if ".." in purpose or ".." in filename:
+        raise HTTPException(400, "Caminho inválido")
+    file_path.unlink()
+    # Also remove tag metadata if exists
+    meta_path = file_path.with_suffix(file_path.suffix + ".meta.json")
+    if meta_path.exists():
+        meta_path.unlink()
+    return {"status": "deleted", "file": filename}
+
+
+@app.get("/api/assets/tags/{purpose}/{filename}")
+async def get_asset_tags(purpose: str, filename: str):
+    """Get tags/metadata for an uploaded asset."""
+    meta_path = _project_root / "output" / "uploads" / purpose / f"{filename}.meta.json"
+    if meta_path.exists():
+        return json.loads(meta_path.read_text(encoding="utf-8"))
+    return {"tags": [], "description": "", "brand": "", "product": ""}
+
+
+@app.put("/api/assets/tags/{purpose}/{filename}")
+async def update_asset_tags(purpose: str, filename: str, request: Request):
+    """Update tags/metadata for an uploaded asset."""
+    data = await request.json()
+    file_path = _project_root / "output" / "uploads" / purpose / filename
+    if not file_path.exists():
+        raise HTTPException(404, "Arquivo não encontrado")
+    meta_path = _project_root / "output" / "uploads" / purpose / f"{filename}.meta.json"
+    existing = {}
+    if meta_path.exists():
+        existing = json.loads(meta_path.read_text(encoding="utf-8"))
+    existing.update({
+        "tags": data.get("tags", existing.get("tags", [])),
+        "description": data.get("description", existing.get("description", "")),
+        "brand": data.get("brand", existing.get("brand", "")),
+        "product": data.get("product", existing.get("product", "")),
+        "updated_at": datetime.now().isoformat(),
+    })
+    meta_path.write_text(json.dumps(existing, ensure_ascii=False, indent=2), encoding="utf-8")
+    return existing
+
+
+@app.get("/api/assets/search")
+async def search_assets(q: str = Query(""), tag: str = Query(""), brand: str = Query(""), purpose: str = Query("")):
+    """Search uploaded assets by name, tag, or brand."""
+    base = _project_root / "output" / "uploads"
+    if not base.exists():
+        return []
+    results = []
+    q_lower = q.lower()
+    search_dirs = [base / purpose] if purpose else [d for d in base.iterdir() if d.is_dir()]
+    for d in search_dirs:
+        if not d.exists():
+            continue
+        for f in sorted(d.iterdir()):
+            if not f.is_file() or f.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".mp4", ".mov", ".webm"}:
+                continue
+            # Load metadata if exists
+            meta_path = f.parent / f"{f.name}.meta.json"
+            meta = {}
+            if meta_path.exists():
+                try:
+                    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                except Exception:
+                    pass
+
+            # Apply filters
+            if q_lower and q_lower not in f.name.lower() and q_lower not in meta.get("description", "").lower():
+                continue
+            if tag and tag not in meta.get("tags", []):
+                continue
+            if brand and meta.get("brand", "") != brand:
+                continue
+
+            results.append({
+                "url": f"/output/uploads/{d.name}/{f.name}",
+                "path": str(f),
+                "name": f.name,
+                "size_kb": round(f.stat().st_size / 1024, 1),
+                "purpose": d.name,
+                "is_video": f.suffix.lower() in {".mp4", ".mov", ".webm"},
+                "tags": meta.get("tags", []),
+                "description": meta.get("description", ""),
+                "brand": meta.get("brand", ""),
+                "product": meta.get("product", ""),
+            })
+    return results
+
+
 # =========================================================================
 # VDPs
 # =========================================================================
@@ -2588,6 +2683,36 @@ async def weekly_report_html(
     svc = get_service()
     html = svc.weekly_report.generate_html(week_id=week_id, brand=brand)
     return HTMLResponse(html)
+
+
+@app.get("/api/report/weekly/download")
+async def weekly_report_download(
+    week_id: str = "", brand: str = "", user: dict = Depends(require_auth),
+):
+    """Download relatorio semanal como HTML file (para print-to-PDF)."""
+    svc = get_service()
+    html = svc.weekly_report.generate_html(week_id=week_id, brand=brand)
+    # Add print-optimized CSS and auto-print script
+    print_html = html.replace(
+        "</style>",
+        """
+        @media print {
+            body { margin: 20px; }
+            .summary-grid { grid-template-columns: repeat(4, 1fr); }
+            .no-print { display: none; }
+        }
+        @page { margin: 1.5cm; size: A4; }
+        </style>"""
+    )
+    from starlette.responses import Response
+    filename = f"relatorio-semanal-{week_id or 'atual'}-{brand or 'todas'}.html"
+    return Response(
+        content=print_html,
+        media_type="text/html",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+        },
+    )
 
 
 # =========================================================================

@@ -3768,7 +3768,8 @@ body.zen-mode .tab-bar { display: none !important; }
         <span x-show="!abTestRunning">&#9878; Gerar Variacoes</span>
         <span x-show="abTestRunning">Gerando...</span>
       </button>
-      <button class="btn" @click="openWeeklyReport()" title="Relatorio Semanal">&#128202; Relatorio</button>
+      <button class="btn" @click="openWeeklyReport()" title="Relatorio Semanal (visualizar)">&#128202; Relatorio</button>
+      <button class="btn" @click="downloadWeeklyReport()" title="Baixar Relatorio HTML (salvar como PDF)">&#128229; Download</button>
       <button class="btn" @click="dashboardCustomizing = !dashboardCustomizing" :style="dashboardCustomizing ? 'border-color: var(--accent); color: var(--accent)' : ''" title="Personalizar widgets">&#9881; Personalizar</button>
     </div>
   </div>
@@ -3874,6 +3875,48 @@ body.zen-mode .tab-bar { display: none !important; }
     </div>
   </div>
 
+  <!-- KPI Row 2 — Production Intelligence -->
+  <div class="kpi-grid" x-show="dashboardLayout.includes('kpis')" style="margin-top: -8px;">
+    <div class="kpi-card" @click="tab = 'board'" style="cursor: pointer;">
+      <div class="kpi-icon" style="background: var(--blue-bg); color: var(--accent);">&#9889;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="stats.pieces_this_week || 0">0</div>
+        <div class="kpi-label">Pecas esta Semana</div>
+      </div>
+    </div>
+    <div class="kpi-card" @click="tab = 'calendar'" style="cursor: pointer;">
+      <div class="kpi-icon" style="background: var(--cyan-bg); color: var(--cyan);">&#128197;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="(stats.calendar_weeks || 0)">0</div>
+        <div class="kpi-label">Semanas Planejadas</div>
+        <div style="font-size:0.6rem; color:var(--text-muted);" x-text="(stats.calendar_filled_slots || 0) + '/' + (stats.calendar_total_slots || 0) + ' slots'"></div>
+      </div>
+    </div>
+    <div class="kpi-card" @click="tab = 'compliance'" style="cursor: pointer;">
+      <div class="kpi-icon" style="background: var(--red-bg); color: var(--red);">&#9888;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="stats.compliance_rules_active || 0">0</div>
+        <div class="kpi-label">Regras Compliance</div>
+      </div>
+    </div>
+    <div class="kpi-card" @click="tab = 'review'" style="cursor: pointer;">
+      <div class="kpi-icon" style="background: var(--purple-bg); color: var(--purple);">&#128269;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="stats.reviews_pending || 0">0</div>
+        <div class="kpi-label">Reviews Pendentes</div>
+        <div style="font-size:0.6rem; color:var(--text-muted);" x-text="(stats.reviews_approved || 0) + ' aprovadas, ' + (stats.reviews_rejected || 0) + ' rejeitadas'"></div>
+      </div>
+    </div>
+    <div class="kpi-card" @click="tab = 'assets'" style="cursor: pointer;">
+      <div class="kpi-icon" style="background: var(--green-bg); color: var(--green);">&#128444;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="stats.products_available || 0">0</div>
+        <div class="kpi-label">Assets Visuais</div>
+        <div style="font-size:0.6rem; color:var(--text-muted);" x-text="(stats.logos_available || 0) + ' logos'"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Stage Distribution Donut + Activity -->
   <div style="display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 20px;" x-show="dashboardLayout.includes('distribution') || dashboardLayout.includes('activity')">
     <!-- Donut Chart -->
@@ -3961,6 +4004,22 @@ body.zen-mode .tab-bar { display: none !important; }
           <div class="action-text">
             <div class="action-title">Nova Peca Manual</div>
             <div class="action-desc">Crie uma peca com configuracao personalizada</div>
+          </div>
+          <span class="action-arrow">&#8250;</span>
+        </button>
+        <button class="action-btn" @click="tab='compliance'; sidebarOpen=false">
+          <span class="action-icon" style="background: var(--red-bg); color: var(--red);">&#9888;</span>
+          <div class="action-text">
+            <div class="action-title">Verificar Compliance</div>
+            <div class="action-desc">Checar textos contra regras ANVISA/CFM</div>
+          </div>
+          <span class="action-arrow">&#8250;</span>
+        </button>
+        <button class="action-btn" @click="tab='assets'; assetTab='uploads'; loadUploadsAll()">
+          <span class="action-icon" style="background: var(--cyan-bg); color: var(--cyan);">&#128444;</span>
+          <div class="action-text">
+            <div class="action-title">Gerenciar Assets</div>
+            <div class="action-desc">Upload, tagueamento e busca de imagens</div>
           </div>
           <span class="action-arrow">&#8250;</span>
         </button>
@@ -5063,6 +5122,38 @@ body.zen-mode .tab-bar { display: none !important; }
             <span style="margin-left: 6px;" x-text="w.reason"></span>
           </div>
         </template>
+
+        <!-- Claims Validation -->
+        <template x-if="complianceResult?.claims_detail">
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+            <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.82rem;">
+              Validacao de Claims
+              <span class="badge" :class="complianceResult.claims_detail.valid ? 'badge-green' : 'badge-red'" style="margin-left: 8px;"
+                    x-text="complianceResult.claims_detail.valid ? 'OK' : 'ATENCAO'"></span>
+            </div>
+            <template x-if="complianceResult.claims_detail.approved_used?.length > 0">
+              <div style="margin-bottom: 6px;">
+                <span style="font-size: 0.75rem; color: var(--green);">Claims aprovados encontrados:</span>
+                <template x-for="cid in complianceResult.claims_detail.approved_used">
+                  <span class="badge badge-green" style="margin: 2px;" x-text="cid"></span>
+                </template>
+              </div>
+            </template>
+            <template x-if="complianceResult.claims_detail.unapproved?.length > 0">
+              <div>
+                <span style="font-size: 0.75rem; color: var(--red);">Especificacoes nao encontradas no banco:</span>
+                <template x-for="u in complianceResult.claims_detail.unapproved">
+                  <div class="violation-item violation-warning" style="margin-top: 4px;">
+                    <strong x-text="u.spec"></strong>
+                    <span style="margin-left: 6px; font-size: 0.72rem;" x-text="u.issue"></span>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 6px;"
+                 x-text="'Base: ' + (complianceResult.claims_detail.total_approved_claims || 0) + ' claims aprovados | ' + (complianceResult.terms_checked || 0) + ' regras de compliance ativas'"></div>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -5250,6 +5341,9 @@ body.zen-mode .tab-bar { display: none !important; }
     <button class="tab-btn" :class="{ active: assetTab === 'logos' }" @click="assetTab = 'logos'">
       Logos <span class="badge badge-purple" style="font-size:0.6rem; margin-left:4px;" x-text="logos.length"></span>
     </button>
+    <button class="tab-btn" :class="{ active: assetTab === 'uploads' }" @click="assetTab = 'uploads'; loadUploadsAll()">
+      Uploads <span class="badge badge-green" style="font-size:0.6rem; margin-left:4px;" x-text="uploadsList.length"></span>
+    </button>
   </div>
 
   <!-- Products -->
@@ -5344,24 +5438,110 @@ body.zen-mode .tab-bar { display: none !important; }
     </template>
   </div>
 
-  <!-- Uploads Recentes -->
-  <div class="card" style="margin-top: 16px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" @click="uploadsOpen = !uploadsOpen">
-      <div class="card-title" style="margin-bottom: 0;">Uploads Recentes</div>
-      <span style="color: var(--text-muted); font-size: 0.8rem;" x-text="uploadsOpen ? '−' : '+ (' + (uploadsList.length || 0) + ')'"></span>
-    </div>
-    <div x-show="uploadsOpen" x-transition style="margin-top: 12px;">
-      <template x-if="uploadsList.length === 0">
-        <div style="text-align: center; padding: 16px; color: var(--text-muted); font-size: 0.82rem;">Nenhum upload encontrado</div>
-      </template>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
-        <template x-for="file in uploadsList.slice(0, 20)" :key="file.filename || file.name">
-          <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; background: var(--bg-darker); font-size: 0.75rem;">
-            <div style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.filename || file.name"></div>
-            <div style="color: var(--text-muted); font-size: 0.68rem; margin-top: 4px;" x-text="(file.purpose || 'geral') + ' — ' + (file.size_kb ? Math.round(file.size_kb) + 'KB' : '')"></div>
-          </div>
-        </template>
+  <!-- Uploads Management Tab -->
+  <div x-show="assetTab === 'uploads'">
+    <!-- Upload Form -->
+    <div class="card" style="margin-bottom: 16px;">
+      <div class="card-title">Upload de Assets</div>
+      <div style="display: grid; grid-template-columns: 1fr 150px 150px 150px; gap: 10px; align-items: end;">
+        <div>
+          <label style="font-size: 0.72rem; color: var(--text-secondary);">Arquivo (imagem ou video, max 50MB)</label>
+          <input type="file" accept="image/*,video/*" @change="uploadAssetFile = $event.target.files[0]"
+                 style="font-size: 0.78rem; padding: 6px; border: 1px dashed var(--border); border-radius: var(--radius-sm); width: 100%; background: var(--bg-darker);">
+        </div>
+        <div>
+          <label style="font-size: 0.72rem; color: var(--text-secondary);">Proposito</label>
+          <select class="form-select" x-model="uploadAssetPurpose" style="font-size: 0.78rem;">
+            <option value="reference">Referencia</option>
+            <option value="studio">Studio</option>
+            <option value="product">Produto</option>
+            <option value="campaign">Campanha</option>
+            <option value="brand">Marca</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 0.72rem; color: var(--text-secondary);">Marca</label>
+          <select class="form-select" x-model="uploadAssetBrand" style="font-size: 0.78rem;">
+            <option value="">Nenhuma</option>
+            <option value="salk">Salk</option>
+            <option value="mendel">Mendel</option>
+            <option value="manager">Manager</option>
+            <option value="dayho">Dayho</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" @click="doAssetUpload()" :disabled="!uploadAssetFile || uploadAssetUploading"
+                x-text="uploadAssetUploading ? 'Enviando...' : 'Enviar'"></button>
       </div>
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <input class="form-input" x-model="uploadAssetTags" placeholder="Tags (separadas por virgula)" style="flex:1; font-size: 0.78rem;">
+        <input class="form-input" x-model="uploadAssetDescription" placeholder="Descricao do asset" style="flex:1; font-size: 0.78rem;">
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="asset-toolbar" style="margin-bottom: 12px;">
+      <div class="search-wrap" style="flex:1;">
+        <input class="search-input" type="text" placeholder="Buscar por nome, descricao ou tag..." x-model="uploadSearchQuery" @input.debounce.300ms="searchUploads()" style="width:100%;">
+      </div>
+      <select class="form-select" style="width: 140px; font-size: 0.78rem;" x-model="uploadFilterPurpose" @change="searchUploads()">
+        <option value="">Todos</option>
+        <option value="reference">Referencia</option>
+        <option value="studio">Studio</option>
+        <option value="product">Produto</option>
+        <option value="campaign">Campanha</option>
+        <option value="brand">Marca</option>
+      </select>
+      <select class="form-select" style="width: 120px; font-size: 0.78rem;" x-model="uploadFilterBrand" @change="searchUploads()">
+        <option value="">Marca</option>
+        <option value="salk">Salk</option>
+        <option value="mendel">Mendel</option>
+        <option value="manager">Manager</option>
+        <option value="dayho">Dayho</option>
+      </select>
+      <div class="asset-stat" x-text="uploadsFiltered.length + ' arquivos'"></div>
+    </div>
+
+    <!-- Upload Grid -->
+    <template x-if="uploadsFiltered.length === 0">
+      <div class="empty-state-rich">
+        <div class="es-icon">&#128194;</div>
+        <div class="es-title">Nenhum upload encontrado</div>
+        <div class="es-desc">Envie imagens ou videos usando o formulario acima.</div>
+      </div>
+    </template>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
+      <template x-for="file in uploadsFiltered" :key="file.url">
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-darker);">
+          <!-- Preview -->
+          <div style="height: 140px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+            <template x-if="!file.is_video">
+              <img :src="file.url" :alt="file.name" loading="lazy" style="max-width: 100%; max-height: 100%; object-fit: cover; width: 100%; height: 100%;" @click="openAssetModal(file, file.purpose)">
+            </template>
+            <template x-if="file.is_video">
+              <div style="color: var(--text-muted); font-size: 2rem; cursor: pointer;" @click="window.open(file.url, '_blank')">&#9654;</div>
+            </template>
+            <!-- Delete button -->
+            <button @click="deleteUpload(file)" style="position: absolute; top: 4px; right: 4px; background: rgba(220,38,38,0.85); color: white; border: none; border-radius: 4px; width: 22px; height: 22px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+                    title="Excluir">&#10005;</button>
+          </div>
+          <!-- Info -->
+          <div style="padding: 8px;">
+            <div style="font-weight: 500; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.name"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <span style="font-size: 0.65rem; color: var(--text-muted);" x-text="file.purpose + ' — ' + Math.round(file.size_kb) + 'KB'"></span>
+              <span x-show="file.brand" class="badge badge-blue" style="font-size: 0.55rem;" x-text="file.brand"></span>
+            </div>
+            <!-- Tags -->
+            <div style="display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px;" x-show="file.tags?.length > 0">
+              <template x-for="t in (file.tags || [])">
+                <span style="background: var(--bg-hover); border-radius: 3px; padding: 1px 5px; font-size: 0.6rem; color: var(--text-secondary);" x-text="t"></span>
+              </template>
+            </div>
+            <div x-show="file.description" style="font-size: 0.65rem; color: var(--text-muted); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.description"></div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </div>
@@ -8617,7 +8797,17 @@ function studioApp() {
     // Assets
     assetTab: 'products',
     uploadsList: [],
+    uploadsFiltered: [],
     uploadsOpen: false,
+    uploadAssetFile: null,
+    uploadAssetPurpose: 'reference',
+    uploadAssetBrand: '',
+    uploadAssetTags: '',
+    uploadAssetDescription: '',
+    uploadAssetUploading: false,
+    uploadSearchQuery: '',
+    uploadFilterPurpose: '',
+    uploadFilterBrand: '',
 
     // Claims
     claimsFilter: '',
@@ -9742,6 +9932,17 @@ function studioApp() {
       } catch(e) { this.notify('Erro ao abrir relatorio: ' + e.message, 'error'); }
     },
 
+    async downloadWeeklyReport() {
+      try {
+        const token = localStorage.getItem('studio_token');
+        const base = (window.STUDIO_CONFIG && (window.STUDIO_CONFIG.API_URL || window.STUDIO_CONFIG.API_BASE_URL)) || '';
+        const brand = this.calBrand || 'salk';
+        const weekId = this.calWeekId || '';
+        window.open(base + `/api/report/weekly/download?brand=${brand}&week_id=${weekId}&token=${token}`, '_blank');
+        this.notify('Relatorio baixado — abra e use Ctrl+P para gerar PDF', 'success');
+      } catch(e) { this.notify('Erro ao baixar relatorio: ' + e.message, 'error'); }
+    },
+
     async loadFeedbackAnalysis() {
       this.feedbackLoading = true;
       try {
@@ -10494,7 +10695,85 @@ function studioApp() {
     },
 
     async loadUploadsList() {
-      try { this.uploadsList = await this.api('/api/uploads'); } catch(e) { this.uploadsList = []; }
+      try { this.uploadsList = await this.api('/api/uploads'); this.uploadsFiltered = this.uploadsList; } catch(e) { this.uploadsList = []; this.uploadsFiltered = []; }
+    },
+
+    async loadUploadsAll() {
+      await this.loadUploadsList();
+      // Enrich with metadata
+      for (let f of this.uploadsList) {
+        try {
+          const meta = await this.api(`/api/assets/tags/${f.purpose}/${f.name}`);
+          f.tags = meta.tags || [];
+          f.description = meta.description || '';
+          f.brand = meta.brand || '';
+          f.product = meta.product || '';
+        } catch(e) { /* no metadata yet */ }
+      }
+      this.uploadsFiltered = [...this.uploadsList];
+    },
+
+    async doAssetUpload() {
+      if (!this.uploadAssetFile) return;
+      this.uploadAssetUploading = true;
+      try {
+        const formData = new FormData();
+        formData.append('file', this.uploadAssetFile);
+        const url = `/api/uploads?purpose=${this.uploadAssetPurpose}`;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: this.token ? { 'Authorization': 'Bearer ' + this.token } : {},
+          body: formData,
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        const result = await resp.json();
+
+        // Save tags/metadata
+        const tags = this.uploadAssetTags ? this.uploadAssetTags.split(',').map(t => t.trim()).filter(Boolean) : [];
+        if (tags.length > 0 || this.uploadAssetDescription || this.uploadAssetBrand) {
+          await this.api(`/api/assets/tags/${this.uploadAssetPurpose}/${result.name}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              tags: tags,
+              description: this.uploadAssetDescription,
+              brand: this.uploadAssetBrand,
+            }),
+          });
+        }
+
+        this.notify('Upload realizado: ' + result.name, 'success');
+        this.uploadAssetFile = null;
+        this.uploadAssetTags = '';
+        this.uploadAssetDescription = '';
+        await this.loadUploadsAll();
+      } catch(e) {
+        this.notify('Erro no upload: ' + e.message, 'error');
+      } finally {
+        this.uploadAssetUploading = false;
+      }
+    },
+
+    async deleteUpload(file) {
+      if (!confirm('Excluir ' + file.name + '?')) return;
+      try {
+        await this.api(`/api/uploads/${file.purpose}/${file.name}`, { method: 'DELETE' });
+        this.notify('Arquivo excluido', 'success');
+        await this.loadUploadsAll();
+      } catch(e) {
+        this.notify('Erro ao excluir: ' + e.message, 'error');
+      }
+    },
+
+    async searchUploads() {
+      const q = this.uploadSearchQuery.toLowerCase();
+      const purpose = this.uploadFilterPurpose;
+      const brand = this.uploadFilterBrand;
+      this.uploadsFiltered = this.uploadsList.filter(f => {
+        if (q && !f.name.toLowerCase().includes(q) && !(f.description || '').toLowerCase().includes(q) && !(f.tags || []).some(t => t.toLowerCase().includes(q))) return false;
+        if (purpose && f.purpose !== purpose) return false;
+        if (brand && f.brand !== brand) return false;
+        return true;
+      });
     },
 
     async loadPromptDimensions() {
