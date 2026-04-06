@@ -28,7 +28,22 @@ Regras:
 - NUNCA mencione ETRUS
 - NUNCA use superlativos
 - Claims APENAS de fontes aprovadas
-- Sempre inclua referencia ANVISA quando aplicavel""",
+- Sempre inclua referencia ANVISA quando aplicavel
+- Usar emojis com moderacao (maximo 2-3 por post). NUNCA usar emojis no inicio de frases tecnicas.
+
+EXEMPLOS DE TOM CONSULTIVO (copie o estilo):
+BOM: "Explore como o foco cirurgico LEV pode otimizar a iluminacao da sua sala. Converse com um especialista para avaliar sua infraestrutura."
+BOM: "KRATUS suporta ate 460kg com fator de seguranca 2.2. Veja as especificacoes completas e descubra como ele se adapta ao seu centro cirurgico."
+BOM: "No Dia da Enfermagem, celebramos quem transforma tecnologia em cuidado. Conheca as solucoes que apoiam o trabalho da sua equipe."
+RUIM: "LEV e o MELHOR foco do mercado! Compre agora!"
+RUIM: "KRATUS garante seguranca TOTAL para todos os pacientes!"
+RUIM: "Nao perca! Ultimas unidades disponiveis!"
+
+REGRAS POR PLATAFORMA:
+- Instagram Post: max 2200 chars, hashtags na ultima linha (5-15 hashtags relevantes), hook forte nos primeiros 150 chars
+- Instagram Stories: max 200 chars, 3-5 hashtags, texto curto e direto
+- LinkedIn: tom mais formal e tecnico, dados e metricas, max 3000 chars, 3-5 hashtags profissionais
+- Email: assunto curto (max 60 chars), CTA claro, sem hashtags""",
     },
     "mendel": {
         "name": "Roberto",
@@ -118,12 +133,29 @@ class BrandCopywriter:
         max_chars: int = 2200,
         product: str = "",
         objective: str = "",
+        prohibited_terms: list | None = None,
+        approved_claims: list | None = None,
     ) -> dict:
         """Gera copy baseado em briefing."""
+        if prohibited_terms is None:
+            prohibited_terms = []
+        if approved_claims is None:
+            approved_claims = []
         product_note = f"\nPRODUTO PRINCIPAL: {product} (mencione pelo nome no texto)\n" if product else ""
         objective_note = f"\nOBJETIVO/TEMA DA PECA: {objective}\nIMPORTANTE: o copy DEVE ser sobre este tema especifico. NAO ignore o objetivo.\n" if objective else ""
+
+        prohibited_block = ""
+        if prohibited_terms:
+            prohibited_block = f"\nTERMOS PROIBIDOS (NUNCA usar):\n{', '.join(prohibited_terms[:30])}\n"
+
+        claims_block = ""
+        if approved_claims:
+            claims_block = f"\nCLAIMS APROVADOS (use SOMENTE estes dados tecnicos):\n"
+            for c in approved_claims[:15]:
+                claims_block += f"- [{c.get('id','')}] {c.get('claim','')}\n"
+
         prompt = f"""Escreva o copy FINAL para {platform} ({format_type}).
-{product_note}{objective_note}
+{product_note}{objective_note}{prohibited_block}{claims_block}
 BRIEFING:
 {briefing}
 
@@ -146,13 +178,33 @@ REGRAS OBRIGATORIAS:
             system_prompt=self._config["system"],
         )
 
+        copy_text = result.get("text", "")
+
+        # Enforce character limit
+        if len(copy_text) > max_chars:
+            # Truncate at last complete sentence before limit
+            truncated = copy_text[:max_chars]
+            last_period = truncated.rfind('.')
+            last_newline = truncated.rfind('\n')
+            cut_point = max(last_period, last_newline)
+            if cut_point > max_chars // 2:
+                copy_text = truncated[:cut_point + 1]
+
+        # Basic compliance check
+        _prohibited_phrases = ["o melhor", "o unico", "garante", "100% seguro", "infalivel", "elimina riscos"]
+        warnings = []
+        for phrase in _prohibited_phrases:
+            if phrase.lower() in copy_text.lower():
+                warnings.append(f"Termo proibido detectado: '{phrase}'")
+
         return {
-            "copy_text": result.get("text", ""),
+            "copy_text": copy_text,
             "copywriter": self._config["name"],
             "brand": self.brand,
             "platform": platform,
             "model_used": result.get("model", ""),
             "cost_usd": result.get("cost_usd", 0),
+            "warnings": warnings,
         }
 
     async def rewrite(self, original: str, feedback: str) -> dict:

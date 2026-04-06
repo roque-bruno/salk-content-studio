@@ -816,7 +816,7 @@ async def get_brands():
 
 
 @app.post("/api/uploads")
-async def upload_file(file: UploadFile = File(...), purpose: str = Query("reference")):
+async def upload_file(file: UploadFile = File(...), purpose: str = Query("reference"), user: dict = Depends(require_auth)):
     """Upload a reference file (image/video) for use in content generation."""
     allowed_ext = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".mp4", ".mov", ".webm"}
     ext = Path(file.filename).suffix.lower() if file.filename else ""
@@ -865,14 +865,14 @@ async def list_uploads(purpose: str = Query("")):
 
 
 @app.delete("/api/uploads/{purpose}/{filename}")
-async def delete_upload(purpose: str, filename: str):
+async def delete_upload(purpose: str, filename: str, user: dict = Depends(require_auth)):
     """Delete an uploaded file."""
+    # Check path traversal FIRST
+    if ".." in purpose or ".." in filename:
+        raise HTTPException(400, "Caminho invalido")
     file_path = _project_root / "output" / "uploads" / purpose / filename
     if not file_path.exists():
-        raise HTTPException(404, "Arquivo não encontrado")
-    # Prevent path traversal
-    if ".." in purpose or ".." in filename:
-        raise HTTPException(400, "Caminho inválido")
+        raise HTTPException(404, "Arquivo nao encontrado")
     file_path.unlink()
     # Also remove tag metadata if exists
     meta_path = file_path.with_suffix(file_path.suffix + ".meta.json")
@@ -1093,7 +1093,7 @@ async def list_pieces(stage: str = "", brand: str = ""):
 
 
 @app.post("/api/production/pieces")
-async def create_piece(request: Request):
+async def create_piece(request: Request, user: dict = Depends(require_auth)):
     try:
         data = await request.json()
         result = get_service().create_piece(data)
@@ -1117,7 +1117,7 @@ async def update_piece_stage(piece_id: str, req: PieceStageUpdate):
 
 
 @app.put("/api/production/pieces/{piece_id}")
-async def update_piece(piece_id: str, request: Request):
+async def update_piece(piece_id: str, request: Request, user: dict = Depends(require_auth)):
     svc = get_service()
     data = await request.json()
     result = svc.update_piece(piece_id, data)
@@ -1127,7 +1127,7 @@ async def update_piece(piece_id: str, request: Request):
 
 
 @app.delete("/api/production/pieces/{piece_id}")
-async def delete_piece(piece_id: str):
+async def delete_piece(piece_id: str, user: dict = Depends(require_auth)):
     svc = get_service()
     if not svc.delete_piece(piece_id):
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
@@ -2154,6 +2154,10 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     pillar = data.get("pillar", "produto")
     format_type = data.get("format", "post")
     objective = data.get("objective", "")
+    logger.info(
+        "produce_single_piece: brand=%s, product=%s, pillar=%s, platform=%s, objective=%s",
+        brand, product, pillar, platform, objective,
+    )
     result = {"steps": [], "errors": []}
 
     # Contexto para briefing e copy
@@ -2193,10 +2197,30 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
 
     # Step 3: Copy
     try:
+        # Load prohibited terms and claims for the copywriter
+        prohibited = []
+        try:
+            bb = svc.load_brandbook(brand)
+            prohibited = bb.get("prohibited_tones", []) + bb.get("visual_rules", {}).get("proibido", [])
+        except Exception:
+            pass
+
+        claims_for_copy = []
+        try:
+            cb = svc.load_claims_bank()
+            if product:
+                claims_for_copy = [c for c in cb.get("products", {}).get(product.lower(), {}).get("claims", []) if c.get("status") == "aprovado"]
+            else:
+                # Get institutional claims
+                claims_for_copy = cb.get("institutional", {}).get("claims", [])[:10]
+        except Exception:
+            pass
+
         cw = BrandCopywriter(svc.llm_client, brand=brand)
         copy_result = await cw.write_copy(
             briefing=briefing_text, platform=platform, format_type=format_type,
             product=product, objective=piece_context,
+            prohibited_terms=prohibited, approved_claims=claims_for_copy,
         )
         copy_text = copy_result.get("copy_text", "")
         result["copy"] = copy_result
@@ -2227,6 +2251,10 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         result["errors"].append(f"NB2 Prompt: {e}")
 
     result["total_steps"] = len(result["steps"])
+    logger.info(
+        "produce_single_piece complete: piece_id=%s, steps=%d, errors=%d",
+        result.get("piece_id"), len(result["steps"]), len(result["errors"]),
+    )
     return result
 
 
@@ -2973,13 +3001,6 @@ for _c in _candidates:
         frontend_dir = _c
         break
 
-if frontend_dir and frontend_dir.exists():
-    logger.info("Frontend found at %s — mounting static files", frontend_dir)
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
-else:
-    logger.info("No frontend directory found — API-only mode")
-
-
 # =========================================================================
 # NOTIFICATIONS & ACTIVITY LOG
 # =========================================================================
@@ -3033,6 +3054,17 @@ async def get_activity_log(limit: int = 100, piece_id: str = None, action: str =
         "activities": items[:limit],
         "total": len(activity_log_store),
     }
+
+
+# =========================================================================
+# FRONTEND STATIC FILES — MUST be last (catch-all mount)
+# =========================================================================
+
+if frontend_dir and frontend_dir.exists():
+    logger.info("Frontend found at %s — mounting static files", frontend_dir)
+    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+else:
+    logger.info("No frontend directory found — API-only mode")
 
 
 # =========================================================================

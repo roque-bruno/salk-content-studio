@@ -3486,8 +3486,8 @@ body.zen-mode .tab-bar { display: none !important; }
     <h1>Content Studio</h1>
     <div class="subtitle">Producao Criativa de Conteudo</div>
     <form @submit.prevent="doLogin()">
-      <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username" x-ref="loginInput" x-init="$nextTick(() => { if (!$store || !localStorage.getItem('studio_token')) $refs.loginInput?.focus() })">
-      <input type="password" x-model="loginPass" placeholder="Senha" autocomplete="current-password">
+      <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username" @input="loginError = ''" x-ref="loginInput" x-init="$nextTick(() => { if (!$store || !localStorage.getItem('studio_token')) $refs.loginInput?.focus() })">
+      <input type="password" x-model="loginPass" placeholder="Senha" autocomplete="current-password" @input="loginError = ''">
       <button type="submit" class="btn-login" :disabled="loginLoading">
         <span x-show="!loginLoading">Entrar</span>
         <span x-show="loginLoading">Entrando...</span>
@@ -3608,7 +3608,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <span x-show="currentUser" style="font-size: 0.72rem; color: var(--text-secondary);" x-text="currentUser?.username || currentUser?.sub || 'Gestora'"></span>
     <button class="btn-logout" @click="logout()">Sair</button>
   </div>
-  <button class="sidebar-collapse-btn" @click="sidebarMini = !sidebarMini" :title="sidebarMini ? 'Expandir menu' : 'Recolher menu'" x-text="sidebarMini ? '&#9654;' : '&#9664;'"></button>
+  <button class="sidebar-collapse-btn" @click="sidebarMini = !sidebarMini; localStorage.setItem('studio_sidebar_mini', sidebarMini)" :title="sidebarMini ? 'Expandir menu' : 'Recolher menu'" x-text="sidebarMini ? '&#9654;' : '&#9664;'"></button>
 </aside>
 
 <!-- ============================================= -->
@@ -4247,9 +4247,8 @@ body.zen-mode .tab-bar { display: none !important; }
           <span class="count" x-text="piecesInStage(stage).length"></span>
         </div>
         <div class="kanban-body">
-          <div x-show="piecesInStage(stage).length === 0" style="text-align: center; padding: 24px 8px; color: var(--text-muted);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.25; margin-bottom: 4px;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            <div style="font-size: 0.72rem;">Vazio</div>
+          <div x-show="piecesInStage(stage).length === 0" style="padding: 24px 12px; text-align: center; color: var(--text-muted); font-size: 0.8rem; opacity: 0.6;">
+            Nenhuma peca neste estagio
           </div>
           <template x-for="piece in piecesInStage(stage)" :key="piece.id">
             <div class="kanban-card" draggable="true"
@@ -4461,10 +4460,12 @@ body.zen-mode .tab-bar { display: none !important; }
 
   <template x-if="calSlots.length === 0">
     <div class="empty-state-rich">
-      <div class="es-icon">&#128197;</div>
-      <div class="es-title">Calendario vazio</div>
-      <div class="es-desc">Informe a semana acima e gere o calendario automaticamente.</div>
-      <button class="btn btn-primary" @click="generateCalendar(); autoFillCalendar()">Gerar Calendario</button>
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+        <div style="font-size: 2rem; margin-bottom: 12px;">&#128197;</div>
+        <div style="font-size: 0.9rem; margin-bottom: 8px;">Calendario vazio</div>
+        <div style="font-size: 0.78rem; opacity: 0.7; margin-bottom: 16px;">Informe a semana acima (ex: 2026-W15) e clique "Nova Semana" para gerar slots automaticamente</div>
+        <button class="btn btn-primary" @click="generateCalendar(); autoFillCalendar()">Gerar Calendario</button>
+      </div>
     </div>
   </template>
 
@@ -7785,7 +7786,7 @@ body.zen-mode .tab-bar { display: none !important; }
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" @click="showNewPiece = false">Cancelar</button>
+      <button class="btn" @click="showNewPiece = false; newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'post', persona_target: '' }">Cancelar</button>
       <button class="btn btn-primary" :disabled="!newPiece.title.trim()" @click="createNewPiece()">Criar Peca</button>
     </div>
   </div>
@@ -7793,8 +7794,8 @@ body.zen-mode .tab-bar { display: none !important; }
 
 <!-- Piece Detail Modal -->
 <!-- ===== DRAWER: Piece Production Panel ===== -->
-<div class="drawer-overlay" x-show="showPieceDetail" @click="showPieceDetail = false" x-cloak></div>
-<div class="drawer" x-show="showPieceDetail" @keydown.escape.window="showPieceDetail = false" x-cloak x-transition role="complementary" aria-label="Detalhes da peca">
+<div class="drawer-overlay" x-show="showPieceDetail" @click="showPieceDetail = false; drawerTab = 'resumo'" x-cloak></div>
+<div class="drawer" x-show="showPieceDetail" @keydown.escape.window="showPieceDetail = false; drawerTab = 'resumo'" x-cloak x-transition role="complementary" aria-label="Detalhes da peca">
   <div class="drawer-header">
     <div>
       <h3 x-text="selectedPiece?.title || selectedPiece?.id || 'Peca'"></h3>
@@ -7818,7 +7819,7 @@ body.zen-mode .tab-bar { display: none !important; }
           </div>
         </template>
       </div>
-    <button class="modal-close" @click="showPieceDetail = false">&times;</button>
+    <button class="modal-close" @click="showPieceDetail = false; drawerTab = 'resumo'">&times;</button>
   </div>
 
   <!-- Piece Progress -->
@@ -8217,7 +8218,7 @@ body.zen-mode .tab-bar { display: none !important; }
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" @click="showQuickProduce = false">Cancelar</button>
+      <button class="btn" @click="showQuickProduce = false; quickProduce = { brand: 'salk', product: '', platform: 'instagram', pillar: 'produto', format: 'post', objective: '' }">Cancelar</button>
       <button class="btn btn-primary" @click="runQuickProduce()" :disabled="quickProducing">
         <span x-show="!quickProducing">Produzir Tudo</span>
         <span x-show="quickProducing">Processando (3 etapas)...</span>
@@ -8582,7 +8583,7 @@ function studioApp() {
 
     // UI state
     sidebarOpen: false,
-    sidebarMini: false,
+    sidebarMini: localStorage.getItem('studio_sidebar_mini') === 'true',
     dataLoading: true,
     autoRefresh: false,
     autoRefreshInterval: null,
@@ -9227,9 +9228,19 @@ function studioApp() {
           if (res.status === 401) {
             localStorage.removeItem('studio_token');
             this.authenticated = false;
-            throw new Error('401');
+            throw new Error('Sessao expirada. Faca login novamente.');
           }
-          if (!res.ok && res.status !== 503) throw new Error(`${res.status}`);
+          if (!res.ok && res.status !== 503) {
+            const errorMessages = {
+              403: 'Sem permissao para esta acao.',
+              404: 'Recurso nao encontrado.',
+              429: 'Muitas requisicoes. Aguarde um momento.',
+              500: 'Erro interno do servidor.',
+              502: 'Servidor indisponivel.',
+              503: 'Servico temporariamente indisponivel.',
+            };
+            throw new Error(errorMessages[res.status] || `Erro ${res.status}`);
+          }
 
           const data = await res.json();
 
@@ -9241,7 +9252,7 @@ function studioApp() {
           return data;
         } catch(e) {
           lastError = e;
-          if (e.message === '401') { this.apiRetryCount = 0; throw e; }
+          if (e.message.includes('Sessao expirada')) { this.apiRetryCount = 0; throw e; }
           // Network failure (server unreachable) — retry makes sense
           if (e instanceof TypeError) {
             this.connectionOk = false;
@@ -9644,10 +9655,6 @@ function studioApp() {
           pieceData.notes = JSON.stringify(notesObj);
         }
         delete pieceData.objective;
-        await this.api('/api/production/pieces', {
-          method: 'POST',
-          body: JSON.stringify(pieceData),
-        });
         const res = await this.api('/api/production/pieces', {
           method: 'POST',
           body: JSON.stringify(pieceData),
@@ -9678,6 +9685,7 @@ function studioApp() {
         this.pieces = await this.api(url);
       } catch(e) {
         console.error('Erro ao carregar pecas:', e);
+        this.notify('Erro ao carregar pecas: ' + e.message, 'error');
         this.pieces = [];
       }
     },
@@ -9698,6 +9706,7 @@ function studioApp() {
       if (!pcs.length) return;
       if (!confirm(`Mover ${pcs.length} pecas de "${this.stageLabels[fromStage]}" para "${this.stageLabels[toStage]}"?`)) return;
       let moved = 0;
+      let failed = 0;
       for (const p of pcs) {
         try {
           await this.api(`/api/production/pieces/${p.id}/stage`, {
@@ -9705,10 +9714,10 @@ function studioApp() {
             body: JSON.stringify({ stage: toStage }),
           });
           moved++;
-        } catch (e) { /* skip failed */ }
+        } catch (e) { failed++; }
       }
       await this.loadPieces();
-      this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}`);
+      this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}${failed ? `, ${failed} falharam` : ''}`);
     },
 
     async runQuickProduce() {

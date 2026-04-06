@@ -175,7 +175,7 @@ class FalImageGenerator:
         # Resolver URL da imagem do produto
         img_url = product_image_url or self._get_product_image_url(product)
         if not img_url:
-            logger.warning("Produto '%s' sem imagem — fallback para FLUX", product)
+            logger.warning("Product '%s' has no image URL — using FLUX text-to-image fallback instead of NB2", product)
             return await self.generate_image(
                 prompt=prompt, negative_prompt=negative_prompt,
                 width=width, height=height, format_preset=format_preset,
@@ -292,6 +292,7 @@ class FalImageGenerator:
             )
 
         # Fallback: FLUX text-to-image
+        logger.info("FLUX fallback: no product specified, using text-to-image")
         if not self.configured:
             return ImageResult(success=False, error="FAL_API_KEY não configurada")
 

@@ -66,6 +66,10 @@ class AutoBriefing:
         Returns:
             dict com briefing completo + metadados LLM
         """
+        logger.info(
+            "Generating briefing: brand=%s, product=%s, pillar=%s, platform=%s",
+            brand, product, pillar, platform,
+        )
         # Carregar contexto rico do brandbook
         brand_context = ""
         if self._load_brandbook:
@@ -137,7 +141,7 @@ class AutoBriefing:
 - Marca: {brand}
 - Plataforma: {platform}
 - Pilar: {pillar}
-- Produto: {product or 'a definir — escolha o mais relevante ao tema'}
+- Produto: {product or 'a definir — escolha o produto MAIS RELEVANTE ao tema entre: LEV (foco cirurgico), KRATUS (mesa cirurgica), OSTUS (pendente), KRONUS (monitor). Justifique a escolha no campo produto_recomendado.'}
 - Persona-alvo: {persona or 'geral'}
 - Dia: {day}
 {f'- Contexto/Tema: {context}' if context else ''}
@@ -156,6 +160,15 @@ Gere o briefing completo no formato YAML especificado."""
             prompt=prompt,
             system_prompt=BRIEFING_SYSTEM_PROMPT,
         )
+
+        logger.info(
+            "Briefing generated: model=%s, cost=%.4f",
+            result.get("model", ""), result.get("cost_usd", 0),
+        )
+
+        briefing_text = result.get("text", "")
+        if not briefing_text or len(briefing_text) < 50:
+            logger.warning("Briefing too short (%d chars), may be invalid", len(briefing_text))
 
         return {
             "briefing_text": result.get("text", ""),
