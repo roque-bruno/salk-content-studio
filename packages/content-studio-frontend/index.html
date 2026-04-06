@@ -9793,11 +9793,10 @@ function studioApp() {
     },
 
     async deletePiece(id) {
-      if (!confirm('Excluir esta peca permanentemente?')) return;
       try {
         await this.api(`/api/production/pieces/${id}`, { method: 'DELETE' });
         this.showPieceDetail = false;
-        await this.loadPieces();
+        this.pieces = this.pieces.filter(p => p.id !== id);
         this.notify('Peca excluida');
       } catch(e) { this.notify('Erro ao excluir: ' + e.message, 'error'); }
     },
