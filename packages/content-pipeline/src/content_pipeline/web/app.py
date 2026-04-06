@@ -2989,8 +2989,8 @@ async def weekly_report_download(
 # API routes above take precedence; this catch-all handles SPA client-side routing.
 frontend_dir = None
 _candidates = [
-    Path(__file__).parent / "static",  # Embedded in package (preferred — always up-to-date with code)
-    Path("/app/frontend"),  # Docker container layout (volume mount)
+    Path("/app/frontend"),  # Docker volume mount (PRIORITY — always up-to-date via git pull)
+    Path(__file__).parent / "static",  # Embedded in package (fallback)
     Path(__file__).parent.parent.parent.parent.parent / "content-studio-frontend",
     Path.cwd() / "frontend",
     Path.cwd() / "packages" / "content-studio-frontend",
