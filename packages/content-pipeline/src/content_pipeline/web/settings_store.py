@@ -283,12 +283,14 @@ class SettingsStore:
 
     def set_many(self, settings: dict[str, str]) -> None:
         """Define múltiplas configurações e salva."""
+        self._load()  # Reload from disk to pick up changes from other workers
         for k, v in settings.items():
             self.set(k, v)
         self._save()
 
     def get_all(self) -> dict[str, str]:
         """Retorna todas as configurações (mascarando valores sensíveis)."""
+        self._load()  # Sync from disk (multi-worker safe)
         result = {}
         for defn in API_KEY_DEFINITIONS:
             key = defn["key"]
@@ -298,6 +300,7 @@ class SettingsStore:
 
     def get_masked(self) -> dict[str, str]:
         """Retorna configurações com valores mascarados para exibição."""
+        self._load()  # Sync from disk (multi-worker safe)
         result = {}
         for defn in API_KEY_DEFINITIONS:
             key = defn["key"]
@@ -313,6 +316,7 @@ class SettingsStore:
 
     def get_status(self) -> dict:
         """Retorna status de configuração de cada chave."""
+        self._load()  # Sync from disk (multi-worker safe)
         status = {}
         for defn in API_KEY_DEFINITIONS:
             key = defn["key"]

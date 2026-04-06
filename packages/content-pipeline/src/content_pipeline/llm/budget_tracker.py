@@ -106,26 +106,29 @@ class BudgetTracker:
                 (month,),
             ).fetchall()
 
-        by_category: dict[str, dict] = {}
+        # Normalize category names and aggregate
+        CATEGORY_MAP = {"llm": "LLM", "llm_openrouter": "LLM", "nb2": "Imagens NB2", "nb2_images": "Imagens NB2",
+                        "video": "Video", "video_kling": "Video", "tts": "Audio TTS", "tts_elevenlabs": "Audio TTS"}
+        by_category: dict[str, float] = {}
+        by_category_detail: dict[str, dict] = {}
         total = 0.0
         for row in rows:
             d = dict(row)
-            cat = d["category"]
-            by_category[cat] = {
-                "total_usd": round(d["total"], 4),
-                "count": d["count"],
-                "limit_usd": getattr(self.limits, cat, 0) if hasattr(self.limits, cat) else 0,
-            }
+            raw_cat = d["category"]
+            display_cat = CATEGORY_MAP.get(raw_cat, raw_cat)
+            cost = round(d["total"], 4)
+            count = d["count"]
+            by_category[display_cat] = round(by_category.get(display_cat, 0) + cost, 4)
+            if display_cat not in by_category_detail:
+                by_category_detail[display_cat] = {"total_usd": 0, "count": 0}
+            by_category_detail[display_cat]["total_usd"] = round(by_category_detail[display_cat]["total_usd"] + cost, 4)
+            by_category_detail[display_cat]["count"] += count
             total += d["total"]
 
-        # Adicionar categorias com zero
-        for cat in ["nb2_images", "video_kling", "llm_openrouter", "tts_elevenlabs"]:
-            if cat not in by_category:
-                by_category[cat] = {
-                    "total_usd": 0,
-                    "count": 0,
-                    "limit_usd": getattr(self.limits, cat, 0),
-                }
+        # Ensure all categories appear (even if zero)
+        for cat_display in ["LLM", "Imagens NB2", "Video", "Audio TTS"]:
+            if cat_display not in by_category:
+                by_category[cat_display] = 0
 
         # Calcular percentual
         pct = round((total / self.limits.total * 100) if self.limits.total > 0 else 0, 1)
@@ -136,6 +139,7 @@ class BudgetTracker:
             "limit_usd": self.limits.total,
             "percentage_used": pct,
             "by_category": by_category,
+            "by_category_detail": by_category_detail,
             "brl_estimate": round(total * 5.65, 2),  # USD→BRL estimativa
         }
 

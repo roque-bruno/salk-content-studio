@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import uuid
 from datetime import datetime
@@ -169,9 +170,11 @@ class StudioService:
             budget_tracker=self.budget_tracker,
         )
 
-        # Image Generation (fal.ai)
+        # Image Generation (fal.ai NB2 + FLUX)
         self.image_generator = FalImageGenerator(
             output_dir=config.output_dir / "generated",
+            product_images_dir=config.product_images_dir,
+            base_url=os.getenv("PUBLIC_BASE_URL", "https://studio.salkmedical.com"),
             budget_tracker=self.budget_tracker,
         )
 
@@ -428,6 +431,7 @@ class StudioService:
                             "name": img_file.stem,
                             "path": str(img_file.relative_to(self.config.project_root)),
                             "url": f"/assets/produtos/{category_dir.name}/{img_file.name}",
+                            "thumb_url": f"/api/assets/thumb/{category_dir.name}/{img_file.name}?w=200",
                             "size_kb": round(img_file.stat().st_size / 1024, 1),
                             "category": category_dir.name,
                         })
@@ -807,7 +811,7 @@ class StudioService:
             "stage_breakdown": stages,
             "brand_breakdown": brands,
             "platform_breakdown": platforms,
-            "calendar_weeks": len(calendars),
+            "calendar_weeks": len(cal_week_ids),
             "calendar_total_slots": total_slots,
             "calendar_filled_slots": filled_slots,
             "compliance_rules_active": total_rules,

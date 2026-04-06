@@ -1,23 +1,18 @@
 """
-fal.ai Image Generator — FLUX/NB2 image generation via fal.ai API.
+fal.ai Image Generator — NanoBanana 2 product-in-scene + FLUX fallback.
 
-Pipeline: NB2 prompt (Apex) → fal.ai FLUX → imagem PNG
-Custo: ~$0.08/imagem (FLUX dev), ~$0.12/imagem (FLUX pro)
+Pipeline principal: foto PNG do produto + prompt NB2 → fal.ai NB2 → imagem final
+Fallback: prompt texto → fal.ai FLUX → imagem (sem produto)
 
-Uso:
-    gen = FalImageGenerator(api_key="fal_...")
-    result = await gen.generate_image(
-        prompt="Dramatic surgical room, overhead light beam...",
-        width=1080, height=1350,
-    )
+Custo: ~$0.08/imagem (NB2), ~$0.04/imagem (FLUX dev)
 """
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 import time
+import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -26,8 +21,9 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-COST_PER_IMAGE_DEV = 0.04
-COST_PER_IMAGE_PRO = 0.08
+COST_NB2 = 0.08
+COST_FLUX_DEV = 0.04
+COST_FLUX_PRO = 0.08
 
 DIMENSION_PRESETS = {
     "feed": (1080, 1350),       # 4:5 Instagram feed
@@ -35,6 +31,28 @@ DIMENSION_PRESETS = {
     "stories": (1080, 1920),    # 9:16 Stories/Reels
     "landscape": (1920, 1080),  # 16:9 YouTube
     "banner": (2560, 720),      # Wide banner
+}
+
+# Mapeamento produto → TOP PICK PNG (relativo a docs_user/imagem_produtos/)
+PRODUCT_TOP_PICKS = {
+    # LEV
+    "lev": "Foco de Teto e Parede/Simplex_4LEV.png",
+    "lev 4lev": "Foco de Teto e Parede/Simplex_4LEV.png",
+    "lev 3lev": "Foco de Teto e Parede/Simplex_3LEV.png",
+    "lev duplex": "Foco de Teto e Parede/Duplex_3LEV_4LEV.png",
+    "foco cirurgico": "Foco de Teto e Parede/Simplex_4LEV.png",
+    "foco": "Foco de Teto e Parede/Simplex_4LEV.png",
+    # KRATUS
+    "kratus": "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png",
+    "mesa cirurgica": "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png",
+    "mesa": "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png",
+    # OSTUS
+    "ostus": "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png",
+    "serra cirurgica": "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png",
+    "serra": "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png",
+    # KRONUS
+    "kronus": "Suporte para equipamentos/Suporte-p-Equipamentos-Kronus-biarticulada_clean.png",
+    "suporte": "Suporte para equipamentos/Suporte-p-Equipamentos-Kronus-biarticulada_clean.png",
 }
 
 
@@ -51,6 +69,7 @@ class ImageResult:
     request_id: str = ""
     seed: int = 0
     error: str = ""
+    model_used: str = ""
 
     def to_dict(self) -> dict:
         return {
@@ -64,15 +83,39 @@ class ImageResult:
             "request_id": self.request_id,
             "seed": self.seed,
             "error": self.error,
+            "model_used": self.model_used,
         }
 
 
-class FalImageGenerator:
-    """Cliente para geração de imagens via fal.ai (FLUX)."""
+def resolve_product_image(product: str, product_images_dir: Path) -> Optional[Path]:
+    """Resolve nome do produto → caminho do PNG TOP PICK."""
+    key = product.strip().lower()
+    # Tenta match direto
+    rel = PRODUCT_TOP_PICKS.get(key)
+    if rel:
+        full = product_images_dir / rel
+        if full.exists():
+            return full
+    # Tenta match parcial (ex: "LEV 4LEV" contém "lev")
+    for k, v in PRODUCT_TOP_PICKS.items():
+        if k in key or key in k:
+            full = product_images_dir / v
+            if full.exists():
+                return full
+    # Busca recursiva por nome
+    for img in product_images_dir.rglob("*.png"):
+        if key in img.stem.lower():
+            return img
+    return None
 
-    QUEUE_URL = "https://queue.fal.run"
+
+class FalImageGenerator:
+    """Cliente para geração de imagens via fal.ai (NB2 + FLUX)."""
+
+    BASE_URL = "https://fal.run"
 
     MODELS = {
+        "nb2": "fal-ai/nano-banana-2/edit",
         "flux-dev": "fal-ai/flux/dev",
         "flux-pro": "fal-ai/flux-pro/v1.1",
         "flux-schnell": "fal-ai/flux/schnell",
@@ -82,11 +125,15 @@ class FalImageGenerator:
         self,
         api_key: Optional[str] = None,
         output_dir: Optional[Path] = None,
+        product_images_dir: Optional[Path] = None,
+        base_url: str = "",
         budget_tracker: Optional[object] = None,
     ) -> None:
         self.api_key = api_key or os.getenv("FAL_API_KEY", "")
         self.output_dir = output_dir or Path("output/generated")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.product_images_dir = product_images_dir or Path("docs_user/imagem_produtos")
+        self.base_url = base_url  # ex: "https://studio.salkmedical.com"
         self.budget_tracker = budget_tracker
 
     @property
@@ -97,6 +144,125 @@ class FalImageGenerator:
         if format_preset and format_preset in DIMENSION_PRESETS:
             return DIMENSION_PRESETS[format_preset]
         return (width or 1080, height or 1350)
+
+    def _get_product_image_url(self, product: str) -> Optional[str]:
+        """Resolve produto → URL pública da imagem PNG."""
+        img_path = resolve_product_image(product, self.product_images_dir)
+        if not img_path:
+            return None
+        # Gera URL relativa: /assets/produtos/{category}/{filename}
+        rel = img_path.relative_to(self.product_images_dir)
+        parts = list(rel.parts)
+        url_path = "/assets/produtos/" + "/".join(urllib.parse.quote(p) for p in parts)
+        if self.base_url:
+            return self.base_url.rstrip("/") + url_path
+        return url_path
+
+    async def generate_nb2(
+        self,
+        prompt: str,
+        product: str = "",
+        product_image_url: str = "",
+        negative_prompt: str = "",
+        width: int = 1080,
+        height: int = 1350,
+        format_preset: str = "",
+    ) -> ImageResult:
+        """Gera imagem NB2: produto real + cenário via NanoBanana 2."""
+        if not self.configured:
+            return ImageResult(success=False, error="FAL_API_KEY não configurada")
+
+        # Resolver URL da imagem do produto
+        img_url = product_image_url or self._get_product_image_url(product)
+        if not img_url:
+            logger.warning("Produto '%s' sem imagem — fallback para FLUX", product)
+            return await self.generate_image(
+                prompt=prompt, negative_prompt=negative_prompt,
+                width=width, height=height, format_preset=format_preset,
+            )
+
+        start = time.time()
+        w, h = self._get_dimensions(format_preset, width, height)
+        model_id = self.MODELS["nb2"]
+
+        payload = {
+            "image_url": img_url,
+            "prompt": prompt,
+            "image_size": {"width": w, "height": h},
+        }
+        if negative_prompt:
+            payload["negative_prompt"] = negative_prompt
+
+        try:
+            logger.info("NB2 generating: %s | product=%s | %dx%d", model_id, product, w, h)
+            logger.info("NB2 product URL: %s", img_url)
+
+            async with httpx.AsyncClient(timeout=180) as client:
+                resp = await client.post(
+                    f"{self.BASE_URL}/{model_id}",
+                    headers={
+                        "Authorization": f"Key {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+                resp.raise_for_status()
+                result_data = resp.json()
+
+            images = result_data.get("images", [])
+            if not images:
+                # NB2 pode retornar "image" ao invés de "images"
+                single = result_data.get("image")
+                if single:
+                    images = [single] if isinstance(single, dict) else [{"url": single}]
+
+            if not images:
+                return ImageResult(success=False, error="NB2 não retornou imagem", model_used="nb2")
+
+            image_info = images[0]
+            image_url = image_info.get("url", "") if isinstance(image_info, dict) else str(image_info)
+            request_id = str(int(time.time() * 1000))
+            image_path = await self._download(image_url, request_id)
+
+            elapsed = time.time() - start
+
+            if self.budget_tracker:
+                try:
+                    self.budget_tracker.record("nb2", COST_NB2, {"model": "nano-banana-2", "product": product})
+                except Exception:
+                    pass
+
+            logger.info("NB2 gerada: %s (%.1fs, $%.4f, produto=%s)", image_path.name, elapsed, COST_NB2, product)
+
+            return ImageResult(
+                success=True,
+                image_url=image_url,
+                image_path=str(image_path),
+                width=image_info.get("width", w) if isinstance(image_info, dict) else w,
+                height=image_info.get("height", h) if isinstance(image_info, dict) else h,
+                cost_usd=COST_NB2,
+                elapsed_seconds=elapsed,
+                request_id=request_id,
+                seed=result_data.get("seed", 0),
+                model_used="nb2",
+            )
+
+        except httpx.HTTPStatusError as e:
+            error_body = ""
+            try:
+                error_body = e.response.text[:500]
+            except Exception:
+                pass
+            logger.error("NB2 HTTP error: %s — %s", e, error_body)
+            return ImageResult(
+                success=False,
+                error=f"NB2 error {e.response.status_code}: {error_body or str(e)}",
+                elapsed_seconds=time.time() - start,
+                model_used="nb2",
+            )
+        except Exception as e:
+            logger.error("NB2 erro: %s", e, exc_info=True)
+            return ImageResult(success=False, error=str(e), elapsed_seconds=time.time() - start, model_used="nb2")
 
     async def generate_image(
         self,
@@ -109,8 +275,23 @@ class FalImageGenerator:
         num_inference_steps: int = 28,
         guidance_scale: float = 3.5,
         seed: Optional[int] = None,
+        product: str = "",
+        product_image_url: str = "",
     ) -> ImageResult:
-        """Gera imagem usando fal.ai FLUX."""
+        """Gera imagem. Se houver produto, usa NB2. Senão, FLUX."""
+        # Se tem produto, tenta NB2 primeiro
+        if product or product_image_url:
+            return await self.generate_nb2(
+                prompt=prompt,
+                product=product,
+                product_image_url=product_image_url,
+                negative_prompt=negative_prompt,
+                width=width,
+                height=height,
+                format_preset=format_preset,
+            )
+
+        # Fallback: FLUX text-to-image
         if not self.configured:
             return ImageResult(success=False, error="FAL_API_KEY não configurada")
 
@@ -118,33 +299,52 @@ class FalImageGenerator:
         w, h = self._get_dimensions(format_preset, width, height)
         model_id = self.MODELS.get(model, model)
 
+        payload = {
+            "prompt": prompt,
+            "image_size": {"width": w, "height": h},
+            "num_inference_steps": num_inference_steps,
+            "guidance_scale": guidance_scale,
+            "num_images": 1,
+            "enable_safety_checker": False,
+        }
+        if negative_prompt:
+            payload["negative_prompt"] = negative_prompt
+        if seed is not None:
+            payload["seed"] = seed
+
         try:
-            # Submit request to queue
-            request_id = await self._submit(model_id, prompt, w, h, negative_prompt,
-                                            num_inference_steps, guidance_scale, seed)
+            logger.info("FLUX generating: %s (%dx%d)", model_id, w, h)
+            async with httpx.AsyncClient(timeout=180) as client:
+                resp = await client.post(
+                    f"{self.BASE_URL}/{model_id}",
+                    headers={
+                        "Authorization": f"Key {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+                resp.raise_for_status()
+                result_data = resp.json()
 
-            # Poll for result
-            result_data = await self._poll(model_id, request_id, timeout=180)
-
-            # Download image
             images = result_data.get("images", [])
             if not images:
-                return ImageResult(success=False, error="Nenhuma imagem retornada", request_id=request_id)
+                return ImageResult(success=False, error="Nenhuma imagem retornada", model_used=model)
 
             image_info = images[0]
             image_url = image_info.get("url", "")
+            request_id = str(int(time.time() * 1000))
             image_path = await self._download(image_url, request_id)
 
-            cost = COST_PER_IMAGE_PRO if "pro" in model else COST_PER_IMAGE_DEV
+            cost = COST_FLUX_PRO if "pro" in model else COST_FLUX_DEV
             elapsed = time.time() - start
 
             if self.budget_tracker:
                 try:
-                    self.budget_tracker.add_cost("fal_image", cost)
+                    self.budget_tracker.record("nb2", cost, {"model": model})
                 except Exception:
                     pass
 
-            logger.info("Imagem gerada: %s (%.1fs, $%.4f)", image_path.name, elapsed, cost)
+            logger.info("FLUX gerada: %s (%.1fs, $%.4f)", image_path.name, elapsed, cost)
 
             return ImageResult(
                 success=True,
@@ -156,72 +356,25 @@ class FalImageGenerator:
                 elapsed_seconds=elapsed,
                 request_id=request_id,
                 seed=result_data.get("seed", 0),
+                model_used=model,
             )
 
-        except Exception as e:
-            logger.error("Erro ao gerar imagem: %s", e, exc_info=True)
+        except httpx.HTTPStatusError as e:
+            error_body = ""
+            try:
+                error_body = e.response.text[:500]
+            except Exception:
+                pass
+            logger.error("FLUX HTTP error: %s — %s", e, error_body)
             return ImageResult(
                 success=False,
-                error=str(e),
+                error=f"FLUX error {e.response.status_code}: {error_body or str(e)}",
                 elapsed_seconds=time.time() - start,
+                model_used=model,
             )
-
-    async def _submit(self, model_id, prompt, width, height, negative_prompt,
-                      steps, guidance, seed) -> str:
-        """Submete request para a fila do fal.ai."""
-        payload = {
-            "prompt": prompt,
-            "image_size": {"width": width, "height": height},
-            "num_inference_steps": steps,
-            "guidance_scale": guidance,
-            "num_images": 1,
-            "enable_safety_checker": False,
-        }
-        if negative_prompt:
-            payload["negative_prompt"] = negative_prompt
-        if seed is not None:
-            payload["seed"] = seed
-
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.post(
-                f"{self.QUEUE_URL}/{model_id}",
-                headers={
-                    "Authorization": f"Key {self.api_key}",
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            request_id = data.get("request_id", "")
-            logger.info("fal.ai request submitted: %s", request_id)
-            return request_id
-
-    async def _poll(self, model_id: str, request_id: str, timeout: int = 180) -> dict:
-        """Faz polling até o resultado estar pronto."""
-        status_url = f"{self.QUEUE_URL}/{model_id}/requests/{request_id}/status"
-        result_url = f"{self.QUEUE_URL}/{model_id}/requests/{request_id}"
-        headers = {"Authorization": f"Key {self.api_key}"}
-
-        deadline = time.time() + timeout
-        while time.time() < deadline:
-            async with httpx.AsyncClient(timeout=30) as client:
-                resp = await client.get(status_url, headers=headers)
-                resp.raise_for_status()
-                status = resp.json()
-
-                if status.get("status") == "COMPLETED":
-                    # Fetch full result
-                    result_resp = await client.get(result_url, headers=headers)
-                    result_resp.raise_for_status()
-                    return result_resp.json()
-
-                if status.get("status") in ("FAILED", "CANCELLED"):
-                    raise RuntimeError(f"fal.ai request failed: {status}")
-
-            await asyncio.sleep(2)
-
-        raise TimeoutError(f"fal.ai request timeout after {timeout}s")
+        except Exception as e:
+            logger.error("Erro ao gerar imagem: %s", e, exc_info=True)
+            return ImageResult(success=False, error=str(e), elapsed_seconds=time.time() - start, model_used=model)
 
     async def _download(self, url: str, request_id: str) -> Path:
         """Baixa imagem gerada."""

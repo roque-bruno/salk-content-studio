@@ -116,19 +116,29 @@ class BrandCopywriter:
         platform: str = "instagram",
         format_type: str = "post",
         max_chars: int = 2200,
+        product: str = "",
+        objective: str = "",
     ) -> dict:
         """Gera copy baseado em briefing."""
-        prompt = f"""Com base no briefing abaixo, escreva o copy para {platform} ({format_type}).
-
+        product_note = f"\nPRODUTO PRINCIPAL: {product} (mencione pelo nome no texto)\n" if product else ""
+        objective_note = f"\nOBJETIVO/TEMA DA PECA: {objective}\nIMPORTANTE: o copy DEVE ser sobre este tema especifico. NAO ignore o objetivo.\n" if objective else ""
+        prompt = f"""Escreva o copy FINAL para {platform} ({format_type}).
+{product_note}{objective_note}
 BRIEFING:
 {briefing}
 
-RESTRICOES:
+REGRAS OBRIGATORIAS:
+- Responda SOMENTE com o texto final pronto para publicar
+- NAO inclua preambulos como "Aqui esta" ou "Segue o copy"
+- NAO use separadores como --- ou ***
 - Maximo {max_chars} caracteres
-- Incluir headline forte
-- Incluir CTA
-- Sugerir hashtags relevantes
-- Formato: headline, corpo, CTA, hashtags (separados por ---)"""
+- Comece direto com a headline
+- Termine com hashtags relevantes (na ultima linha, sem separador)
+- Inclua CTA consultivo sutil (nao agressivo)
+- Se houver produto especifico, MENCIONE pelo nome e destaque beneficios reais
+- Se houver objetivo/tema, o copy DEVE abordar esse tema (ex: Pascoa, lancamento, etc.)
+- NAO invente dados tecnicos ou estatisticas — use apenas informacoes do briefing
+- NAO invente numeros como "reducao de 40%" ou "multas de R$ 50 mil" sem fonte"""
 
         result = await self.llm.complete(
             task="copy",

@@ -24,6 +24,8 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.gzip import GZipMiddleware
 
+from content_pipeline.web.settings_store import SettingsStore
+
 from content_pipeline.web.auth import (
     LoginRequest,
     authenticate,
@@ -113,6 +115,17 @@ async def lifespan(app: FastAPI):
 
     config = None
     try:
+        # Pre-load settings store and apply to env BEFORE load_config
+        # This ensures API keys saved via UI are available as env vars
+        _pre_root = Path.cwd()
+        for _c in [Path.cwd()] + list(Path.cwd().parents):
+            if (_c / "docs_user").exists() or (_c / "squads").exists():
+                _pre_root = _c
+                break
+        _pre_store = SettingsStore(_pre_root / "output" / "studio")
+        _pre_store.apply_to_env()
+        logger.info("Pre-loaded %d settings from store", len(_pre_store._cache))
+
         from content_pipeline.config import load_config
         config = load_config()
         _service = StudioService(config, preview_mode=False)
@@ -244,6 +257,40 @@ else:
 _output_dir = _project_root / "output"
 _output_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/output", StaticFiles(directory=str(_output_dir)), name="output")
+
+
+# --- Thumbnail generation endpoint ---
+_thumbs_dir = _output_dir / "thumbs"
+_thumbs_dir.mkdir(parents=True, exist_ok=True)
+
+
+@app.get("/api/assets/thumb/{category}/{filename}")
+async def serve_thumbnail(category: str, filename: str, w: int = 200):
+    """Generate and serve cached thumbnail for product images."""
+    from starlette.responses import FileResponse
+    w = max(32, min(w, 800))
+    thumb_subdir = _thumbs_dir / f"w{w}" / category
+    thumb_subdir.mkdir(parents=True, exist_ok=True)
+    thumb_path = thumb_subdir / filename
+    if not thumb_path.exists():
+        original = _project_root / "docs_user" / "imagem_produtos" / category / filename
+        if not original.exists():
+            raise HTTPException(404, "Imagem não encontrada")
+        try:
+            from PIL import Image
+            with Image.open(original) as im:
+                ratio = w / im.width
+                new_h = max(1, int(im.height * ratio))
+                im_resized = im.resize((w, new_h), Image.LANCZOS)
+                if im_resized.mode in ("RGBA", "P"):
+                    im_resized.save(str(thumb_path), "PNG", optimize=True)
+                else:
+                    im_resized.save(str(thumb_path), "JPEG", quality=80, optimize=True)
+        except Exception as e:
+            logger.warning("Thumbnail generation failed for %s/%s: %s", category, filename, e)
+            return FileResponse(str(original))
+    content_type = "image/png" if filename.lower().endswith(".png") else "image/jpeg"
+    return FileResponse(str(thumb_path), media_type=content_type)
 
 
 # --- Fallback asset serving via API route (if StaticFiles mount failed at startup) ---
@@ -496,12 +543,6 @@ async def test_platform_connection(platform: str, user: dict = Depends(require_a
     timeout = 10.0
 
     platform_tests = {
-        "google_ai": {
-            "key_name": "GOOGLE_API_KEY",
-            "url": "https://generativelanguage.googleapis.com/v1beta/models",
-            "params_fn": lambda key: {"key": key},
-            "headers_fn": lambda key: {},
-        },
         "instagram": {
             "key_name": "INSTAGRAM_ACCESS_TOKEN",
             "url": "https://graph.instagram.com/me",
@@ -568,7 +609,6 @@ async def test_platform_connection(platform: str, user: dict = Depends(require_a
 # =========================================================================
 
 INTEGRATION_PLATFORMS = {
-    "google_ai": "GOOGLE_API_KEY",
     "instagram": "INSTAGRAM_ACCESS_TOKEN",
     "facebook": "FACEBOOK_ACCESS_TOKEN",
     "linkedin": "LINKEDIN_ACCESS_TOKEN",
@@ -576,7 +616,6 @@ INTEGRATION_PLATFORMS = {
 }
 
 PLATFORM_LABELS = {
-    "google_ai": "Google AI (Gemini)",
     "instagram": "Instagram",
     "facebook": "Facebook",
     "linkedin": "LinkedIn",
@@ -1105,14 +1144,32 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
     data = await request.json()
     briefing = data.get("briefing", "")
+    # Extrair objetivo das notes ou do titulo
+    import json as _json
+    notes_raw = piece.get("notes", "")
+    objective = ""
+    try:
+        notes_obj = _json.loads(notes_raw) if notes_raw else {}
+        objective = notes_obj.get("objective", "")
+    except (ValueError, TypeError):
+        pass
+    # Contexto = titulo + objetivo + notas do usuario
+    context_parts = []
+    if piece.get("title"):
+        context_parts.append(f"Titulo: {piece['title']}")
+    if objective:
+        context_parts.append(f"Objetivo/Tema: {objective}")
+    piece_context = ". ".join(context_parts)
+
     if not briefing:
-        # Gerar briefing automaticamente
+        # Gerar briefing com contexto
         ab = svc.auto_briefing
         br = await ab.generate(
             product=piece.get("product", ""),
             brand=piece.get("brand", "salk"),
             pillar=piece.get("pillar", ""),
             platform=piece.get("platform", "instagram"),
+            context=piece_context,
         )
         briefing = br.get("briefing_text", "")
     # Gerar copy
@@ -1121,13 +1178,66 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
         briefing=briefing,
         platform=piece.get("platform", "instagram"),
         format_type=piece.get("format", "post"),
+        product=piece.get("product", ""),
+        objective=piece_context,
     )
+    # Parsear copy para extrair headline, hashtags, CTA
+    raw_copy = copy_result.get("copy_text", "")
+    lines = [l for l in raw_copy.split("\n") if l.strip()]
+    headline = ""
+    hashtags = []
+    cta = ""
+    body_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        # Linha de hashtags (começa com # e tem várias)
+        if stripped.startswith("#") and stripped.count("#") >= 2 and not stripped.startswith("##"):
+            hashtags = [t.strip() for t in stripped.split() if t.startswith("#")]
+            continue
+        # Primeira linha curta = headline
+        if not headline and len(stripped) < 100 and not stripped.startswith("http"):
+            headline = stripped.lstrip("#").lstrip("*").rstrip("*").strip()
+            continue
+        body_lines.append(line)
+
+    # Tentar detectar CTA (última linha antes das hashtags que parece CTA)
+    cta_keywords = ["saiba mais", "converse", "consulte", "conheça", "fale com", "acesse", "solicite", "confira", "agende", "faca parte", "descubra"]
+    for bl in reversed(body_lines):
+        if any(kw in bl.lower() for kw in cta_keywords):
+            cta = bl.strip()
+            body_lines.remove(bl)
+            break
+
+    clean_copy = "\n".join(body_lines).strip()
+
     # Salvar na peca e avancar stage
-    update_data = {"copy_text": copy_result.get("copy_text", "")}
+    update_data = {
+        "copy_text": raw_copy,
+        "hashtags": hashtags if hashtags else [],
+    }
+    # Salvar headline e CTA no notes JSON
+    try:
+        notes_obj = _json.loads(piece.get("notes", "") or "{}") if piece.get("notes") else {}
+    except (ValueError, TypeError):
+        notes_obj = {}
+    if headline:
+        notes_obj["headline"] = headline
+    if cta:
+        notes_obj["cta"] = cta
+    update_data["notes"] = _json.dumps(notes_obj)
+
     if piece.get("stage") == "briefing":
         update_data["stage"] = "copy"
     svc.update_piece(piece_id, update_data)
-    return {**copy_result, "piece_id": piece_id, "stage": update_data.get("stage", piece.get("stage"))}
+    return {
+        **copy_result,
+        "piece_id": piece_id,
+        "stage": update_data.get("stage", piece.get("stage")),
+        "headline": headline,
+        "hashtags": hashtags,
+        "cta": cta,
+    }
 
 
 @app.post("/api/production/pieces/{piece_id}/generate-prompt")
@@ -1152,7 +1262,9 @@ async def generate_prompt_for_piece(piece_id: str, request: Request, user: dict 
         notes_data = _json.loads(existing_notes) if existing_notes else {}
     except (ValueError, TypeError):
         notes_data = {"original_notes": existing_notes}
-    notes_data["nb2_prompt"] = result.get("prompt", result.get("nb2_prompt", ""))
+    notes_data["nb2_prompt"] = result.get("positive_prompt", result.get("prompt", result.get("nb2_prompt", "")))
+    if result.get("negative_prompt"):
+        notes_data["nb2_negative"] = result.get("negative_prompt")
     update_data = {"notes": _json.dumps(notes_data)}
     if piece.get("stage") in ("briefing", "copy"):
         update_data["stage"] = "visual"
@@ -1371,9 +1483,18 @@ async def llm_models(user: dict = Depends(require_auth)):
 @app.get("/api/llm/usage")
 async def llm_usage(user: dict = Depends(require_auth)):
     svc = get_service()
-    if not hasattr(svc, "llm_client") or svc.llm_client is None:
-        return {"total_calls": 0, "total_cost_usd": 0}
-    return svc.llm_client.get_usage_summary()
+    # Read from persistent budget tracker instead of in-memory log
+    if hasattr(svc, "budget_tracker") and svc.budget_tracker is not None:
+        summary = svc.budget_tracker.get_month_summary()
+        detail = summary.get("by_category_detail", {})
+        llm_detail = detail.get("LLM", {"total_usd": 0, "count": 0})
+        return {
+            "total_calls": llm_detail.get("count", 0),
+            "total_cost_usd": llm_detail.get("total_usd", 0),
+            "by_task": {},
+            "by_model": {},
+        }
+    return {"total_calls": 0, "total_cost_usd": 0, "by_task": {}, "by_model": {}}
 
 
 # =========================================================================
@@ -2022,11 +2143,21 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     platform = data.get("platform", "instagram")
     pillar = data.get("pillar", "produto")
     format_type = data.get("format", "post")
+    objective = data.get("objective", "")
     result = {"steps": [], "errors": []}
+
+    # Contexto para briefing e copy
+    title = data.get("title", f"{pillar.title()} — {product.upper() or brand.upper()} ({platform})")
+    context_parts = []
+    if title:
+        context_parts.append(f"Titulo: {title}")
+    if objective:
+        context_parts.append(f"Objetivo/Tema: {objective}")
+    piece_context = ". ".join(context_parts)
 
     # Step 1: Create piece
     piece_data = {
-        "title": data.get("title", f"{pillar.title()} — {product.upper() or brand.upper()} ({platform})"),
+        "title": title,
         "brand": brand, "product": product, "pillar": pillar,
         "platform": platform, "format": format_type, "stage": "briefing",
         "persona_target": data.get("persona_target", ""),
@@ -2040,19 +2171,21 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     try:
         br = await svc.auto_briefing.generate(
             product=product, brand=brand, pillar=pillar, platform=platform,
+            context=piece_context,
         )
         briefing_text = br.get("briefing_text", "")
         result["briefing"] = briefing_text
         result["steps"].append({"step": "briefing", "status": "ok"})
     except Exception as e:
         result["errors"].append(f"Briefing: {e}")
-        briefing_text = data.get("briefing", f"Post {pillar} sobre {product} para {platform}")
+        briefing_text = data.get("briefing", f"Post {pillar} sobre {product} para {platform}. {objective}")
 
     # Step 3: Copy
     try:
         cw = BrandCopywriter(svc.llm_client, brand=brand)
         copy_result = await cw.write_copy(
             briefing=briefing_text, platform=platform, format_type=format_type,
+            product=product, objective=piece_context,
         )
         copy_text = copy_result.get("copy_text", "")
         result["copy"] = copy_result
@@ -2066,12 +2199,14 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     try:
         prompt_result = await svc.auto_prompt.generate_prompt(
             product=product or "lev", brand=brand,
-            concept=data.get("concept", "dramatic_studio"), platform=platform,
+            concept=data.get("concept", "dramatic_studio"),
         )
-        nb2_prompt = prompt_result.get("prompt", prompt_result.get("nb2_prompt", ""))
+        nb2_prompt = prompt_result.get("positive_prompt", prompt_result.get("prompt", prompt_result.get("nb2_prompt", "")))
+        nb2_negative = prompt_result.get("negative_prompt", "")
         result["nb2_prompt"] = nb2_prompt
+        result["nb2_negative"] = nb2_negative
         result["steps"].append({"step": "nb2_prompt", "status": "ok"})
-        notes_data = {"briefing": briefing_text, "nb2_prompt": nb2_prompt}
+        notes_data = {"briefing": briefing_text, "nb2_prompt": nb2_prompt, "nb2_negative": nb2_negative, "objective": objective}
         svc.update_piece(piece_id, {"notes": _json.dumps(notes_data), "stage": "visual"})
     except Exception as e:
         result["errors"].append(f"NB2 Prompt: {e}")
@@ -2091,13 +2226,67 @@ async def write_copy(request: Request, user: dict = Depends(require_auth)):
     svc = get_service()
     data = await request.json()
     brand = data.get("brand", "salk")
+    product = data.get("product", "")
+    objective = data.get("objective", "")
+    briefing = data.get("briefing", "")
+
+    # Se não tem briefing mas tem produto/objetivo, gerar briefing automaticamente
+    if not briefing and (product or objective):
+        context_parts = []
+        if product:
+            context_parts.append(f"Produto: {product}")
+        if objective:
+            context_parts.append(f"Objetivo/Tema: {objective}")
+        content_type = data.get("content_type", "")
+        if content_type:
+            context_parts.append(f"Tipo: {content_type}")
+        piece_context = ". ".join(context_parts)
+        ab = svc.auto_briefing
+        br = await ab.generate(
+            product=product,
+            brand=brand,
+            pillar=data.get("pillar", "produto"),
+            platform=data.get("platform", "instagram"),
+            context=piece_context,
+        )
+        briefing = br.get("briefing_text", "")
+
     cw = BrandCopywriter(svc.llm_client, brand=brand)
     result = await cw.write_copy(
-        briefing=data.get("briefing", ""),
+        briefing=briefing,
         platform=data.get("platform", "instagram"),
         format_type=data.get("format_type", "post"),
         max_chars=data.get("max_chars", 2200),
+        product=product,
+        objective=objective,
     )
+
+    # Parsear copy para extrair headline, hashtags, CTA
+    import json as _json
+    raw_copy = result.get("copy_text", "")
+    lines = [l for l in raw_copy.split("\n") if l.strip()]
+    headline = ""
+    hashtags = []
+    cta = ""
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("#") and stripped.count("#") >= 2 and not stripped.startswith("##"):
+            hashtags = [t.strip() for t in stripped.split() if t.startswith("#")]
+            continue
+        if not headline and len(stripped) < 100 and not stripped.startswith("http"):
+            headline = stripped.lstrip("#").lstrip("*").rstrip("*").strip()
+            continue
+
+    cta_keywords = ["saiba mais", "converse", "consulte", "conheça", "fale com", "acesse", "solicite", "confira", "agende", "faca parte", "descubra"]
+    for line in reversed(lines):
+        if any(kw in line.lower() for kw in cta_keywords):
+            cta = line.strip()
+            break
+
+    result["headline"] = headline
+    result["hashtags"] = hashtags
+    result["cta"] = cta
     return result
 
 
@@ -2315,7 +2504,8 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
         notes_data = _json.loads(notes) if notes else {}
     except (ValueError, TypeError):
         notes_data = {}
-    prompt = data.get("prompt") or notes_data.get("nb2_prompt", "")
+    prompt = data.get("prompt") or notes_data.get("nb2_prompt", "") or notes_data.get("positive_prompt", "")
+    negative = data.get("negative_prompt") or notes_data.get("nb2_negative", "") or "text, logo, watermark, blurry, low quality"
     if not prompt:
         raise HTTPException(400, "Nenhum prompt NB2 disponível. Gere o prompt primeiro.")
 
@@ -2331,7 +2521,8 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
     result = await svc.image_generator.generate_image(
         prompt=prompt,
         format_preset=format_preset,
-        negative_prompt=data.get("negative_prompt", "text, logo, watermark, blurry, low quality"),
+        negative_prompt=negative,
+        product=piece.get("product", ""),
         model=data.get("model", "flux-dev"),
     )
 
@@ -2480,7 +2671,8 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
                 product=product or "lev", brand=brand,
                 concept=variation_concept, platform=platform,
             )
-            nb2_prompt = prompt_result.get("prompt", prompt_result.get("nb2_prompt", ""))
+            nb2_prompt = prompt_result.get("positive_prompt", prompt_result.get("prompt", prompt_result.get("nb2_prompt", "")))
+            nb2_negative = prompt_result.get("negative_prompt", "")
             variation["steps"].append("prompt")
 
             # Step 4: Create piece
@@ -2513,6 +2705,7 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
                     prompt=nb2_prompt,
                     format_preset="feed",
                     negative_prompt="text, logo, watermark, blurry, low quality, medical equipment other than the target product",
+                    product=data.get("product", ""),
                     model="flux-dev",
                 )
                 if img_result.success:

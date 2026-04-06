@@ -102,12 +102,21 @@ class SupabaseDatabase:
 
     def _parse_piece(self, row: dict) -> dict:
         """Normaliza dados do Supabase para o formato esperado."""
-        # JSONB já vem como list/dict do supabase-py, não precisa json.loads
-        if isinstance(row.get("claims_used"), str):
+        # Handle NULL/None → default values
+        if row.get("claims_used") is None:
+            row["claims_used"] = []
+        elif isinstance(row.get("claims_used"), str):
             row["claims_used"] = json.loads(row["claims_used"])
-        if isinstance(row.get("hashtags"), str):
+        if row.get("hashtags") is None:
+            row["hashtags"] = []
+        elif isinstance(row.get("hashtags"), str):
             row["hashtags"] = json.loads(row["hashtags"])
         row["is_derivative"] = bool(row.get("is_derivative", False))
+        # Ensure text fields are never None (frontend expects strings)
+        for field in ("product", "assignee", "vdp_path", "copy_text", "persona_target",
+                       "master_id", "calendar_slot_id", "notes", "pillar", "platform", "format"):
+            if row.get(field) is None:
+                row[field] = ""
         return row
 
     # ------------------------------------------------------------------
