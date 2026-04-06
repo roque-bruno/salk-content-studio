@@ -9499,6 +9499,16 @@ function studioApp() {
       this.showImageModal = true;
     },
 
+    async refreshSelectedPiece(pieceId) {
+      // Force Alpine re-render: null → nextTick → new object
+      const fresh = this.pieces.find(p => p.id === pieceId);
+      if (fresh) {
+        this.selectedPiece = null;
+        await this.$nextTick();
+        this.selectedPiece = fresh;
+      }
+    },
+
     async generateCopyForPiece(pieceId) {
       if (!pieceId) return;
       this.pieceActionLoading = true;
@@ -9510,7 +9520,7 @@ function studioApp() {
         const tags = (result.hashtags && result.hashtags.length) ? ` | ${result.hashtags.length} hashtags` : '';
         this.notify('Copy gerada por ' + (result.copywriter || 'IA') + hl + tags);
         await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+        await this.refreshSelectedPiece(pieceId);
         this.drawerTab = 'texto';
       } catch(e) { this.notify('Erro ao gerar copy: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
@@ -9525,7 +9535,7 @@ function studioApp() {
         });
         this.notify('Prompt NB2 gerado com sucesso');
         await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+        await this.refreshSelectedPiece(pieceId);
       } catch(e) { this.notify('Erro ao gerar prompt: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
     },
@@ -9540,7 +9550,7 @@ function studioApp() {
         if (result.success) {
           this.notify('Imagem gerada com sucesso!');
           await this.loadPieces();
-          this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+          await this.refreshSelectedPiece(pieceId);
           this.drawerTab = 'visual';
           this.showPieceDetail = true;
           this.tab = 'board';
@@ -9561,7 +9571,7 @@ function studioApp() {
         if (result.success) {
           this.notify('Video animado gerado!');
           await this.loadPieces();
-          this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+          await this.refreshSelectedPiece(pieceId);
           this.drawerTab = 'visual';
         } else {
           this.notify('Erro: ' + (result.error || 'falha na animacao'), 'error');
@@ -9726,7 +9736,7 @@ function studioApp() {
         // Recarregar para garantir dados completos
         await this.loadPieces();
         if (this.selectedPiece?.id === id) {
-          this.selectedPiece = this.pieces.find(x => x.id === id) || this.selectedPiece;
+          await this.refreshSelectedPiece(id);
         }
       } catch(e) { this.notify('Erro ao mover peca: ' + e.message, 'error'); }
     },
@@ -11206,7 +11216,7 @@ function studioApp() {
         this.pieceNewNote = '';
         this.notify('Nota adicionada');
         await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === this.selectedPiece.id) || this.selectedPiece;
+        await this.refreshSelectedPiece(this.selectedPiece.id);
       } catch(e) { this.notify('Erro ao salvar nota: ' + e.message, 'error'); }
     },
 
