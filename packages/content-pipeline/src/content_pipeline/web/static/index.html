@@ -3597,13 +3597,13 @@ body.zen-mode .tab-bar { display: none !important; }
     <div class="sidebar-item" :class="{ active: tab === 'compliance' }" :aria-current="tab === 'compliance' ? 'page' : false" role="button" @click="tab='compliance'; sidebarOpen=false" title="Regras">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Regras
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'reference' && !['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection) }" :aria-current="tab === 'reference' ? 'page' : false" role="button" @click="tab='reference'; sidebarOpen=false" title="Referencia">
-      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Referencia
-    </div>
   </div>
 
   <div class="sidebar-section" style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px;">
     <div class="sidebar-section-title">Motor IA</div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && !['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection) }" role="button" @click="tab='reference'; sidebarOpen=false" title="Marca">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Marca
+    </div>
     <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'copywriters' }" role="button" @click="tab='reference'; refActiveSection='copywriters'; loadRefSection('copywriters'); sidebarOpen=false" title="Copywriters">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13l2-6L11 2l3 3-7 7-6 2z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5l2 2" stroke="currentColor" stroke-width="1.2"/></svg></span> Copywriters
     </div>
@@ -3622,6 +3622,9 @@ body.zen-mode .tab-bar { display: none !important; }
     <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'briefing' }" role="button" @click="tab='reference'; refActiveSection='briefing'; loadRefSection('briefing'); sidebarOpen=false" title="Briefing Atlas">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10 2v3h3" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 8h6M5 11h4" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg></span> Briefing Atlas
     </div>
+  </div>
+
+  <div class="sidebar-section" style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px;">
     <div class="sidebar-item" :class="{ active: tab === 'help' }" :aria-current="tab === 'help' ? 'page' : false" role="button" @click="tab='help'; sidebarOpen=false" title="Central de Ajuda" data-tip="Central de Ajuda">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M6 6a2 2 0 1 1 2 2v1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="12" r="0.5" fill="currentColor"/></svg></span> Ajuda
     </div>
@@ -9359,7 +9362,7 @@ function studioApp() {
       editor: 'Editor de Video',
       publish: 'Publicar',
       approval: 'Aprovacoes em Lote',
-      reference: 'Biblioteca de Referencia',
+      reference: 'Marca',
       settings: 'Configuracoes'
     },
     tabSubtitles: {
