@@ -264,9 +264,23 @@ _thumbs_dir = _output_dir / "thumbs"
 _thumbs_dir.mkdir(parents=True, exist_ok=True)
 
 
+def _generate_thumbnail_sync(original: Path, thumb_path: Path, w: int) -> None:
+    """Generate thumbnail — runs in thread pool to avoid blocking event loop."""
+    from PIL import Image
+    with Image.open(original) as im:
+        ratio = w / im.width
+        new_h = max(1, int(im.height * ratio))
+        im_resized = im.resize((w, new_h), Image.LANCZOS)
+        if im_resized.mode in ("RGBA", "P"):
+            im_resized.save(str(thumb_path), "PNG", optimize=True)
+        else:
+            im_resized.save(str(thumb_path), "JPEG", quality=80, optimize=True)
+
+
 @app.get("/api/assets/thumb/{category}/{filename}")
 async def serve_thumbnail(category: str, filename: str, w: int = 200):
     """Generate and serve cached thumbnail for product images."""
+    import asyncio
     from starlette.responses import FileResponse
     w = max(32, min(w, 800))
     thumb_subdir = _thumbs_dir / f"w{w}" / category
@@ -277,20 +291,13 @@ async def serve_thumbnail(category: str, filename: str, w: int = 200):
         if not original.exists():
             raise HTTPException(404, "Imagem não encontrada")
         try:
-            from PIL import Image
-            with Image.open(original) as im:
-                ratio = w / im.width
-                new_h = max(1, int(im.height * ratio))
-                im_resized = im.resize((w, new_h), Image.LANCZOS)
-                if im_resized.mode in ("RGBA", "P"):
-                    im_resized.save(str(thumb_path), "PNG", optimize=True)
-                else:
-                    im_resized.save(str(thumb_path), "JPEG", quality=80, optimize=True)
+            await asyncio.to_thread(_generate_thumbnail_sync, original, thumb_path, w)
         except Exception as e:
             logger.warning("Thumbnail generation failed for %s/%s: %s", category, filename, e)
             return FileResponse(str(original))
     content_type = "image/png" if filename.lower().endswith(".png") else "image/jpeg"
-    return FileResponse(str(thumb_path), media_type=content_type)
+    return FileResponse(str(thumb_path), media_type=content_type,
+                        headers={"Cache-Control": "public, max-age=604800"})
 
 
 # --- Fallback asset serving via API route (if StaticFiles mount failed at startup) ---
@@ -301,7 +308,8 @@ async def serve_product_image(category: str, filename: str):
     if not file_path.exists():
         raise HTTPException(404, "Imagem não encontrada")
     from starlette.responses import FileResponse
-    return FileResponse(str(file_path))
+    return FileResponse(str(file_path),
+                        headers={"Cache-Control": "public, max-age=604800"})
 
 
 @app.get("/assets/logos/{brand}/{filename}")
