@@ -10,36 +10,45 @@ Usa LLM barato (Flash) via OpenRouter para gerar.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
-BRIEFING_SYSTEM_PROMPT = """Voce e Atlas, o estrategista de conteudo do Manager Grupo.
-Sua funcao e criar briefings de conteudo para redes sociais B2B healthcare.
+# ---------------------------------------------------------------------------
+# Carregamento dinâmico de briefing-config.yaml
+# ---------------------------------------------------------------------------
+_BRIEFING_CONFIG_CACHE: Optional[dict] = None
+_BRIEFING_DATA_DIR: Optional[Path] = None
 
-REGRAS INEGOCIAVEIS:
-- ETRUS esta BLOQUEADO — nunca mencionar jamais
-- NUNCA prometer resultados medicos
-- NUNCA usar superlativos (o melhor, o unico, garante, infalivel)
-- Claims SOMENTE dos claims aprovados fornecidos abaixo — NUNCA inventar
-- Tom deve seguir o brandbook da marca
-- O briefing DEVE ser ESPECIFICO ao produto e tema, NUNCA generico
-- Se um produto foi selecionado, o briefing DEVE mencionar specs e diferenciais reais desse produto
-- Se nenhum produto foi selecionado, escolher 1-2 produtos mais relevantes ao tema/data e justificar
-- claims_sugeridos DEVEM ser IDs do banco de claims (ex: LEV-01, KRATUS-03)
 
-Formato de saida (YAML):
-```yaml
-objetivo: "string — especifico ao tema e produto"
-mensagem_chave: "string — com diferencial tecnico real do produto"
-cta: "string — consultivo, nunca vendedor"
-tom: "string"
-formato_visual: "string — descricao do cenario para imagem NB2"
-hashtags_sugeridas: ["string"]
-claims_sugeridos: ["ID do claim — ex: LEV-01"]
-notas_visuais: "string — instrucoes especificas para cenario da imagem"
-produto_recomendado: "string — produto escolhido e por que"
-```"""
+def _load_briefing_config() -> dict:
+    global _BRIEFING_CONFIG_CACHE
+    if _BRIEFING_CONFIG_CACHE is not None:
+        return _BRIEFING_CONFIG_CACHE
+    if _BRIEFING_DATA_DIR:
+        path = _BRIEFING_DATA_DIR / "briefing-config.yaml"
+        if path.exists():
+            try:
+                _BRIEFING_CONFIG_CACHE = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+                return _BRIEFING_CONFIG_CACHE
+            except Exception as e:
+                logger.warning("Falha ao carregar briefing-config.yaml: %s", e)
+    _BRIEFING_CONFIG_CACHE = {}
+    return _BRIEFING_CONFIG_CACHE
+
+
+def init_briefing_config(data_dir: Path) -> None:
+    """Inicializa data_dir para carregamento do YAML."""
+    global _BRIEFING_DATA_DIR, _BRIEFING_CONFIG_CACHE
+    _BRIEFING_DATA_DIR = data_dir
+    _BRIEFING_CONFIG_CACHE = None
+
+
+def get_briefing_system_prompt() -> str:
+    return _load_briefing_config().get("briefing_system_prompt", "")
 
 
 class AutoBriefing:
@@ -158,7 +167,7 @@ Gere o briefing completo no formato YAML especificado."""
         result = await self.llm.complete(
             task="briefing",
             prompt=prompt,
-            system_prompt=BRIEFING_SYSTEM_PROMPT,
+            system_prompt=get_briefing_system_prompt(),
         )
 
         logger.info(

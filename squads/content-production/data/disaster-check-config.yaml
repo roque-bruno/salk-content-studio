@@ -1,0 +1,65 @@
+# Configuração do Disaster Check — Shield Visual
+# Editável via UI Recursos > Quality Gate
+# Alimenta: disaster_check.py (DisasterCheck)
+
+disaster_checks:
+  - id: text_logo
+    name: "Texto/Logo na Imagem"
+    severity: block
+    description: "IA gera texto distorcido e ilegivel. Texto e logo sao adicionados no Canva."
+    auto_detectable: true
+
+  - id: competitor_equipment
+    name: "Equipamento Concorrente"
+    severity: block
+    description: "Imagem nao pode conter equipamentos medicos alem do produto-alvo."
+    auto_detectable: true
+
+  - id: identifiable_faces
+    name: "Rostos Identificaveis"
+    severity: block
+    description: "Pessoas com rostos claros geram risco legal (LGPD, direito de imagem)."
+    auto_detectable: true
+
+  - id: graphic_clinical
+    name: "Cenas Clinicas Graficas"
+    severity: block
+    description: "Sangue, procedimentos abertos, conteudo grafico nao e adequado para social media."
+    auto_detectable: true
+
+  - id: lev_light_direction
+    name: "Direcao da Luz LEV"
+    severity: block
+    description: "LEV vende luz CONCENTRADA. Raios laterais/dispersos contradizem o produto."
+    product_specific: lev
+    auto_detectable: true
+
+  - id: product_distortion
+    name: "Distorcao do Produto"
+    severity: block
+    description: "Produto com proporcoes erradas, partes faltando ou deformacoes."
+    auto_detectable: true
+
+  - id: image_quality
+    name: "Qualidade Tecnica"
+    severity: warn
+    description: "Blur, artefatos de compressao, ruido excessivo, baixa resolucao."
+    auto_detectable: true
+
+  - id: composition_format
+    name: "Composicao e Formato"
+    severity: warn
+    description: "Produto cortado, muito pequeno, ou composicao inadequada para o formato."
+    auto_detectable: true
+
+  - id: brand_colors
+    name: "Paleta de Cores da Marca"
+    severity: warn
+    description: "Imagem com cores que conflitam com a identidade visual da marca."
+    auto_detectable: false
+
+  - id: empty_scene
+    name: "Cenario Vazio/Generico"
+    severity: warn
+    description: "Cenario sem contexto ou muito generico (anti-pattern validado)."
+    auto_detectable: true

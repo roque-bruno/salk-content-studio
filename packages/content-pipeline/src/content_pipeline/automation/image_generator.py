@@ -25,35 +25,28 @@ COST_NB2 = 0.08
 COST_FLUX_DEV = 0.04
 COST_FLUX_PRO = 0.08
 
-DIMENSION_PRESETS = {
-    "feed": (1080, 1350),       # 4:5 Instagram feed
-    "square": (1080, 1080),     # 1:1
-    "stories": (1080, 1920),    # 9:16 Stories/Reels
-    "landscape": (1920, 1080),  # 16:9 YouTube
-    "banner": (2560, 720),      # Wide banner
-}
+def _get_dimension_presets() -> dict:
+    """Carrega dimension presets do image-generation-config.yaml via auto_prompt."""
+    try:
+        from content_pipeline.automation.auto_prompt import _load_image_gen_config
+        cfg = _load_image_gen_config()
+        presets_raw = cfg.get("dimension_presets", {})
+        # Converter listas [w,h] para tuplas (w,h)
+        return {k: tuple(v) if isinstance(v, list) else v for k, v in presets_raw.items()}
+    except Exception:
+        return {
+            "feed": (1080, 1350), "square": (1080, 1080),
+            "stories": (1080, 1920), "landscape": (1920, 1080), "banner": (2560, 720),
+        }
 
-# Mapeamento produto → TOP PICK PNG (relativo a docs_user/imagem_produtos/)
-PRODUCT_TOP_PICKS = {
-    # LEV
-    "lev": "Foco de Teto e Parede/Simplex_4LEV.png",
-    "lev 4lev": "Foco de Teto e Parede/Simplex_4LEV.png",
-    "lev 3lev": "Foco de Teto e Parede/Simplex_3LEV.png",
-    "lev duplex": "Foco de Teto e Parede/Duplex_3LEV_4LEV.png",
-    "foco cirurgico": "Foco de Teto e Parede/Simplex_4LEV.png",
-    "foco": "Foco de Teto e Parede/Simplex_4LEV.png",
-    # KRATUS
-    "kratus": "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png",
-    "mesa cirurgica": "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png",
-    "mesa": "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png",
-    # OSTUS
-    "ostus": "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png",
-    "serra cirurgica": "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png",
-    "serra": "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png",
-    # KRONUS
-    "kronus": "Suporte para equipamentos/Suporte-p-Equipamentos-Kronus-biarticulada_clean.png",
-    "suporte": "Suporte para equipamentos/Suporte-p-Equipamentos-Kronus-biarticulada_clean.png",
-}
+
+def _get_product_top_picks() -> dict:
+    """Carrega product top picks do image-generation-config.yaml via auto_prompt."""
+    try:
+        from content_pipeline.automation.auto_prompt import _load_image_gen_config
+        return _load_image_gen_config().get("product_top_picks", {})
+    except Exception:
+        return {}
 
 
 @dataclass
@@ -92,14 +85,14 @@ def resolve_product_image(product: str, product_images_dir: Path) -> Optional[Pa
     key = product.strip().lower()
     logger.debug("resolve_product_image: key=%r dir=%s exists=%s", key, product_images_dir, product_images_dir.exists())
     # Tenta match direto
-    rel = PRODUCT_TOP_PICKS.get(key)
+    rel = _get_product_top_picks().get(key)
     if rel:
         full = product_images_dir / rel
         logger.debug("resolve_product_image: direct match %s exists=%s", full, full.exists())
         if full.exists():
             return full
     # Tenta match parcial (ex: "LEV 4LEV" contém "lev")
-    for k, v in PRODUCT_TOP_PICKS.items():
+    for k, v in _get_product_top_picks().items():
         if k in key or key in k:
             full = product_images_dir / v
             if full.exists():
@@ -146,8 +139,8 @@ class FalImageGenerator:
         return bool(self.api_key)
 
     def _get_dimensions(self, format_preset: str = "", width: int = 0, height: int = 0) -> tuple[int, int]:
-        if format_preset and format_preset in DIMENSION_PRESETS:
-            return DIMENSION_PRESETS[format_preset]
+        if format_preset and format_preset in _get_dimension_presets():
+            return _get_dimension_presets()[format_preset]
         return (width or 1080, height or 1350)
 
     async def _upload_to_fal_cdn(self, file_path: Path) -> Optional[str]:

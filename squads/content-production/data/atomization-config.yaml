@@ -1,0 +1,60 @@
+# Configuração de Atomização — Nova (Semantic Atomizer)
+# Editável via UI Recursos > Atomização
+# Alimenta: atomizer.py (SemanticAtomizer)
+
+platform_formats:
+  instagram_post:
+    max_chars: 2200
+    hashtag_limit: 30
+    tone_adjustment: "visual, direto, emoji moderado"
+    cta_style: "Link na bio, swipe, salve"
+  instagram_story:
+    max_chars: 200
+    hashtag_limit: 5
+    tone_adjustment: "ultra-curto, casual, urgente"
+    cta_style: "Arraste pra cima, Toque, Vote"
+  instagram_reels:
+    max_chars: 300
+    hashtag_limit: 15
+    tone_adjustment: "dinamico, hook nos 3 primeiros segundos"
+    cta_style: "Siga para mais, Comente, Compartilhe"
+  linkedin_post:
+    max_chars: 3000
+    hashtag_limit: 5
+    tone_adjustment: "profissional, dados e resultados, storytelling corporativo"
+    cta_style: "Comente sua experiencia, Saiba mais no link, Conecte-se"
+  linkedin_article:
+    max_chars: 10000
+    hashtag_limit: 3
+    tone_adjustment: "formal, aprofundado, thought leadership"
+    cta_style: "Leia o artigo completo, Compartilhe com sua rede"
+  email_snippet:
+    max_chars: 500
+    hashtag_limit: 0
+    tone_adjustment: "pessoal, direto, valor claro"
+    cta_style: "Clique aqui, Responda este email, Agende uma conversa"
+  whatsapp_broadcast:
+    max_chars: 1000
+    hashtag_limit: 0
+    tone_adjustment: "conversacional, proximo, sem formalidade excessiva"
+    cta_style: "Responda SIM, Clique no link, Fale com um consultor"
+
+atomization_map:
+  carrossel:
+    - instagram_story
+    - instagram_reels
+    - linkedin_post
+    - email_snippet
+  post_unico:
+    - instagram_story
+    - linkedin_post
+    - whatsapp_broadcast
+  video_longo:
+    - instagram_reels
+    - instagram_story
+    - linkedin_post
+  artigo:
+    - linkedin_post
+    - instagram_post
+    - email_snippet
+    - whatsapp_broadcast

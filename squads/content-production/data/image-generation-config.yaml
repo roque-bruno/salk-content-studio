@@ -1,0 +1,209 @@
+# Configuração de Geração de Imagem — Apex (Auto-Prompt NB2) + fal.ai
+# Editável via UI Recursos > Geração Imagem
+# Alimenta: auto_prompt.py, image_generator.py
+
+prompt_dimensions:
+  tecnica:
+    hero_shot: "Professional hero shot photography, product centered"
+    dramatic_studio: "Dramatic studio photography with professional lighting setup"
+    lifestyle: "Lifestyle photography in real-world usage context"
+    detail_macro: "Macro detail photography showing craftsmanship and precision"
+    environmental: "Environmental photography showing product in its natural setting"
+  iluminacao:
+    dramatic_rim: "Dramatic rim lighting with strong key light, deep shadows"
+    soft_diffused: "Soft diffused lighting, even illumination, minimal shadows"
+    high_contrast: "High contrast lighting with defined highlights and shadows"
+    natural_window: "Natural window light, soft and directional"
+    clinical_bright: "Bright clinical lighting, clean and even"
+  cenario:
+    centro_cirurgico: "Modern surgical center, clean sterile environment, stainless steel surfaces"
+    sala_exames: "Medical examination room, clinical setting, organized equipment"
+    corredor_hospital: "Modern hospital corridor, wide and clean, professional environment"
+    laboratorio: "High-tech laboratory, precision instruments, controlled environment"
+    industrial: "Industrial manufacturing floor, CNC machines, precision engineering"
+    studio_neutro: "Clean neutral photography studio, seamless background"
+  composicao:
+    central_hero: "Centered composition, product as focal point, rule of thirds"
+    angular_dramatico: "Low angle dramatic shot, emphasizing scale and importance"
+    overhead_tech: "Overhead technical view, showing layout and organization"
+    three_quarter: "Three-quarter view, showing depth and dimension"
+    detail_close: "Extreme close-up, filling frame with product detail"
+  atmosfera:
+    premium_tech: "Premium technology aesthetic, cool blue tones, professional"
+    clean_medical: "Clean medical aesthetic, whites and soft blues, sterile feel"
+    industrial_warm: "Industrial warm tones, amber accents, solid and reliable"
+    modern_minimal: "Modern minimalist, neutral palette, sophisticated"
+    dramatic_dark: "Dramatic dark mood, selective lighting, high impact"
+  detalhes_tecnicos:
+    4k_landscape: "4K resolution, 16:9 landscape, photorealistic rendering"
+    square_social: "1080x1080, square format optimized for social media"
+    portrait_story: "1080x1920, portrait format for stories/reels"
+    wide_banner: "2560x720, wide banner format for covers"
+
+mandatory_negatives:
+  universal:
+    - text
+    - watermark
+    - logo
+    - signature
+    - letters
+    - words
+    - blurry
+    - low quality
+    - distorted
+    - deformed
+    - cartoon
+    - illustration
+    - painting
+    - sketch
+  medical:
+    - surgical light
+    - operating light
+    - ceiling mounted light
+    - surgical lamp
+    - operating table
+    - surgical table
+    - examination table
+    - medical monitor
+    - patient monitor
+    - display screen
+    - pendant
+    - ceiling mount arm
+    - articulating arm
+    - medical equipment
+    - hospital equipment
+    - medical device
+    - competing medical equipment
+    - other brand equipment
+    - people faces
+    - identifiable patients
+    - blood
+    - graphic medical content
+    - blue monochrome
+    - cyan tint
+    - teal color
+    - neon blue
+    - blue cast
+  lev_specific:
+    - light rays spreading sideways
+    - diffused glow
+    - scattered light
+    - lens flare
+    - light bleeding
+    - omnidirectional light
+    - ceiling mounted fluorescent
+    - ambient room lighting
+
+product_rules:
+  lev:
+    description: "Foco cirurgico de teto LED — luz concentrada no campo"
+    must_include: "visible ceiling area for ceiling-mounted equipment, surgical field below"
+    never_include: "scattered light, diffused glow, lateral rays, other ceiling lights"
+    preferred_techniques:
+      - dramatic_studio
+      - hero_shot
+    preferred_lighting:
+      - dramatic_rim
+      - high_contrast
+    extra_negatives_ref: lev_specific
+  kratus:
+    description: "Mesa cirurgica robusta com posicoes ajustaveis"
+    must_include: "clean floor area in center for surgical table, wide room"
+    never_include: "other surgical tables, examination couch, gurney, stretcher"
+    preferred_techniques:
+      - hero_shot
+      - environmental
+    preferred_lighting:
+      - clinical_bright
+      - soft_diffused
+    extra_negatives_ref: null
+  ostus:
+    description: "Serra cirurgica eletrica para ortopedia"
+    must_include: "sterile instrument area, draped surgical surface, precision context"
+    never_include: "other power tools, hand saw, competing surgical instruments"
+    preferred_techniques:
+      - detail_macro
+      - hero_shot
+    preferred_lighting:
+      - clinical_bright
+      - high_contrast
+    extra_negatives_ref: null
+  kronus:
+    description: "Suporte pendente de teto biarticulado para equipamentos"
+    must_include: "visible ceiling with mounting rails, upper wall area, gas panels"
+    never_include: "floor-standing rack, wall TV bracket, consumer monitor arm"
+    preferred_techniques:
+      - hero_shot
+      - environmental
+    preferred_lighting:
+      - soft_diffused
+      - clinical_bright
+    extra_negatives_ref: null
+
+product_scene_hints:
+  lev:
+    perspective: "camera at bed level looking UPWARD toward ceiling, showing ceiling and upper walls"
+    spatial: "tall room, high ceiling prominent, vertical emphasis, space for ceiling-mounted light"
+  kratus:
+    perspective: "camera at waist height, slightly elevated, looking toward center of room"
+    spatial: "wide room, clean floor prominent, horizontal emphasis, space for table in center"
+  ostus:
+    perspective: "camera at table height, close-up perspective, sterile instrument context"
+    spatial: "tight clinical framing, draped surfaces, precision instrument environment"
+  kronus:
+    perspective: "camera at standing height looking slightly upward toward ceiling area"
+    spatial: "vertical space, ceiling and upper walls visible, mounting infrastructure context"
+
+product_inference_map:
+  iluminacao: lev
+  "iluminação": lev
+  foco: lev
+  luz: lev
+  led: lev
+  "surgical light": lev
+  visibilidade: lev
+  lev: lev
+  mesa: kratus
+  table: kratus
+  posicionamento: kratus
+  paciente: kratus
+  ergonomia: kratus
+  kratus: kratus
+  serra: ostus
+  saw: ostus
+  corte: ostus
+  ortopedia: ostus
+  osso: ostus
+  osteotomia: ostus
+  ostus: ostus
+  suporte: kronus
+  pendente: kronus
+  monitor: kronus
+  "braço": kronus
+  articulado: kronus
+  kronus: kronus
+
+hero_product: lev
+
+dimension_presets:
+  feed: [1080, 1350]
+  square: [1080, 1080]
+  stories: [1080, 1920]
+  landscape: [1920, 1080]
+  banner: [2560, 720]
+
+product_top_picks:
+  lev: "Foco de Teto e Parede/Simplex_4LEV.png"
+  "lev 4lev": "Foco de Teto e Parede/Simplex_4LEV.png"
+  "lev 3lev": "Foco de Teto e Parede/Simplex_3LEV.png"
+  "lev duplex": "Foco de Teto e Parede/Duplex_3LEV_4LEV.png"
+  "foco cirurgico": "Foco de Teto e Parede/Simplex_4LEV.png"
+  foco: "Foco de Teto e Parede/Simplex_4LEV.png"
+  kratus: "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png"
+  "mesa cirurgica": "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png"
+  mesa: "Mesa Cirurgica/KRATUS-EH-460K-ML-clean01.png"
+  ostus: "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png"
+  "serra cirurgica": "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png"
+  serra: "Serra Cirurgica/Serra Cirurgica OSTUS - full - PNG.png"
+  kronus: "Suporte para equipamentos/Suporte-p-Equipamentos-Kronus-biarticulada_clean.png"
+  suporte: "Suporte para equipamentos/Suporte-p-Equipamentos-Kronus-biarticulada_clean.png"

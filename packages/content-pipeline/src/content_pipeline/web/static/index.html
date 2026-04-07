@@ -3597,8 +3597,30 @@ body.zen-mode .tab-bar { display: none !important; }
     <div class="sidebar-item" :class="{ active: tab === 'compliance' }" :aria-current="tab === 'compliance' ? 'page' : false" role="button" @click="tab='compliance'; sidebarOpen=false" title="Regras">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Regras
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'reference' }" :aria-current="tab === 'reference' ? 'page' : false" role="button" @click="tab='reference'; sidebarOpen=false" title="Referencia">
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && !['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection) }" :aria-current="tab === 'reference' ? 'page' : false" role="button" @click="tab='reference'; sidebarOpen=false" title="Referencia">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Referencia
+    </div>
+  </div>
+
+  <div class="sidebar-section" style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px;">
+    <div class="sidebar-section-title">Motor IA</div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'copywriters' }" role="button" @click="tab='reference'; refActiveSection='copywriters'; loadRefSection('copywriters'); sidebarOpen=false" title="Copywriters">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13l2-6L11 2l3 3-7 7-6 2z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5l2 2" stroke="currentColor" stroke-width="1.2"/></svg></span> Copywriters
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'imagegen' }" role="button" @click="tab='reference'; refActiveSection='imagegen'; loadRefSection('imagegen'); sidebarOpen=false" title="Geração Imagem">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1" fill="none"/><path d="M1.5 11l3.5-3 2.5 2 3-4 4 5" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Geração Imagem
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'strategy' }" role="button" @click="tab='reference'; refActiveSection='strategy'; loadRefSection('strategy'); sidebarOpen=false" title="Estratégia">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3" fill="none"/><circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1" fill="none"/><circle cx="8" cy="8" r="1" fill="currentColor"/></svg></span> Estrategia
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'atomization' }" role="button" @click="tab='reference'; refActiveSection='atomization'; loadRefSection('atomization'); sidebarOpen=false" title="Atomização">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="4" cy="12" r="2" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 6v2M6.5 9.5L5 10.5M9.5 9.5L11 10.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span> Atomizacao
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'qualitygate' }" role="button" @click="tab='reference'; refActiveSection='qualitygate'; loadRefSection('qualitygate'); sidebarOpen=false" title="Quality Gate">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M5.5 8l2 2 3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span> Quality Gate
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'briefing' }" role="button" @click="tab='reference'; refActiveSection='briefing'; loadRefSection('briefing'); sidebarOpen=false" title="Briefing Atlas">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10 2v3h3" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 8h6M5 11h4" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg></span> Briefing Atlas
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'help' }" :aria-current="tab === 'help' ? 'page' : false" role="button" @click="tab='help'; sidebarOpen=false" title="Central de Ajuda" data-tip="Central de Ajuda">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M6 6a2 2 0 1 1 2 2v1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="8" cy="12" r="0.5" fill="currentColor"/></svg></span> Ajuda
@@ -7220,10 +7242,21 @@ body.zen-mode .tab-bar { display: none !important; }
 <div x-show="tab === 'reference'" class="tab-content">
   <!-- Header com sub-tabs + botoes de acao -->
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-      <template x-for="sec in [{key:'brandbooks',label:'Brandbooks',icon:'book'},{key:'personas',label:'Buyer Personas',icon:'users'},{key:'prohibited',label:'Termos Proibidos',icon:'shield'},{key:'claims',label:'Claims Aprovados',icon:'check-circle'},{key:'hashbank',label:'Hashtags',icon:'hash'},{key:'guidelines',label:'Diretrizes',icon:'layout'},{key:'specs',label:'Specs Plataforma',icon:'monitor'},{key:'editorial',label:'Calendario Editorial',icon:'calendar'}]">
-        <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; refEditMode = false; loadRefSection(sec.key)" style="font-size: 0.72rem; padding: 5px 12px;" x-text="sec.label"></button>
-      </template>
+    <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+      <!-- Grupo 1: Dados de Marca -->
+      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+        <span style="font-size: 0.64rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; min-width: 50px;">Marca</span>
+        <template x-for="sec in [{key:'brandbooks',label:'Brandbooks'},{key:'personas',label:'Buyer Personas'},{key:'prohibited',label:'Termos Proibidos'},{key:'claims',label:'Claims'},{key:'hashbank',label:'Hashtags'},{key:'guidelines',label:'Diretrizes'},{key:'specs',label:'Specs Plataforma'},{key:'editorial',label:'Calendario'}]">
+          <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; refEditMode = false; loadRefSection(sec.key)" style="font-size: 0.72rem; padding: 5px 12px;" x-text="sec.label"></button>
+        </template>
+      </div>
+      <!-- Grupo 2: Motor de Automação -->
+      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+        <span style="font-size: 0.64rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; min-width: 50px;">Motor</span>
+        <template x-for="sec in [{key:'copywriters',label:'Copywriters'},{key:'imagegen',label:'Geração Imagem'},{key:'strategy',label:'Estratégia Conteúdo'},{key:'atomization',label:'Atomização'},{key:'qualitygate',label:'Quality Gate'},{key:'briefing',label:'Briefing Atlas'}]">
+          <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; refEditMode = false; loadRefSection(sec.key)" style="font-size: 0.72rem; padding: 5px 12px;" x-text="sec.label"></button>
+        </template>
+      </div>
     </div>
     <div style="display: flex; gap: 6px;" x-show="refData !== null && !refLoading">
       <button class="btn btn-sm" x-show="!refEditMode" @click="refEditMode = true; refEditData = JSON.parse(JSON.stringify(refActiveSection === 'brandbooks' && refBrandbookDetail ? refBrandbookDetail : refData)); refEditJSON = JSON.stringify(refData, null, 2); refEditJSONError = '';" style="font-size: 0.72rem; padding: 5px 12px; background: var(--accent); color: white;">Editar</button>
@@ -7490,8 +7523,397 @@ body.zen-mode .tab-bar { display: none !important; }
     </div>
   </template>
 
+  <!-- ============ COPYWRITERS — Formulario estruturado ============ -->
+  <template x-if="!refLoading && refActiveSection === 'copywriters' && refData !== null">
+    <div>
+      <div class="card" style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(79,142,255,0.06) 0%, transparent 100%);">
+        <div class="card-title">Copywriters por Marca</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">Cada marca tem um copywriter com tom, regras e personalidade propria. Estes prompts controlam TODA a copy gerada.</div>
+      </div>
+      <!-- Brand Copywriters -->
+      <template x-for="[brand, cw] in Object.entries(refEditMode ? (refEditData.brand_copywriters||{}) : (refData.brand_copywriters||{}))">
+        <div class="card" style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <span style="font-weight: 700; font-size: 0.88rem;" x-text="brand.toUpperCase()"></span>
+              <span style="margin-left: 8px; font-size: 0.76rem; color: var(--accent);" x-text="'Copywriter: ' + (cw.name || '-')"></span>
+            </div>
+          </div>
+          <template x-if="!refEditMode">
+            <div style="background: var(--bg-darker); border-radius: var(--radius-sm); padding: 12px; max-height: 200px; overflow-y: auto;">
+              <pre style="white-space: pre-wrap; font-size: 0.72rem; line-height: 1.5; color: var(--text-secondary); font-family: inherit;" x-text="cw.system || ''"></pre>
+            </div>
+          </template>
+          <template x-if="refEditMode">
+            <div style="display: grid; gap: 8px;">
+              <div><label class="form-label">Nome do Copywriter</label><input class="form-input" x-model="refEditData.brand_copywriters[brand].name" style="font-size: 0.8rem;"></div>
+              <div><label class="form-label">System Prompt (instrucoes completas)</label><textarea class="form-input" rows="8" x-model="refEditData.brand_copywriters[brand].system" style="font-size: 0.76rem; line-height: 1.5; font-family: inherit;"></textarea></div>
+            </div>
+          </template>
+        </div>
+      </template>
+      <!-- Persona Clones -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-title">Persona Clones (Teste de Copy)</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px;">Simulacoes de buyer personas para testar e avaliar a qualidade da copy gerada.</div>
+        <template x-for="[pid, pc] in Object.entries(refEditMode ? (refEditData.persona_clones||{}) : (refData.persona_clones||{}))">
+          <div style="margin-bottom: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-weight: 600; font-size: 0.8rem; margin-bottom: 4px;" x-text="pc.name || pid"></div>
+            <template x-if="!refEditMode">
+              <div style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.5;" x-text="pc.system || ''"></div>
+            </template>
+            <template x-if="refEditMode">
+              <div style="display: grid; gap: 6px;">
+                <div><label class="form-label" style="font-size: 0.68rem;">Nome</label><input class="form-input" x-model="refEditData.persona_clones[pid].name" style="font-size: 0.78rem;"></div>
+                <div><label class="form-label" style="font-size: 0.68rem;">System Prompt da Persona</label><textarea class="form-input" rows="4" x-model="refEditData.persona_clones[pid].system" style="font-size: 0.74rem; line-height: 1.4; font-family: inherit;"></textarea></div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ ESTRATEGIA DE CONTEUDO — Formulario estruturado ============ -->
+  <template x-if="!refLoading && refActiveSection === 'strategy' && refData !== null">
+    <div>
+      <div class="card" style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(79,142,255,0.06) 0%, transparent 100%);">
+        <div class="card-title">Estrategia de Conteudo</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">Controla o MIX semanal: quais pilares, produtos, personas e tecnicas visuais sao usados na producao automatica.</div>
+      </div>
+      <!-- Pillar Weights por marca -->
+      <div class="card" style="margin-bottom: 10px;">
+        <div class="card-title" style="font-size: 0.84rem;">Pesos dos Pilares por Marca (%)</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 10px;">Define a distribuicao percentual de cada pilar no calendario semanal.</div>
+        <template x-for="[brand, pillars] in Object.entries(refEditMode ? (refEditData.pillar_weights||{}) : (refData.pillar_weights||{}))">
+          <div style="margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-weight: 700; font-size: 0.82rem; margin-bottom: 8px; color: var(--accent);" x-text="brand.toUpperCase()"></div>
+            <template x-if="!refEditMode">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <template x-for="[pillar, pct] in Object.entries(pillars)">
+                  <div style="padding: 4px 12px; border-radius: 12px; font-size: 0.74rem; background: var(--bg-darker);">
+                    <span style="font-weight: 600;" x-text="pillar"></span>
+                    <span style="color: var(--accent); margin-left: 4px;" x-text="pct + '%'"></span>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px;">
+                <template x-for="[pillar, pct] in Object.entries(pillars)">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <label style="font-size: 0.74rem; min-width: 90px; font-weight: 500;" x-text="pillar"></label>
+                    <input class="form-input" type="number" min="0" max="100" :value="pct" @change="refEditData.pillar_weights[brand][pillar] = parseInt($event.target.value)" style="width: 60px; font-size: 0.76rem; text-align: center;">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">%</span>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- Active Products -->
+      <div class="card" style="margin-bottom: 10px;">
+        <div class="card-title" style="font-size: 0.84rem;">Produtos Ativos por Marca</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 10px;">Produtos que aparecem no calendario. ETRUS nunca deve aparecer aqui.</div>
+        <template x-for="[brand, prods] in Object.entries(refEditMode ? (refEditData.active_products||{}) : (refData.active_products||{}))">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-weight: 600; font-size: 0.78rem; min-width: 110px;" x-text="brand.toUpperCase()"></span>
+            <template x-if="!refEditMode">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <template x-for="p in prods">
+                  <span style="background: var(--success); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 500;" x-text="p.toUpperCase()"></span>
+                </template>
+                <span x-show="!prods || prods.length === 0" style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">Nenhum produto</span>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <div><input class="form-input" :value="(prods||[]).join(', ')" @change="refEditData.active_products[brand] = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" placeholder="lev, kratus, ostus, kronus" style="font-size: 0.76rem; min-width: 250px;"></div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- Product Techniques -->
+      <div class="card" style="margin-bottom: 10px;">
+        <div class="card-title" style="font-size: 0.84rem;">Tecnicas Visuais NB2 por Produto</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 10px;">Define o estilo fotografico padrao de cada produto na geracao de imagem.</div>
+        <template x-for="[prod, tech] in Object.entries(refEditMode ? (refEditData.product_techniques||{}) : (refData.product_techniques||{}))">
+          <div style="margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-weight: 700; font-size: 0.8rem; margin-bottom: 6px;" x-text="prod.toUpperCase()"></div>
+            <template x-if="!refEditMode">
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 0.72rem;">
+                <div><span style="color: var(--text-muted);">Tecnica:</span> <span style="font-weight: 500;" x-text="tech.technique"></span></div>
+                <div><span style="color: var(--text-muted);">Luz:</span> <span style="font-weight: 500;" x-text="tech.lighting"></span></div>
+                <div><span style="color: var(--text-muted);">Cenario:</span> <span style="font-weight: 500;" x-text="tech.scene"></span></div>
+                <div><span style="color: var(--text-muted);">Atmosfera:</span> <span style="font-weight: 500;" x-text="tech.atmosphere"></span></div>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                <div><label class="form-label" style="font-size: 0.66rem;">Tecnica</label><input class="form-input" x-model="refEditData.product_techniques[prod].technique" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Iluminacao</label><input class="form-input" x-model="refEditData.product_techniques[prod].lighting" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Cenario</label><input class="form-input" x-model="refEditData.product_techniques[prod].scene" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Atmosfera</label><input class="form-input" x-model="refEditData.product_techniques[prod].atmosphere" style="font-size: 0.74rem;"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- Pillar Personas + Format Map (compact) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="card">
+          <div class="card-title" style="font-size: 0.84rem;">Personas por Pilar</div>
+          <template x-for="[pillar, personas] in Object.entries(refEditMode ? (refEditData.pillar_personas||{}) : (refData.pillar_personas||{}))">
+            <div style="display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 0.72rem;">
+              <span style="font-weight: 600; min-width: 100px;" x-text="pillar"></span>
+              <template x-if="!refEditMode">
+                <span style="color: var(--text-secondary);" x-text="(personas||[]).join(', ')"></span>
+              </template>
+              <template x-if="refEditMode">
+                <input class="form-input" :value="(personas||[]).join(', ')" @change="refEditData.pillar_personas[pillar] = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.72rem; flex: 1;">
+              </template>
+            </div>
+          </template>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.84rem;">Mapa de Formatos</div>
+          <template x-for="[fmt, preset] in Object.entries(refEditMode ? (refEditData.format_map||{}) : (refData.format_map||{}))">
+            <div style="display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 0.72rem;">
+              <span style="font-weight: 500; min-width: 120px;" x-text="fmt"></span>
+              <template x-if="!refEditMode">
+                <span style="color: var(--accent);" x-text="preset"></span>
+              </template>
+              <template x-if="refEditMode">
+                <input class="form-input" x-model="refEditData.format_map[fmt]" style="font-size: 0.72rem; flex: 1;">
+              </template>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ ATOMIZACAO — Formulario estruturado ============ -->
+  <template x-if="!refLoading && refActiveSection === 'atomization' && refData !== null">
+    <div>
+      <div class="card" style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(79,142,255,0.06) 0%, transparent 100%);">
+        <div class="card-title">Atomizacao de Conteudo</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">Define como cada plataforma recebe o conteudo (limites, tom, CTA) e quais derivativos sao gerados de cada tipo master.</div>
+      </div>
+      <!-- Platform Formats -->
+      <div class="card" style="margin-bottom: 10px;">
+        <div class="card-title" style="font-size: 0.84rem;">Formatos por Plataforma</div>
+        <template x-for="[platform, fmt] in Object.entries(refEditMode ? (refEditData.platform_formats||{}) : (refData.platform_formats||{}))">
+          <div style="margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-weight: 700; font-size: 0.8rem; margin-bottom: 6px; color: var(--accent);" x-text="platform.replace(/_/g, ' ').toUpperCase()"></div>
+            <template x-if="!refEditMode">
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 0.72rem;">
+                <div><span style="color: var(--text-muted);">Max chars:</span> <strong x-text="fmt.max_chars"></strong></div>
+                <div><span style="color: var(--text-muted);">Hashtags:</span> <strong x-text="fmt.hashtag_limit"></strong></div>
+                <div><span style="color: var(--text-muted);">Tom:</span> <span x-text="fmt.tone_adjustment"></span></div>
+                <div><span style="color: var(--text-muted);">CTA:</span> <span x-text="fmt.cta_style"></span></div>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <div style="display: grid; grid-template-columns: 100px 80px 1fr 1fr; gap: 6px;">
+                <div><label class="form-label" style="font-size: 0.66rem;">Max Chars</label><input class="form-input" type="number" x-model.number="refEditData.platform_formats[platform].max_chars" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Hashtags</label><input class="form-input" type="number" x-model.number="refEditData.platform_formats[platform].hashtag_limit" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Tom / Ajuste</label><input class="form-input" x-model="refEditData.platform_formats[platform].tone_adjustment" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Estilo de CTA</label><input class="form-input" x-model="refEditData.platform_formats[platform].cta_style" style="font-size: 0.74rem;"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- Atomization Map -->
+      <div class="card">
+        <div class="card-title" style="font-size: 0.84rem;">Mapa de Atomizacao (Master → Derivativos)</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 10px;">Quais plataformas recebem derivativos de cada tipo de conteudo master.</div>
+        <template x-for="[master, targets] in Object.entries(refEditMode ? (refEditData.atomization_map||{}) : (refData.atomization_map||{}))">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-weight: 700; font-size: 0.78rem; min-width: 120px; color: var(--accent);" x-text="master.toUpperCase()"></span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">→</span>
+            <template x-if="!refEditMode">
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <template x-for="t in targets">
+                  <span style="background: var(--bg-darker); padding: 2px 8px; border-radius: 10px; font-size: 0.68rem;" x-text="t.replace(/_/g, ' ')"></span>
+                </template>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <input class="form-input" :value="(targets||[]).join(', ')" @change="refEditData.atomization_map[master] = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.72rem; flex: 1;">
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ QUALITY GATE — Formulario estruturado ============ -->
+  <template x-if="!refLoading && refActiveSection === 'qualitygate' && refData !== null">
+    <div>
+      <div class="card" style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(79,142,255,0.06) 0%, transparent 100%);">
+        <div class="card-title">Quality Gate (Disaster Check)</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">Checklist de verificacao visual pos-geracao. Itens "block" impedem publicacao, "warn" apenas alertam.</div>
+      </div>
+      <div class="card">
+        <template x-for="(check, ci) in (refEditMode ? (refEditData.disaster_checks||[]) : (refData.disaster_checks||[]))">
+          <div style="padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);" :style="check.severity === 'block' ? 'border-left: 3px solid var(--error);' : 'border-left: 3px solid var(--warning);'">
+            <template x-if="!refEditMode">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <span style="font-weight: 700; font-size: 0.82rem;" x-text="check.name"></span>
+                  <span style="font-size: 0.62rem; padding: 1px 8px; border-radius: 8px; font-weight: 600;" :style="check.severity === 'block' ? 'background: var(--error); color: white;' : 'background: var(--warning); color: black;'" x-text="check.severity.toUpperCase()"></span>
+                  <span x-show="check.product_specific" style="font-size: 0.62rem; padding: 1px 8px; border-radius: 8px; background: var(--accent); color: white;" x-text="'Apenas ' + (check.product_specific||'').toUpperCase()"></span>
+                  <span x-show="check.auto_detectable" style="font-size: 0.6rem; color: var(--text-muted);">auto-detectavel</span>
+                </div>
+                <div style="font-size: 0.74rem; color: var(--text-secondary);" x-text="check.description"></div>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <div style="display: grid; gap: 6px;">
+                <div style="display: grid; grid-template-columns: 1fr 120px 120px 80px; gap: 6px; align-items: end;">
+                  <div><label class="form-label" style="font-size: 0.66rem;">Nome</label><input class="form-input" x-model="refEditData.disaster_checks[ci].name" style="font-size: 0.76rem;"></div>
+                  <div><label class="form-label" style="font-size: 0.66rem;">Severidade</label><select class="form-input" x-model="refEditData.disaster_checks[ci].severity" style="font-size: 0.76rem;"><option value="block">BLOCK</option><option value="warn">WARN</option></select></div>
+                  <div><label class="form-label" style="font-size: 0.66rem;">Produto Especifico</label><input class="form-input" x-model="refEditData.disaster_checks[ci].product_specific" placeholder="(vazio = todos)" style="font-size: 0.74rem;"></div>
+                  <div style="display: flex; align-items: center; gap: 4px; padding-bottom: 2px;"><input type="checkbox" :checked="refEditData.disaster_checks[ci].auto_detectable" @change="refEditData.disaster_checks[ci].auto_detectable = $event.target.checked"><label style="font-size: 0.66rem;">Auto</label></div>
+                </div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Descricao</label><input class="form-input" x-model="refEditData.disaster_checks[ci].description" style="font-size: 0.74rem;"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+        <template x-if="refEditMode">
+          <button class="btn btn-sm" @click="refEditData.disaster_checks.push({id:'novo_check_'+Date.now(), name:'', severity:'warn', description:'', auto_detectable:true})" style="font-size: 0.7rem; margin-top: 6px;">+ Adicionar Check</button>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ BRIEFING ATLAS — Formulario estruturado ============ -->
+  <template x-if="!refLoading && refActiveSection === 'briefing' && refData !== null">
+    <div>
+      <div class="card" style="background: linear-gradient(135deg, rgba(79,142,255,0.06) 0%, transparent 100%);">
+        <div class="card-title">Briefing Atlas — System Prompt</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px;">Este prompt controla como o Atlas (IA) gera briefings automaticos para cada slot do calendario. Altere as regras, o formato de saida e as restricoes aqui.</div>
+        <template x-if="!refEditMode">
+          <div style="background: var(--bg-darker); border-radius: var(--radius-sm); padding: 16px; max-height: 500px; overflow-y: auto;">
+            <pre style="white-space: pre-wrap; font-size: 0.76rem; line-height: 1.6; color: var(--text-secondary); font-family: inherit;" x-text="refData.briefing_system_prompt || ''"></pre>
+          </div>
+        </template>
+        <template x-if="refEditMode">
+          <div>
+            <textarea class="form-input" rows="20" x-model="refEditData.briefing_system_prompt" style="font-size: 0.78rem; line-height: 1.6; font-family: inherit; min-height: 400px; resize: vertical;"></textarea>
+            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 6px;">Dica: mantenha as regras inegociaveis (ETRUS bloqueado, sem superlativos) e o formato YAML de saida.</div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ GERACAO DE IMAGEM — Formulario estruturado ============ -->
+  <template x-if="!refLoading && refActiveSection === 'imagegen' && refData !== null">
+    <div>
+      <div class="card" style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(79,142,255,0.06) 0%, transparent 100%);">
+        <div class="card-title">Geracao de Imagem (Apex / NB2)</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">Configuracoes que controlam como o Apex gera prompts de imagem: dimensoes fotograficas, negatives obrigatorios, regras por produto.</div>
+      </div>
+      <!-- Product Rules -->
+      <div class="card" style="margin-bottom: 10px;">
+        <div class="card-title" style="font-size: 0.84rem;">Regras por Produto</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 10px;">O que incluir e nao incluir no cenario de cada produto. Controla a composicao da foto.</div>
+        <template x-for="[prod, rule] in Object.entries(refEditMode ? (refEditData.product_rules||{}) : (refData.product_rules||{}))">
+          <div style="margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-weight: 700; font-size: 0.82rem; margin-bottom: 6px;" x-text="prod.toUpperCase()"></div>
+            <template x-if="!refEditMode">
+              <div style="font-size: 0.72rem; display: grid; gap: 4px;">
+                <div><span style="color: var(--text-muted);">Descricao:</span> <span x-text="rule.description"></span></div>
+                <div><span style="color: var(--success); font-weight: 500;">Incluir:</span> <span x-text="rule.must_include"></span></div>
+                <div><span style="color: var(--error); font-weight: 500;">Nunca:</span> <span x-text="rule.never_include"></span></div>
+                <div><span style="color: var(--text-muted);">Tecnicas:</span> <span x-text="(rule.preferred_techniques||[]).join(', ')"></span></div>
+                <div><span style="color: var(--text-muted);">Iluminacao:</span> <span x-text="(rule.preferred_lighting||[]).join(', ')"></span></div>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <div style="display: grid; gap: 6px;">
+                <div><label class="form-label" style="font-size: 0.66rem;">Descricao do produto</label><input class="form-input" x-model="refEditData.product_rules[prod].description" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem; color: var(--success);">DEVE incluir no cenario</label><input class="form-input" x-model="refEditData.product_rules[prod].must_include" style="font-size: 0.74rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem; color: var(--error);">NUNCA incluir</label><input class="form-input" x-model="refEditData.product_rules[prod].never_include" style="font-size: 0.74rem;"></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                  <div><label class="form-label" style="font-size: 0.66rem;">Tecnicas preferidas (virgula)</label><input class="form-input" :value="(refEditData.product_rules[prod].preferred_techniques||[]).join(', ')" @change="refEditData.product_rules[prod].preferred_techniques = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.74rem;"></div>
+                  <div><label class="form-label" style="font-size: 0.66rem;">Iluminacao preferida (virgula)</label><input class="form-input" :value="(refEditData.product_rules[prod].preferred_lighting||[]).join(', ')" @change="refEditData.product_rules[prod].preferred_lighting = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.74rem;"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- Mandatory Negatives -->
+      <div class="card" style="margin-bottom: 10px;">
+        <div class="card-title" style="font-size: 0.84rem;">Negatives Obrigatorios</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 10px;">Termos que a IA NUNCA deve gerar nas imagens. Separados por categoria.</div>
+        <template x-for="[cat, terms] in Object.entries(refEditMode ? (refEditData.mandatory_negatives||{}) : (refData.mandatory_negatives||{}))">
+          <div style="margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px;">
+            <div style="font-weight: 600; font-size: 0.78rem; margin-bottom: 6px; color: var(--error);" x-text="cat.replace(/_/g, ' ').toUpperCase()"></div>
+            <template x-if="!refEditMode">
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <template x-for="t in terms">
+                  <span style="background: rgba(239,68,68,0.1); color: var(--error); padding: 2px 8px; border-radius: 10px; font-size: 0.68rem;" x-text="t"></span>
+                </template>
+              </div>
+            </template>
+            <template x-if="refEditMode">
+              <textarea class="form-input" rows="2" :value="(terms||[]).join(', ')" @change="refEditData.mandatory_negatives[cat] = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.72rem; line-height: 1.4;"></textarea>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- Scene Hints + Dimension Presets (compact) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="card">
+          <div class="card-title" style="font-size: 0.84rem;">Perspectiva de Camera por Produto</div>
+          <template x-for="[prod, hint] in Object.entries(refEditMode ? (refEditData.product_scene_hints||{}) : (refData.product_scene_hints||{}))">
+            <div style="margin-bottom: 6px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+              <div style="font-weight: 600; font-size: 0.76rem;" x-text="prod.toUpperCase()"></div>
+              <template x-if="!refEditMode">
+                <div style="font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4;">
+                  <div x-text="'Camera: ' + hint.perspective"></div>
+                  <div x-text="'Espaco: ' + hint.spatial"></div>
+                </div>
+              </template>
+              <template x-if="refEditMode">
+                <div style="display: grid; gap: 4px; margin-top: 4px;">
+                  <input class="form-input" x-model="refEditData.product_scene_hints[prod].perspective" placeholder="Perspectiva" style="font-size: 0.72rem;">
+                  <input class="form-input" x-model="refEditData.product_scene_hints[prod].spatial" placeholder="Espacialidade" style="font-size: 0.72rem;">
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.84rem;">Presets de Dimensao</div>
+          <template x-for="[name, dims] in Object.entries(refEditMode ? (refEditData.dimension_presets||{}) : (refData.dimension_presets||{}))">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 0.74rem;">
+              <span style="font-weight: 600; min-width: 80px;" x-text="name"></span>
+              <template x-if="!refEditMode">
+                <span style="color: var(--text-secondary);" x-text="(Array.isArray(dims) ? dims[0] : dims) + ' x ' + (Array.isArray(dims) ? dims[1] : '')"></span>
+              </template>
+              <template x-if="refEditMode">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <input class="form-input" type="number" :value="Array.isArray(dims) ? dims[0] : dims" @change="refEditData.dimension_presets[name] = [parseInt($event.target.value), refEditData.dimension_presets[name][1]||0]" style="width: 70px; font-size: 0.72rem; text-align: center;">
+                  <span>x</span>
+                  <input class="form-input" type="number" :value="Array.isArray(dims) ? dims[1] : 0" @change="refEditData.dimension_presets[name] = [refEditData.dimension_presets[name][0]||0, parseInt($event.target.value)]" style="width: 70px; font-size: 0.72rem; text-align: center;">
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <!-- ============ GENERIC DATA (prohibited, guidelines, specs, editorial, hashbank, claims) ============ -->
-  <template x-if="!refLoading && refData !== null && !['brandbooks','personas'].includes(refActiveSection)">
+  <template x-if="!refLoading && refData !== null && !['brandbooks','personas','copywriters','strategy','atomization','qualitygate','briefing','imagegen'].includes(refActiveSection)">
     <div class="card">
       <div class="card-title" x-text="({prohibited:'Termos Proibidos',claims:'Claims Aprovados',hashbank:'Banco de Hashtags',guidelines:'Diretrizes de Marca',specs:'Specs de Plataforma',editorial:'Calendario Editorial'})[refActiveSection] || refActiveSection"></div>
       <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px;" x-text="refEditMode ? 'Edite os dados abaixo. Formato JSON sera preservado.' : 'Clique em Editar para modificar estes dados.'"></div>
@@ -11646,6 +12068,12 @@ function studioApp() {
         hashbank: '/api/data/hashtag-bank',
         personas: '/api/data/buyer-personas',
         claims: '/api/assets/claims',
+        copywriters: '/api/data/copywriter-config',
+        imagegen: '/api/data/image-generation-config',
+        strategy: '/api/data/content-strategy-config',
+        atomization: '/api/data/atomization-config',
+        qualitygate: '/api/data/disaster-check-config',
+        briefing: '/api/data/briefing-config',
       };
       try {
         this.refData = await this.api(endpoints[section]);
@@ -11673,6 +12101,12 @@ function studioApp() {
           prohibited: '/api/data/prohibited-terms',
           hashbank: '/api/data/hashtag-bank',
           claims: '/api/data/claims-bank',
+          copywriters: '/api/data/copywriter-config',
+          imagegen: '/api/data/image-generation-config',
+          strategy: '/api/data/content-strategy-config',
+          atomization: '/api/data/atomization-config',
+          qualitygate: '/api/data/disaster-check-config',
+          briefing: '/api/data/briefing-config',
         };
 
         let payload, endpoint, method = 'PUT';
@@ -11685,6 +12119,10 @@ function studioApp() {
           endpoint = '/api/data/buyer-personas';
           // refEditData e o dict de personas; wrappa com metadata
           payload = { version: '1.0', last_updated: new Date().toISOString().split('T')[0], personas: this.refEditData };
+        } else if (['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(section)) {
+          // Seções com formulário estruturado — usam refEditData direto
+          endpoint = saveEndpoints[section];
+          payload = this.refEditData;
         } else if (saveEndpoints[section]) {
           endpoint = saveEndpoints[section];
           // Para seções genéricas, parse do JSON editado

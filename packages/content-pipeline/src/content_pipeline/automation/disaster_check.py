@@ -18,9 +18,46 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
+import yaml
+
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Carregamento dinâmico de disaster-check-config.yaml
+# ---------------------------------------------------------------------------
+_DC_CONFIG_CACHE: Optional[list] = None
+_DC_DATA_DIR: Optional[Path] = None
+
+
+def _load_disaster_checks() -> list:
+    global _DC_CONFIG_CACHE
+    if _DC_CONFIG_CACHE is not None:
+        return _DC_CONFIG_CACHE
+    if _DC_DATA_DIR:
+        path = _DC_DATA_DIR / "disaster-check-config.yaml"
+        if path.exists():
+            try:
+                data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+                _DC_CONFIG_CACHE = data.get("disaster_checks", [])
+                return _DC_CONFIG_CACHE
+            except Exception as e:
+                logger.warning("Falha ao carregar disaster-check-config.yaml: %s", e)
+    _DC_CONFIG_CACHE = []
+    return _DC_CONFIG_CACHE
+
+
+def init_disaster_check_config(data_dir: Path) -> None:
+    """Inicializa data_dir para carregamento do YAML."""
+    global _DC_DATA_DIR, _DC_CONFIG_CACHE
+    _DC_DATA_DIR = data_dir
+    _DC_CONFIG_CACHE = None
+
+
+def get_disaster_checks() -> list:
+    return _load_disaster_checks()
 
 
 @dataclass
@@ -69,80 +106,6 @@ class DisasterResult:
         }
 
 
-# Checklist de verificacoes
-DISASTER_CHECKS = [
-    {
-        "id": "text_logo",
-        "name": "Texto/Logo na Imagem",
-        "severity": "block",
-        "description": "IA gera texto distorcido e ilegivel. Texto e logo sao adicionados no Canva.",
-        "auto_detectable": True,
-    },
-    {
-        "id": "competitor_equipment",
-        "name": "Equipamento Concorrente",
-        "severity": "block",
-        "description": "Imagem nao pode conter equipamentos medicos alem do produto-alvo.",
-        "auto_detectable": True,
-    },
-    {
-        "id": "identifiable_faces",
-        "name": "Rostos Identificaveis",
-        "severity": "block",
-        "description": "Pessoas com rostos claros geram risco legal (LGPD, direito de imagem).",
-        "auto_detectable": True,
-    },
-    {
-        "id": "graphic_clinical",
-        "name": "Cenas Clinicas Graficas",
-        "severity": "block",
-        "description": "Sangue, procedimentos abertos, conteudo grafico nao e adequado para social media.",
-        "auto_detectable": True,
-    },
-    {
-        "id": "lev_light_direction",
-        "name": "Direcao da Luz LEV",
-        "severity": "block",
-        "description": "LEV vende luz CONCENTRADA. Raios laterais/dispersos contradizem o produto.",
-        "product_specific": "lev",
-        "auto_detectable": True,
-    },
-    {
-        "id": "product_distortion",
-        "name": "Distorcao do Produto",
-        "severity": "block",
-        "description": "Produto com proporcoes erradas, partes faltando ou deformacoes.",
-        "auto_detectable": True,
-    },
-    {
-        "id": "image_quality",
-        "name": "Qualidade Tecnica",
-        "severity": "warn",
-        "description": "Blur, artefatos de compressao, ruido excessivo, baixa resolucao.",
-        "auto_detectable": True,
-    },
-    {
-        "id": "composition_format",
-        "name": "Composicao e Formato",
-        "severity": "warn",
-        "description": "Produto cortado, muito pequeno, ou composicao inadequada para o formato.",
-        "auto_detectable": True,
-    },
-    {
-        "id": "brand_colors",
-        "name": "Paleta de Cores da Marca",
-        "severity": "warn",
-        "description": "Imagem com cores que conflitam com a identidade visual da marca.",
-        "auto_detectable": False,
-    },
-    {
-        "id": "empty_scene",
-        "name": "Cenario Vazio/Generico",
-        "severity": "warn",
-        "description": "Cenario sem contexto ou muito generico (anti-pattern validado).",
-        "auto_detectable": True,
-    },
-]
 
 
 class DisasterCheck:
@@ -186,7 +149,7 @@ class DisasterCheck:
 
         overrides = manual_overrides or {}
 
-        for check_def in DISASTER_CHECKS:
+        for check_def in get_disaster_checks():
             # Pular checks especificos de produto
             if check_def.get("product_specific") and check_def["product_specific"] != product.lower():
                 continue
@@ -261,5 +224,5 @@ class DisasterCheck:
                 "auto_detectable": c.get("auto_detectable", False),
                 "product_specific": c.get("product_specific"),
             }
-            for c in DISASTER_CHECKS
+            for c in get_disaster_checks()
         ]

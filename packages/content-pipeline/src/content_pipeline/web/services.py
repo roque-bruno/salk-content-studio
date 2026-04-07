@@ -113,6 +113,12 @@ class StudioService:
         self._prohibited_terms_cache: Optional[dict] = None
         self._brand_guidelines_cache: Optional[dict] = None
         self._brandbooks_cache: dict[str, dict] = {}
+        self._copywriter_config_cache: Optional[dict] = None
+        self._image_generation_config_cache: Optional[dict] = None
+        self._content_strategy_config_cache: Optional[dict] = None
+        self._atomization_config_cache: Optional[dict] = None
+        self._disaster_check_config_cache: Optional[dict] = None
+        self._briefing_config_cache: Optional[dict] = None
 
     def _init_database(self):
         """Inicializa banco: Supabase se configurado, senão SQLite local."""
@@ -190,6 +196,21 @@ class StudioService:
             image_generator=self.image_generator,
             output_dir=config.output_dir / "keyframes",
         )
+
+        # Inicializar configs YAML dos módulos de automação
+        data_dir = self._data_dir()
+        from content_pipeline.automation.copywriter import init_copywriter_config
+        from content_pipeline.automation.auto_prompt import init_image_gen_config
+        from content_pipeline.automation.week_orchestrator import init_strategy_config
+        from content_pipeline.automation.atomizer import init_atomization_config
+        from content_pipeline.automation.disaster_check import init_disaster_check_config
+        from content_pipeline.automation.auto_briefing import init_briefing_config
+        init_copywriter_config(data_dir)
+        init_image_gen_config(data_dir)
+        init_strategy_config(data_dir)
+        init_atomization_config(data_dir)
+        init_disaster_check_config(data_dir)
+        init_briefing_config(data_dir)
 
         # Automation agents
         self.auto_briefing = AutoBriefing(
@@ -428,9 +449,32 @@ class StudioService:
         self._prohibited_terms_cache = None
         self._brand_guidelines_cache = None
         self._brandbooks_cache.clear()
+        self._copywriter_config_cache = None
+        self._image_generation_config_cache = None
+        self._content_strategy_config_cache = None
+        self._atomization_config_cache = None
+        self._disaster_check_config_cache = None
+        self._briefing_config_cache = None
         # Invalida cache do auto_prompt também
         if hasattr(self, 'auto_prompt') and hasattr(self.auto_prompt, '_brand_context_cache'):
             self.auto_prompt._brand_context_cache.clear()
+        # Invalida caches dos módulos de automação (module-level)
+        try:
+            from content_pipeline.automation.copywriter import init_copywriter_config
+            from content_pipeline.automation.auto_prompt import init_image_gen_config
+            from content_pipeline.automation.week_orchestrator import init_strategy_config
+            from content_pipeline.automation.atomizer import init_atomization_config
+            from content_pipeline.automation.disaster_check import init_disaster_check_config
+            from content_pipeline.automation.auto_briefing import init_briefing_config
+            data_dir = self._data_dir()
+            init_copywriter_config(data_dir)
+            init_image_gen_config(data_dir)
+            init_strategy_config(data_dir)
+            init_atomization_config(data_dir)
+            init_disaster_check_config(data_dir)
+            init_briefing_config(data_dir)
+        except Exception as e:
+            logger.warning("Falha ao invalidar caches de automação: %s", e)
         logger.info("Todos os caches de dados YAML invalidados")
 
     def save_platform_specs(self, data: dict) -> None:
@@ -471,6 +515,100 @@ class StudioService:
         self._save_yaml("claims-bank.yaml", data)
         # claims não tem cache próprio (lê direto), mas invalida geral
         logger.info("Claims bank atualizado")
+
+    # =========================================================================
+    # DADOS YAML — Configurações de automação (migrados de hardcoded)
+    # =========================================================================
+
+    def load_copywriter_config(self) -> dict:
+        if self._copywriter_config_cache is None:
+            self._copywriter_config_cache = self._load_yaml("copywriter-config.yaml")
+        return self._copywriter_config_cache
+
+    def save_copywriter_config(self, data: dict) -> None:
+        self._save_yaml("copywriter-config.yaml", data)
+        self._copywriter_config_cache = None
+        try:
+            from content_pipeline.automation.copywriter import init_copywriter_config
+            init_copywriter_config(self._data_dir())
+        except Exception:
+            pass
+        logger.info("Copywriter config atualizado — prompts de copy re-calibrados")
+
+    def load_image_generation_config(self) -> dict:
+        if self._image_generation_config_cache is None:
+            self._image_generation_config_cache = self._load_yaml("image-generation-config.yaml")
+        return self._image_generation_config_cache
+
+    def save_image_generation_config(self, data: dict) -> None:
+        self._save_yaml("image-generation-config.yaml", data)
+        self._image_generation_config_cache = None
+        try:
+            from content_pipeline.automation.auto_prompt import init_image_gen_config
+            init_image_gen_config(self._data_dir())
+        except Exception:
+            pass
+        logger.info("Image generation config atualizado — prompts NB2 re-calibrados")
+
+    def load_content_strategy_config(self) -> dict:
+        if self._content_strategy_config_cache is None:
+            self._content_strategy_config_cache = self._load_yaml("content-strategy-config.yaml")
+        return self._content_strategy_config_cache
+
+    def save_content_strategy_config(self, data: dict) -> None:
+        self._save_yaml("content-strategy-config.yaml", data)
+        self._content_strategy_config_cache = None
+        try:
+            from content_pipeline.automation.week_orchestrator import init_strategy_config
+            init_strategy_config(self._data_dir())
+        except Exception:
+            pass
+        logger.info("Content strategy config atualizado — orquestrador re-calibrado")
+
+    def load_atomization_config(self) -> dict:
+        if self._atomization_config_cache is None:
+            self._atomization_config_cache = self._load_yaml("atomization-config.yaml")
+        return self._atomization_config_cache
+
+    def save_atomization_config(self, data: dict) -> None:
+        self._save_yaml("atomization-config.yaml", data)
+        self._atomization_config_cache = None
+        try:
+            from content_pipeline.automation.atomizer import init_atomization_config
+            init_atomization_config(self._data_dir())
+        except Exception:
+            pass
+        logger.info("Atomization config atualizado — derivativos re-calibrados")
+
+    def load_disaster_check_config(self) -> dict:
+        if self._disaster_check_config_cache is None:
+            self._disaster_check_config_cache = self._load_yaml("disaster-check-config.yaml")
+        return self._disaster_check_config_cache
+
+    def save_disaster_check_config(self, data: dict) -> None:
+        self._save_yaml("disaster-check-config.yaml", data)
+        self._disaster_check_config_cache = None
+        try:
+            from content_pipeline.automation.disaster_check import init_disaster_check_config
+            init_disaster_check_config(self._data_dir())
+        except Exception:
+            pass
+        logger.info("Disaster check config atualizado — quality gate re-calibrado")
+
+    def load_briefing_config(self) -> dict:
+        if self._briefing_config_cache is None:
+            self._briefing_config_cache = self._load_yaml("briefing-config.yaml")
+        return self._briefing_config_cache
+
+    def save_briefing_config(self, data: dict) -> None:
+        self._save_yaml("briefing-config.yaml", data)
+        self._briefing_config_cache = None
+        try:
+            from content_pipeline.automation.auto_briefing import init_briefing_config
+            init_briefing_config(self._data_dir())
+        except Exception:
+            pass
+        logger.info("Briefing config atualizado — Atlas re-calibrado")
 
     # =========================================================================
     # ASSETS — Imagens de produto, logos, claims

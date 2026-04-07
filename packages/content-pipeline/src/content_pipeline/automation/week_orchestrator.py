@@ -17,95 +17,61 @@ import logging
 import random
 import uuid
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
-# Rotação de pilares por marca (peso = % da semana)
-PILLAR_WEIGHTS = {
-    "salk": {
-        "produto": 30,
-        "educacional": 25,
-        "cases": 20,
-        "command": 15,
-        "licitacoes": 10,
-    },
-    "mendel": {
-        "produto_tecnico": 35,
-        "engenharia": 30,
-        "certificacoes": 20,
-        "bastidores": 15,
-    },
-    "manager-grupo": {
-        "cultura": 35,
-        "inovacao": 25,
-        "pessoas": 25,
-        "institucional": 15,
-    },
-}
+# ---------------------------------------------------------------------------
+# Carregamento dinâmico de content-strategy-config.yaml
+# ---------------------------------------------------------------------------
+_STRATEGY_CONFIG_CACHE: Optional[dict] = None
+_STRATEGY_DATA_DIR: Optional[Path] = None
 
-# Produtos ativos por marca (nunca incluir ETRUS)
-ACTIVE_PRODUCTS = {
-    "salk": ["lev", "kratus", "ostus", "kronus"],
-    "mendel": ["lev", "kratus", "ostus", "kronus"],
-    "manager-grupo": [],
-    "dayho": [],
-}
 
-# Personas-alvo por pilar
-PILLAR_PERSONAS = {
-    "produto": ["eng_clinica", "compras", "equipe_medica"],
-    "educacional": ["eng_clinica", "admin_hospitalar"],
-    "cases": ["admin_hospitalar", "compras"],
-    "command": ["eng_clinica", "equipe_medica"],
-    "licitacoes": ["compras", "admin_hospitalar"],
-    "produto_tecnico": ["eng_clinica"],
-    "engenharia": ["eng_clinica"],
-    "certificacoes": ["eng_clinica", "compras"],
-    "bastidores": ["eng_clinica"],
-}
+def _load_strategy_config() -> dict:
+    global _STRATEGY_CONFIG_CACHE
+    if _STRATEGY_CONFIG_CACHE is not None:
+        return _STRATEGY_CONFIG_CACHE
+    if _STRATEGY_DATA_DIR:
+        path = _STRATEGY_DATA_DIR / "content-strategy-config.yaml"
+        if path.exists():
+            try:
+                _STRATEGY_CONFIG_CACHE = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+                return _STRATEGY_CONFIG_CACHE
+            except Exception as e:
+                logger.warning("Falha ao carregar content-strategy-config.yaml: %s", e)
+    _STRATEGY_CONFIG_CACHE = {}
+    return _STRATEGY_CONFIG_CACHE
 
-# Técnicas preferidas por produto para prompt NB2
-PRODUCT_TECHNIQUES = {
-    "lev": {
-        "technique": "dramatic_studio",
-        "lighting": "dramatic_rim",
-        "scene": "centro_cirurgico",
-        "atmosphere": "premium_tech",
-    },
-    "kratus": {
-        "technique": "hero_shot",
-        "lighting": "high_contrast",
-        "scene": "centro_cirurgico",
-        "atmosphere": "clean_medical",
-    },
-    "ostus": {
-        "technique": "environmental",
-        "lighting": "soft_diffused",
-        "scene": "centro_cirurgico",
-        "atmosphere": "modern_minimal",
-    },
-    "kronus": {
-        "technique": "detail_macro",
-        "lighting": "clinical_bright",
-        "scene": "centro_cirurgico",
-        "atmosphere": "premium_tech",
-    },
-}
 
-# Formato de imagem por formato de plataforma
-FORMAT_MAP = {
-    "Carousel 4:5": "square_social",
-    "Reel 9:16": "portrait_story",
-    "Post 1:1": "square_social",
-    "Imagem 1200x627": "4k_landscape",
-    "Banner": "wide_banner",
-    "Texto+Imagem": "square_social",
-    "PDF Carousel": "square_social",
-    "Vídeo/Post": "square_social",
-    "Shorts 9:16": "portrait_story",
-    "Vídeo <90s": "4k_landscape",
-}
+def init_strategy_config(data_dir: Path) -> None:
+    """Inicializa data_dir para carregamento do YAML."""
+    global _STRATEGY_DATA_DIR, _STRATEGY_CONFIG_CACHE
+    _STRATEGY_DATA_DIR = data_dir
+    _STRATEGY_CONFIG_CACHE = None
+
+
+def get_pillar_weights() -> dict:
+    return _load_strategy_config().get("pillar_weights", {})
+
+
+def get_active_products() -> dict:
+    return _load_strategy_config().get("active_products", {})
+
+
+def get_pillar_personas() -> dict:
+    return _load_strategy_config().get("pillar_personas", {})
+
+
+def get_product_techniques() -> dict:
+    return _load_strategy_config().get("product_techniques", {})
+
+
+def get_format_map() -> dict:
+    return _load_strategy_config().get("format_map", {})
 
 
 class WeekOrchestrator:
@@ -157,8 +123,8 @@ class WeekOrchestrator:
         if not slots:
             return calendar
 
-        weights = PILLAR_WEIGHTS.get(brand, PILLAR_WEIGHTS.get("salk", {}))
-        products = ACTIVE_PRODUCTS.get(brand, [])
+        weights = get_pillar_weights().get(brand, get_pillar_weights().get("salk", {}))
+        products = get_active_products().get(brand, [])
 
         # Calcular distribuição de pilares para a semana
         total_slots = len(slots)
@@ -186,7 +152,7 @@ class WeekOrchestrator:
                 product = product_cycle[i % len(product_cycle)]
 
             # Persona-alvo
-            personas = PILLAR_PERSONAS.get(pillar, ["eng_clinica"])
+            personas = get_pillar_personas().get(pillar, ["eng_clinica"])
             persona = personas[i % len(personas)]
 
             slot["pillar"] = pillar
@@ -395,8 +361,8 @@ class WeekOrchestrator:
         # 3. PROMPT NB2 (Apex)
         if generate_prompt and slot.get("product"):
             product = slot.get("product", "lev")
-            tech = PRODUCT_TECHNIQUES.get(product, PRODUCT_TECHNIQUES["lev"])
-            format_type = FORMAT_MAP.get(
+            tech = get_product_techniques().get(product, get_product_techniques()["lev"])
+            format_type = get_format_map().get(
                 slot.get("format", ""), "square_social"
             )
 

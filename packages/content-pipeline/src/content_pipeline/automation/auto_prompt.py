@@ -29,144 +29,68 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-# Dimensoes do prompt com opcoes pre-validadas
-PROMPT_DIMENSIONS = {
-    "tecnica": {
-        "hero_shot": "Professional hero shot photography, product centered",
-        "dramatic_studio": "Dramatic studio photography with professional lighting setup",
-        "lifestyle": "Lifestyle photography in real-world usage context",
-        "detail_macro": "Macro detail photography showing craftsmanship and precision",
-        "environmental": "Environmental photography showing product in its natural setting",
-    },
-    "iluminacao": {
-        "dramatic_rim": "Dramatic rim lighting with strong key light, deep shadows",
-        "soft_diffused": "Soft diffused lighting, even illumination, minimal shadows",
-        "high_contrast": "High contrast lighting with defined highlights and shadows",
-        "natural_window": "Natural window light, soft and directional",
-        "clinical_bright": "Bright clinical lighting, clean and even",
-    },
-    "cenario": {
-        "centro_cirurgico": "Modern surgical center, clean sterile environment, stainless steel surfaces",
-        "sala_exames": "Medical examination room, clinical setting, organized equipment",
-        "corredor_hospital": "Modern hospital corridor, wide and clean, professional environment",
-        "laboratorio": "High-tech laboratory, precision instruments, controlled environment",
-        "industrial": "Industrial manufacturing floor, CNC machines, precision engineering",
-        "studio_neutro": "Clean neutral photography studio, seamless background",
-    },
-    "composicao": {
-        "central_hero": "Centered composition, product as focal point, rule of thirds",
-        "angular_dramatico": "Low angle dramatic shot, emphasizing scale and importance",
-        "overhead_tech": "Overhead technical view, showing layout and organization",
-        "three_quarter": "Three-quarter view, showing depth and dimension",
-        "detail_close": "Extreme close-up, filling frame with product detail",
-    },
-    "atmosfera": {
-        "premium_tech": "Premium technology aesthetic, cool blue tones, professional",
-        "clean_medical": "Clean medical aesthetic, whites and soft blues, sterile feel",
-        "industrial_warm": "Industrial warm tones, amber accents, solid and reliable",
-        "modern_minimal": "Modern minimalist, neutral palette, sophisticated",
-        "dramatic_dark": "Dramatic dark mood, selective lighting, high impact",
-    },
-    "detalhes_tecnicos": {
-        "4k_landscape": "4K resolution, 16:9 landscape, photorealistic rendering",
-        "square_social": "1080x1080, square format optimized for social media",
-        "portrait_story": "1080x1920, portrait format for stories/reels",
-        "wide_banner": "2560x720, wide banner format for covers",
-    },
-}
+# ---------------------------------------------------------------------------
+# Carregamento dinâmico de image-generation-config.yaml
+# ---------------------------------------------------------------------------
+_IMG_CONFIG_CACHE: Optional[dict] = None
+_IMG_CONFIG_DATA_DIR: Optional[Path] = None
 
-# Negative prompts obrigatorios por categoria
-MANDATORY_NEGATIVES = {
-    "universal": [
-        "text", "watermark", "logo", "signature", "letters", "words",
-        "blurry", "low quality", "distorted", "deformed",
-        "cartoon", "illustration", "painting", "sketch",
-    ],
-    "medical": [
-        "surgical light", "operating light", "ceiling mounted light", "surgical lamp",
-        "operating table", "surgical table", "examination table",
-        "medical monitor", "patient monitor", "display screen",
-        "pendant", "ceiling mount arm", "articulating arm",
-        "medical equipment", "hospital equipment", "medical device",
-        "competing medical equipment", "other brand equipment",
-        "people faces", "identifiable patients", "blood", "graphic medical content",
-        "blue monochrome", "cyan tint", "teal color", "neon blue", "blue cast",
-    ],
-    "lev_specific": [
-        "light rays spreading sideways", "diffused glow", "scattered light",
-        "lens flare", "light bleeding", "omnidirectional light",
-        "ceiling mounted fluorescent", "ambient room lighting",
-    ],
-}
 
-# Regras por produto
-PRODUCT_RULES = {
-    "lev": {
-        "description": "Foco cirurgico de teto LED — luz concentrada no campo",
-        "must_include": "visible ceiling area for ceiling-mounted equipment, surgical field below",
-        "never_include": "scattered light, diffused glow, lateral rays, other ceiling lights",
-        "preferred_techniques": ["dramatic_studio", "hero_shot"],
-        "preferred_lighting": ["dramatic_rim", "high_contrast"],
-        "extra_negatives": MANDATORY_NEGATIVES["lev_specific"],
-    },
-    "kratus": {
-        "description": "Mesa cirurgica robusta com posicoes ajustaveis",
-        "must_include": "clean floor area in center for surgical table, wide room",
-        "never_include": "other surgical tables, examination couch, gurney, stretcher",
-        "preferred_techniques": ["hero_shot", "environmental"],
-        "preferred_lighting": ["clinical_bright", "soft_diffused"],
-        "extra_negatives": [],
-    },
-    "ostus": {
-        "description": "Serra cirurgica eletrica para ortopedia",
-        "must_include": "sterile instrument area, draped surgical surface, precision context",
-        "never_include": "other power tools, hand saw, competing surgical instruments",
-        "preferred_techniques": ["detail_macro", "hero_shot"],
-        "preferred_lighting": ["clinical_bright", "high_contrast"],
-        "extra_negatives": [],
-    },
-    "kronus": {
-        "description": "Suporte pendente de teto biarticulado para equipamentos",
-        "must_include": "visible ceiling with mounting rails, upper wall area, gas panels",
-        "never_include": "floor-standing rack, wall TV bracket, consumer monitor arm",
-        "preferred_techniques": ["hero_shot", "environmental"],
-        "preferred_lighting": ["soft_diffused", "clinical_bright"],
-        "extra_negatives": [],
-    },
-}
+def _load_image_gen_config() -> dict:
+    global _IMG_CONFIG_CACHE
+    if _IMG_CONFIG_CACHE is not None:
+        return _IMG_CONFIG_CACHE
+    if _IMG_CONFIG_DATA_DIR:
+        path = _IMG_CONFIG_DATA_DIR / "image-generation-config.yaml"
+        if path.exists():
+            try:
+                _IMG_CONFIG_CACHE = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+                return _IMG_CONFIG_CACHE
+            except Exception as e:
+                logger.warning("Falha ao carregar image-generation-config.yaml: %s", e)
+    _IMG_CONFIG_CACHE = {}
+    return _IMG_CONFIG_CACHE
 
-# Perspectiva da camera por tipo de produto
-PRODUCT_SCENE_HINTS = {
-    "lev": {
-        "perspective": "camera at bed level looking UPWARD toward ceiling, showing ceiling and upper walls",
-        "spatial": "tall room, high ceiling prominent, vertical emphasis, space for ceiling-mounted light",
-    },
-    "kratus": {
-        "perspective": "camera at waist height, slightly elevated, looking toward center of room",
-        "spatial": "wide room, clean floor prominent, horizontal emphasis, space for table in center",
-    },
-    "ostus": {
-        "perspective": "camera at table height, close-up perspective, sterile instrument context",
-        "spatial": "tight clinical framing, draped surfaces, precision instrument environment",
-    },
-    "kronus": {
-        "perspective": "camera at standing height looking slightly upward toward ceiling area",
-        "spatial": "vertical space, ceiling and upper walls visible, mounting infrastructure context",
-    },
-}
 
-# Inferencia de produto por keywords
-PRODUCT_INFERENCE_MAP = {
-    "iluminacao": "lev", "iluminação": "lev", "foco": "lev", "luz": "lev",
-    "led": "lev", "surgical light": "lev", "visibilidade": "lev", "lev": "lev",
-    "mesa": "kratus", "table": "kratus", "posicionamento": "kratus",
-    "paciente": "kratus", "ergonomia": "kratus", "kratus": "kratus",
-    "serra": "ostus", "saw": "ostus", "corte": "ostus", "ortopedia": "ostus",
-    "osso": "ostus", "osteotomia": "ostus", "ostus": "ostus",
-    "suporte": "kronus", "pendente": "kronus", "monitor": "kronus",
-    "braço": "kronus", "articulado": "kronus", "kronus": "kronus",
-}
-HERO_PRODUCT = "lev"  # Produto principal da marca
+def init_image_gen_config(data_dir: Path) -> None:
+    """Inicializa data_dir para carregamento do YAML. Chamado no startup."""
+    global _IMG_CONFIG_DATA_DIR, _IMG_CONFIG_CACHE
+    _IMG_CONFIG_DATA_DIR = data_dir
+    _IMG_CONFIG_CACHE = None
+
+
+def get_prompt_dimensions() -> dict:
+    return _load_image_gen_config().get("prompt_dimensions", {})
+
+
+def get_mandatory_negatives() -> dict:
+    return _load_image_gen_config().get("mandatory_negatives", {})
+
+
+def get_product_rules() -> dict:
+    cfg = _load_image_gen_config()
+    rules = cfg.get("product_rules", {})
+    negatives = cfg.get("mandatory_negatives", {})
+    # Resolve extra_negatives_ref → lista real
+    for product, rule in rules.items():
+        ref = rule.get("extra_negatives_ref")
+        if ref and isinstance(ref, str):
+            rule["extra_negatives"] = negatives.get(ref, [])
+        elif not rule.get("extra_negatives"):
+            rule["extra_negatives"] = []
+    return rules
+
+
+def get_product_scene_hints() -> dict:
+    return _load_image_gen_config().get("product_scene_hints", {})
+
+
+def get_product_inference_map() -> dict:
+    return _load_image_gen_config().get("product_inference_map", {})
+
+
+def get_hero_product() -> str:
+    return _load_image_gen_config().get("hero_product", "lev")
 
 
 class AutoPromptNB2:
@@ -272,12 +196,12 @@ class AutoPromptNB2:
     def infer_product(objective: str = "", pillar: str = "", title: str = "", context: str = "") -> str:
         """Sugere produto com base no contexto. Retorna key ou '' se institucional."""
         text = f"{objective} {pillar} {title} {context}".lower()
-        for keyword, product in PRODUCT_INFERENCE_MAP.items():
+        for keyword, product in get_product_inference_map().items():
             if keyword in text:
                 return product
         # Pilares que tipicamente envolvem produto
         if pillar in ("produto",):
-            return HERO_PRODUCT
+            return get_hero_product()
         # Institucional, educacional sem keyword de produto = sem produto (FLUX)
         return ""
 
@@ -301,32 +225,32 @@ class AutoPromptNB2:
         O produto e inserido via upload separado no NB2.
         """
         product_key = product.lower()
-        product_rules = PRODUCT_RULES.get(product_key, {})
+        product_rules = get_product_rules().get(product_key, {})
 
         # Montar as 8 dimensoes
-        dim_tecnica = PROMPT_DIMENSIONS["tecnica"].get(
-            technique, PROMPT_DIMENSIONS["tecnica"]["dramatic_studio"]
+        dim_tecnica = get_prompt_dimensions()["tecnica"].get(
+            technique, get_prompt_dimensions()["tecnica"]["dramatic_studio"]
         )
-        dim_iluminacao = PROMPT_DIMENSIONS["iluminacao"].get(
-            lighting, PROMPT_DIMENSIONS["iluminacao"]["dramatic_rim"]
+        dim_iluminacao = get_prompt_dimensions()["iluminacao"].get(
+            lighting, get_prompt_dimensions()["iluminacao"]["dramatic_rim"]
         )
-        dim_cenario = PROMPT_DIMENSIONS["cenario"].get(
-            scene, PROMPT_DIMENSIONS["cenario"]["studio_neutro"]
+        dim_cenario = get_prompt_dimensions()["cenario"].get(
+            scene, get_prompt_dimensions()["cenario"]["studio_neutro"]
         )
-        dim_composicao = PROMPT_DIMENSIONS["composicao"].get(
-            composition, PROMPT_DIMENSIONS["composicao"]["central_hero"]
+        dim_composicao = get_prompt_dimensions()["composicao"].get(
+            composition, get_prompt_dimensions()["composicao"]["central_hero"]
         )
-        dim_atmosfera = PROMPT_DIMENSIONS["atmosfera"].get(
-            atmosphere, PROMPT_DIMENSIONS["atmosfera"]["premium_tech"]
+        dim_atmosfera = get_prompt_dimensions()["atmosfera"].get(
+            atmosphere, get_prompt_dimensions()["atmosfera"]["premium_tech"]
         )
-        dim_tecnico = PROMPT_DIMENSIONS["detalhes_tecnicos"].get(
-            format_type, PROMPT_DIMENSIONS["detalhes_tecnicos"]["square_social"]
+        dim_tecnico = get_prompt_dimensions()["detalhes_tecnicos"].get(
+            format_type, get_prompt_dimensions()["detalhes_tecnicos"]["square_social"]
         )
 
         # Construir negative prompt
         negatives = (
-            MANDATORY_NEGATIVES["universal"]
-            + MANDATORY_NEGATIVES["medical"]
+            get_mandatory_negatives()["universal"]
+            + get_mandatory_negatives()["medical"]
             + product_rules.get("extra_negatives", [])
         )
 
@@ -403,7 +327,7 @@ class AutoPromptNB2:
             )
 
         product_key = product.lower()
-        product_rules = PRODUCT_RULES.get(product_key, {})
+        product_rules = get_product_rules().get(product_key, {})
 
         # ── Brand Intelligence: contexto dinamico dos YAMLs ──
         brand_ctx = self._build_brand_context(brand)
@@ -459,7 +383,7 @@ O cenario, a atmosfera e os detalhes visuais devem ressoar com profissionais que
 INSTALAM e fazem MANUTENCAO de equipamentos em hospitais. Pense como o ICP ve o ambiente.
 """
         # Scene hints por produto (perspectiva, espacialidade)
-        scene_hints = PRODUCT_SCENE_HINTS.get(product_key, {})
+        scene_hints = get_product_scene_hints().get(product_key, {})
         if scene_hints:
             system += f"""
 === PERSPECTIVA ESPECIFICA PARA {product.upper()} ===
@@ -557,8 +481,8 @@ NEGATIVE: (prompt negativo em ingles)"""
 
         # Garantir negatives obrigatorios mesmo que LLM esqueca
         mandatory_neg = (
-            MANDATORY_NEGATIVES["universal"]
-            + MANDATORY_NEGATIVES["medical"]
+            get_mandatory_negatives()["universal"]
+            + get_mandatory_negatives()["medical"]
             + product_rules.get("extra_negatives", [])
         )
         all_negatives = negative + ", " + ", ".join(mandatory_neg) if negative else ", ".join(mandatory_neg)
@@ -580,10 +504,10 @@ NEGATIVE: (prompt negativo em ingles)"""
         """Lista todas as dimensoes e opcoes disponiveis."""
         return {
             dim: list(options.keys())
-            for dim, options in PROMPT_DIMENSIONS.items()
+            for dim, options in get_prompt_dimensions().items()
         }
 
     @staticmethod
     def list_products() -> list[str]:
         """Lista produtos com regras especificas."""
-        return list(PRODUCT_RULES.keys())
+        return list(get_product_rules().keys())

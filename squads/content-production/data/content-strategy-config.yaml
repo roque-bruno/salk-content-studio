@@ -1,0 +1,96 @@
+# Configuração de Estratégia de Conteúdo — Week Orchestrator
+# Editável via UI Recursos > Estratégia Conteúdo
+# Alimenta: week_orchestrator.py (WeekOrchestrator)
+
+pillar_weights:
+  salk:
+    produto: 30
+    educacional: 25
+    cases: 20
+    command: 15
+    licitacoes: 10
+  mendel:
+    produto_tecnico: 35
+    engenharia: 30
+    certificacoes: 20
+    bastidores: 15
+  manager-grupo:
+    cultura: 35
+    inovacao: 25
+    pessoas: 25
+    institucional: 15
+
+active_products:
+  salk:
+    - lev
+    - kratus
+    - ostus
+    - kronus
+  mendel:
+    - lev
+    - kratus
+    - ostus
+    - kronus
+  manager-grupo: []
+  dayho: []
+
+pillar_personas:
+  produto:
+    - eng_clinica
+    - compras
+    - equipe_medica
+  educacional:
+    - eng_clinica
+    - admin_hospitalar
+  cases:
+    - admin_hospitalar
+    - compras
+  command:
+    - eng_clinica
+    - equipe_medica
+  licitacoes:
+    - compras
+    - admin_hospitalar
+  produto_tecnico:
+    - eng_clinica
+  engenharia:
+    - eng_clinica
+  certificacoes:
+    - eng_clinica
+    - compras
+  bastidores:
+    - eng_clinica
+
+product_techniques:
+  lev:
+    technique: dramatic_studio
+    lighting: dramatic_rim
+    scene: centro_cirurgico
+    atmosphere: premium_tech
+  kratus:
+    technique: hero_shot
+    lighting: high_contrast
+    scene: centro_cirurgico
+    atmosphere: clean_medical
+  ostus:
+    technique: environmental
+    lighting: soft_diffused
+    scene: centro_cirurgico
+    atmosphere: modern_minimal
+  kronus:
+    technique: detail_macro
+    lighting: clinical_bright
+    scene: centro_cirurgico
+    atmosphere: premium_tech
+
+format_map:
+  "Carousel 4:5": square_social
+  "Reel 9:16": portrait_story
+  "Post 1:1": square_social
+  "Imagem 1200x627": 4k_landscape
+  Banner: wide_banner
+  "Texto+Imagem": square_social
+  "PDF Carousel": square_social
+  "Vídeo/Post": square_social
+  "Shorts 9:16": portrait_story
+  "Vídeo <90s": 4k_landscape

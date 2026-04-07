@@ -20,81 +20,49 @@ Regras:
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
-# Configuracao de formatos por plataforma
-PLATFORM_FORMATS = {
-    "instagram_post": {
-        "max_chars": 2200,
-        "hashtag_limit": 30,
-        "tone_adjustment": "visual, direto, emoji moderado",
-        "cta_style": "Link na bio, swipe, salve",
-    },
-    "instagram_story": {
-        "max_chars": 200,
-        "hashtag_limit": 5,
-        "tone_adjustment": "ultra-curto, casual, urgente",
-        "cta_style": "Arraste pra cima, Toque, Vote",
-    },
-    "instagram_reels": {
-        "max_chars": 300,
-        "hashtag_limit": 15,
-        "tone_adjustment": "dinamico, hook nos 3 primeiros segundos",
-        "cta_style": "Siga para mais, Comente, Compartilhe",
-    },
-    "linkedin_post": {
-        "max_chars": 3000,
-        "hashtag_limit": 5,
-        "tone_adjustment": "profissional, dados e resultados, storytelling corporativo",
-        "cta_style": "Comente sua experiencia, Saiba mais no link, Conecte-se",
-    },
-    "linkedin_article": {
-        "max_chars": 10000,
-        "hashtag_limit": 3,
-        "tone_adjustment": "formal, aprofundado, thought leadership",
-        "cta_style": "Leia o artigo completo, Compartilhe com sua rede",
-    },
-    "email_snippet": {
-        "max_chars": 500,
-        "hashtag_limit": 0,
-        "tone_adjustment": "pessoal, direto, valor claro",
-        "cta_style": "Clique aqui, Responda este email, Agende uma conversa",
-    },
-    "whatsapp_broadcast": {
-        "max_chars": 1000,
-        "hashtag_limit": 0,
-        "tone_adjustment": "conversacional, proximo, sem formalidade excessiva",
-        "cta_style": "Responda SIM, Clique no link, Fale com um consultor",
-    },
-}
+# ---------------------------------------------------------------------------
+# Carregamento dinâmico de atomization-config.yaml
+# ---------------------------------------------------------------------------
+_ATOM_CONFIG_CACHE: Optional[dict] = None
+_ATOM_DATA_DIR: Optional[Path] = None
 
-# Mapa de atomizacao: master → derivativos possiveis
-ATOMIZATION_MAP = {
-    "carrossel": [
-        "instagram_story",
-        "instagram_reels",
-        "linkedin_post",
-        "email_snippet",
-    ],
-    "post_unico": [
-        "instagram_story",
-        "linkedin_post",
-        "whatsapp_broadcast",
-    ],
-    "video_longo": [
-        "instagram_reels",
-        "instagram_story",
-        "linkedin_post",
-    ],
-    "artigo": [
-        "linkedin_post",
-        "instagram_post",
-        "email_snippet",
-        "whatsapp_broadcast",
-    ],
-}
+
+def _load_atom_config() -> dict:
+    global _ATOM_CONFIG_CACHE
+    if _ATOM_CONFIG_CACHE is not None:
+        return _ATOM_CONFIG_CACHE
+    if _ATOM_DATA_DIR:
+        path = _ATOM_DATA_DIR / "atomization-config.yaml"
+        if path.exists():
+            try:
+                _ATOM_CONFIG_CACHE = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+                return _ATOM_CONFIG_CACHE
+            except Exception as e:
+                logger.warning("Falha ao carregar atomization-config.yaml: %s", e)
+    _ATOM_CONFIG_CACHE = {}
+    return _ATOM_CONFIG_CACHE
+
+
+def init_atomization_config(data_dir: Path) -> None:
+    """Inicializa data_dir para carregamento do YAML."""
+    global _ATOM_DATA_DIR, _ATOM_CONFIG_CACHE
+    _ATOM_DATA_DIR = data_dir
+    _ATOM_CONFIG_CACHE = None
+
+
+def get_platform_formats() -> dict:
+    return _load_atom_config().get("platform_formats", {})
+
+
+def get_atomization_map() -> dict:
+    return _load_atom_config().get("atomization_map", {})
 
 
 class SemanticAtomizer:
@@ -118,7 +86,7 @@ class SemanticAtomizer:
             master_content: Conteudo original (copy, briefing, etc)
             master_type: Tipo do master (carrossel, post_unico, video_longo, artigo)
             brand: Marca para manter tom consistente
-            target_platforms: Plataformas alvo (ou auto via ATOMIZATION_MAP)
+            target_platforms: Plataformas alvo (ou auto via get_atomization_map())
             context: Contexto adicional (produto, campanha, etc)
 
         Returns:
@@ -128,12 +96,12 @@ class SemanticAtomizer:
         if target_platforms:
             platforms = target_platforms
         else:
-            platforms = ATOMIZATION_MAP.get(master_type, ["instagram_story", "linkedin_post"])
+            platforms = get_atomization_map().get(master_type, ["instagram_story", "linkedin_post"])
 
         derivatives = {}
 
         for platform in platforms:
-            fmt = PLATFORM_FORMATS.get(platform)
+            fmt = get_platform_formats().get(platform)
             if not fmt:
                 logger.warning(f"Plataforma desconhecida: {platform}")
                 continue
@@ -254,10 +222,10 @@ NOTAS: (ajustes feitos)"""
         master_type: str,
     ) -> dict:
         """Sugere derivativos possiveis para um tipo de master."""
-        platforms = ATOMIZATION_MAP.get(master_type, [])
+        platforms = get_atomization_map().get(master_type, [])
         suggestions = []
         for p in platforms:
-            fmt = PLATFORM_FORMATS.get(p, {})
+            fmt = get_platform_formats().get(p, {})
             suggestions.append({
                 "platform": p,
                 "max_chars": fmt.get("max_chars", 0),
@@ -274,12 +242,12 @@ NOTAS: (ajustes feitos)"""
     @staticmethod
     def list_master_types() -> list[str]:
         """Lista tipos de conteudo master disponiveis."""
-        return list(ATOMIZATION_MAP.keys())
+        return list(get_atomization_map().keys())
 
     @staticmethod
     def list_platforms() -> list[dict]:
         """Lista plataformas e seus limites."""
         return [
             {"platform": k, **v}
-            for k, v in PLATFORM_FORMATS.items()
+            for k, v in get_platform_formats().items()
         ]

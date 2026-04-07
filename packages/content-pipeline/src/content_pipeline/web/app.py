@@ -867,6 +867,78 @@ async def save_claims_bank(request: Request):
     return {"ok": True, "message": "Claims bank atualizado"}
 
 
+@app.get("/api/data/copywriter-config")
+async def get_copywriter_config():
+    return get_service().load_copywriter_config()
+
+
+@app.put("/api/data/copywriter-config")
+async def save_copywriter_config(request: Request):
+    data = await request.json()
+    get_service().save_copywriter_config(data)
+    return {"ok": True, "message": "Copywriter config atualizado — prompts de copy re-calibrados"}
+
+
+@app.get("/api/data/image-generation-config")
+async def get_image_generation_config():
+    return get_service().load_image_generation_config()
+
+
+@app.put("/api/data/image-generation-config")
+async def save_image_generation_config(request: Request):
+    data = await request.json()
+    get_service().save_image_generation_config(data)
+    return {"ok": True, "message": "Image generation config atualizado — prompts NB2 re-calibrados"}
+
+
+@app.get("/api/data/content-strategy-config")
+async def get_content_strategy_config():
+    return get_service().load_content_strategy_config()
+
+
+@app.put("/api/data/content-strategy-config")
+async def save_content_strategy_config(request: Request):
+    data = await request.json()
+    get_service().save_content_strategy_config(data)
+    return {"ok": True, "message": "Content strategy config atualizado — orquestrador re-calibrado"}
+
+
+@app.get("/api/data/atomization-config")
+async def get_atomization_config():
+    return get_service().load_atomization_config()
+
+
+@app.put("/api/data/atomization-config")
+async def save_atomization_config(request: Request):
+    data = await request.json()
+    get_service().save_atomization_config(data)
+    return {"ok": True, "message": "Atomization config atualizado — derivativos re-calibrados"}
+
+
+@app.get("/api/data/disaster-check-config")
+async def get_disaster_check_config():
+    return get_service().load_disaster_check_config()
+
+
+@app.put("/api/data/disaster-check-config")
+async def save_disaster_check_config(request: Request):
+    data = await request.json()
+    get_service().save_disaster_check_config(data)
+    return {"ok": True, "message": "Disaster check config atualizado — quality gate re-calibrado"}
+
+
+@app.get("/api/data/briefing-config")
+async def get_briefing_config():
+    return get_service().load_briefing_config()
+
+
+@app.put("/api/data/briefing-config")
+async def save_briefing_config(request: Request):
+    data = await request.json()
+    get_service().save_briefing_config(data)
+    return {"ok": True, "message": "Briefing config atualizado — Atlas re-calibrado"}
+
+
 @app.post("/api/data/invalidate-cache")
 async def invalidate_all_caches():
     get_service().invalidate_all_caches()
@@ -2443,8 +2515,8 @@ async def rewrite_copy(req: Request, user: dict = Depends(require_auth)):
 @app.get("/api/automation/copy/copywriters")
 async def list_copywriters():
     """Lista copywriters disponiveis por marca."""
-    from content_pipeline.automation.copywriter import BRAND_COPYWRITERS
-    return {k: {"name": v["name"]} for k, v in BRAND_COPYWRITERS.items()}
+    from content_pipeline.automation.copywriter import get_brand_copywriters
+    return {k: {"name": v["name"]} for k, v in get_brand_copywriters().items()}
 
 
 # =========================================================================
