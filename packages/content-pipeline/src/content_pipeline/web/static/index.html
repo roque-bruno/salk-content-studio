@@ -3601,7 +3601,7 @@ body.zen-mode .tab-bar { display: none !important; }
 
   <div class="sidebar-section" style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px;">
     <div class="sidebar-section-title">Motor IA</div>
-    <div class="sidebar-item" :class="{ active: tab === 'reference' && !['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection) }" role="button" @click="tab='reference'; sidebarOpen=false" title="Marca">
+    <div class="sidebar-item" :class="{ active: tab === 'reference' && !['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection) }" role="button" @click="tab='reference'; refActiveSection='brandbooks'; loadRefSection('brandbooks'); sidebarOpen=false" title="Marca">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Marca
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'reference' && refActiveSection === 'copywriters' }" role="button" @click="tab='reference'; refActiveSection='copywriters'; loadRefSection('copywriters'); sidebarOpen=false" title="Copywriters">
@@ -3658,8 +3658,8 @@ body.zen-mode .tab-bar { display: none !important; }
   <div style="display: flex; align-items: center; gap: 12px;">
     <button class="sidebar-toggle" @click="sidebarOpen = !sidebarOpen">&#9776;</button>
     <div>
-      <h2 x-text="tabTitles[tab]"></h2>
-      <div class="subtitle" x-text="tabSubtitles[tab]"></div>
+      <h2 x-text="tab === 'reference' && ['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection) ? ({copywriters:'Copywriters',imagegen:'Geração de Imagem',strategy:'Estratégia de Conteúdo',atomization:'Atomização',qualitygate:'Quality Gate',briefing:'Briefing Atlas'})[refActiveSection] : tabTitles[tab]"></h2>
+      <div class="subtitle" x-text="tab === 'reference' && ['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection) ? ({copywriters:'Personalidades e prompts dos redatores por marca',imagegen:'Dimensões, negativas e regras de geração visual',strategy:'Pesos de pilares, produtos ativos e técnicas',atomization:'Formatos por plataforma e mapa de derivações',qualitygate:'Checagens de qualidade antes da publicação',briefing:'Prompt do Atlas para geração automática de briefings'})[refActiveSection] : tabSubtitles[tab]"></div>
     </div>
   </div>
   <div style="display: flex; align-items: center; gap: 10px;">
@@ -7243,20 +7243,12 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- TAB: RECURSOS — Dados Estrategicos Editaveis -->
 <!-- ===================================================== -->
 <div x-show="tab === 'reference'" class="tab-content">
-  <!-- Header com sub-tabs + botoes de acao -->
+  <!-- Header com sub-tabs (só Marca) + botoes de acao -->
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
     <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
-      <!-- Grupo 1: Dados de Marca -->
-      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-        <span style="font-size: 0.64rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; min-width: 50px;">Marca</span>
+      <!-- Sub-tabs de Marca — só aparecem quando estiver numa seção de Marca -->
+      <div x-show="!['copywriters','imagegen','strategy','atomization','qualitygate','briefing'].includes(refActiveSection)" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
         <template x-for="sec in [{key:'brandbooks',label:'Brandbooks'},{key:'personas',label:'Buyer Personas'},{key:'prohibited',label:'Termos Proibidos'},{key:'claims',label:'Claims'},{key:'hashbank',label:'Hashtags'},{key:'guidelines',label:'Diretrizes'},{key:'specs',label:'Specs Plataforma'},{key:'editorial',label:'Calendario'}]">
-          <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; refEditMode = false; loadRefSection(sec.key)" style="font-size: 0.72rem; padding: 5px 12px;" x-text="sec.label"></button>
-        </template>
-      </div>
-      <!-- Grupo 2: Motor de Automação -->
-      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-        <span style="font-size: 0.64rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; min-width: 50px;">Motor</span>
-        <template x-for="sec in [{key:'copywriters',label:'Copywriters'},{key:'imagegen',label:'Geração Imagem'},{key:'strategy',label:'Estratégia Conteúdo'},{key:'atomization',label:'Atomização'},{key:'qualitygate',label:'Quality Gate'},{key:'briefing',label:'Briefing Atlas'}]">
           <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; refEditMode = false; loadRefSection(sec.key)" style="font-size: 0.72rem; padding: 5px 12px;" x-text="sec.label"></button>
         </template>
       </div>
