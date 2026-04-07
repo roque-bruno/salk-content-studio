@@ -365,10 +365,11 @@ LEMBRE: o prompt descreve o AMBIENTE. O produto NAO aparece no prompt. O centro 
         elif not product:
             system += """
 === CONTEUDO INSTITUCIONAL (sem produto especifico) ===
-- Cenario hospitalar generico premium — corredor, recepcao, fachada
-- Nao precisa de espaco vazio no centro (nenhum produto sera inserido)
-- Pode mostrar o AMBIENTE completo, perspectiva livre
-- Foco em transmitir profissionalismo, tecnologia, confianca
+- A imagem deve refletir o TEMA/OBJETIVO do conteudo (ex: Dia da Engenharia, Dia do Medico, etc.)
+- Contexto HOSPITALAR ou de SAUDE, mas adaptado ao tema
+- Pode mostrar o AMBIENTE completo, perspectiva livre, pessoas desfocadas ao fundo se fizer sentido
+- Foco em transmitir profissionalismo, tecnologia, inovacao, humanidade
+- Se o tema for uma data comemorativa, capture a essencia dessa profissao/data no contexto hospitalar
 """
 
         # Contexto rico do briefing e objetivo
@@ -378,7 +379,8 @@ LEMBRE: o prompt descreve o AMBIENTE. O produto NAO aparece no prompt. O centro 
         if objective:
             context_block += f"\nOBJETIVO/TEMA: {objective}\n"
 
-        user_prompt = f"""Crie um prompt de cenario hospitalar para inserir o produto {product or 'Salk Medical'}.
+        if product:
+            user_prompt = f"""Crie um prompt de cenario hospitalar para inserir o produto {product}.
 {context_block}
 Conceito: {concept or 'centro cirurgico premium, vazio no centro, pronto para inserir produto'}
 Formato: {format_type}
@@ -392,7 +394,29 @@ CRITICO — O prompt descreve SOMENTE o ambiente/cenario:
 - Cores QUENTES e NEUTRAS (branco, cinza, creme, prata) — NUNCA azul dominante
 
 TERMINAR o prompt com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing, no labels, no medical equipment, empty center"
+"""
+        else:
+            user_prompt = f"""Crie um prompt para imagem institucional da Salk Medical.
+{context_block}
+Conceito: {concept or 'conteudo institucional premium'}
+Formato: {format_type}
 
+O prompt DEVE refletir o TEMA/OBJETIVO acima. Exemplos:
+- "Dia da Engenharia" → engenheiros biomedicos trabalhando em equipamentos hospitalares, plantas tecnicas, ferramentas de precisao
+- "Dia do Medico" → ambiente cirurgico premium, equipe medica desfocada, atmosfera de excelencia
+- "Inovacao" → corredor hospitalar futurista, tecnologia avancada, design clean
+
+REGRAS:
+- A imagem deve contar uma HISTORIA relacionada ao tema, nao ser uma sala vazia
+- Pode incluir PESSOAS desfocadas ou silhuetas se fizer sentido para o tema
+- Cores QUENTES e NEUTRAS — NUNCA azul monocromatico dominante
+- Nao descreva equipamentos medicos especificos (nao citar marca, modelo)
+- Contexto sempre HOSPITALAR/SAUDE, mas o foco e o TEMA
+
+TERMINAR com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing, no labels"
+"""
+
+        user_prompt += """
 Responda EXATAMENTE neste formato:
 POSITIVE: (prompt em ingles)
 NEGATIVE: (prompt negativo em ingles)"""
