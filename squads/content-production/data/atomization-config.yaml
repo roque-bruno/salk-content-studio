@@ -1,8 +1,51 @@
-# Configuração de Atomização — Nova (Semantic Atomizer)
+# Configuração de Atomização — Recalibrada IC (Story 14.3)
 # Editável via UI Recursos > Atomização
 # Alimenta: atomizer.py (SemanticAtomizer)
+# MUDANÇA CHAVE: WhatsApp como canal PRIMÁRIO (não derivado) — Score IC 95
 
 platform_formats:
+  # ── Canal #1: WhatsApp (Score IC: 95) ──
+  whatsapp_nurturing:
+    max_chars: 1000
+    hashtag_limit: 0
+    tone_adjustment: "conversacional, próximo, técnico quando necessário"
+    cta_style: "Responda SIM, Clique no link, Fale com um consultor"
+    note: "Canal PRIMÁRIO — sequências de nurturing por fase da jornada"
+  whatsapp_catalog:
+    max_chars: 500
+    hashtag_limit: 0
+    tone_adjustment: "direto, specs resumidas, visual"
+    cta_style: "Solicite cotação, Veja demo, Fale com consultor"
+    note: "Catálogo de produtos para encaminhamento por reps"
+  whatsapp_broadcast:
+    max_chars: 1000
+    hashtag_limit: 0
+    tone_adjustment: "conversacional, proximo, sem formalidade excessiva"
+    cta_style: "Responda SIM, Clique no link, Fale com um consultor"
+
+  # ── Canal #3: YouTube (Score IC: 85) ──
+  # (specs de vídeo em platform-specs.yaml)
+
+  # ── Canal #4: LinkedIn (Score IC: 80) ──
+  linkedin_post:
+    max_chars: 3000
+    hashtag_limit: 5
+    tone_adjustment: "profissional, dados e resultados, storytelling corporativo"
+    cta_style: "Comente sua experiencia, Saiba mais no link, Conecte-se"
+  linkedin_article:
+    max_chars: 10000
+    hashtag_limit: 3
+    tone_adjustment: "formal, aprofundado, thought leadership"
+    cta_style: "Leia o artigo completo, Compartilhe com sua rede"
+
+  # ── Canal #5: Email (Score IC: 75) ──
+  email_snippet:
+    max_chars: 500
+    hashtag_limit: 0
+    tone_adjustment: "pessoal, direto, valor claro"
+    cta_style: "Clique aqui, Responda este email, Agende uma conversa"
+
+  # ── Canal #6: Instagram (Score IC: 45) — Awareness only ──
   instagram_post:
     max_chars: 2200
     hashtag_limit: 30
@@ -18,43 +61,34 @@ platform_formats:
     hashtag_limit: 15
     tone_adjustment: "dinamico, hook nos 3 primeiros segundos"
     cta_style: "Siga para mais, Comente, Compartilhe"
-  linkedin_post:
-    max_chars: 3000
-    hashtag_limit: 5
-    tone_adjustment: "profissional, dados e resultados, storytelling corporativo"
-    cta_style: "Comente sua experiencia, Saiba mais no link, Conecte-se"
-  linkedin_article:
-    max_chars: 10000
-    hashtag_limit: 3
-    tone_adjustment: "formal, aprofundado, thought leadership"
-    cta_style: "Leia o artigo completo, Compartilhe com sua rede"
-  email_snippet:
-    max_chars: 500
-    hashtag_limit: 0
-    tone_adjustment: "pessoal, direto, valor claro"
-    cta_style: "Clique aqui, Responda este email, Agende uma conversa"
-  whatsapp_broadcast:
-    max_chars: 1000
-    hashtag_limit: 0
-    tone_adjustment: "conversacional, proximo, sem formalidade excessiva"
-    cta_style: "Responda SIM, Clique no link, Fale com um consultor"
+
+  # Facebook: DESCONTINUADO (Score IC: 0 — Story 14.3)
 
 atomization_map:
   carrossel:
+    - whatsapp_nurturing
+    - linkedin_post
     - instagram_story
     - instagram_reels
-    - linkedin_post
     - email_snippet
   post_unico:
-    - instagram_story
-    - linkedin_post
     - whatsapp_broadcast
+    - linkedin_post
+    - instagram_story
   video_longo:
+    - whatsapp_nurturing
+    - linkedin_post
     - instagram_reels
     - instagram_story
-    - linkedin_post
   artigo:
+    - whatsapp_nurturing
     - linkedin_post
     - instagram_post
     - email_snippet
-    - whatsapp_broadcast
+  spec_tecnica:
+    - whatsapp_catalog
+    - linkedin_post
+    - email_snippet
+  tutorial_posvenda:
+    - whatsapp_nurturing
+    - email_snippet

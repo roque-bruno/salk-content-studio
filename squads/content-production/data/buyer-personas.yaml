@@ -2,16 +2,35 @@
 # Fonte: docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md (linhas 337-371)
 # Fonte: docs/MAPEAMENTO_ORGANIZACIONAL.md
 
-version: "1.0"
-last_updated: "2026-03-16"
+version: "2.0"
+last_updated: "2026-04-07"
+
+# ═══════════════════════════════════════════════════════════════
+# PRIORIZAÇÃO IC — Quem inicia a compra hospitalar (Story 14.5)
+# ═══════════════════════════════════════════════════════════════
+priority_weights:
+  note: "Validado pela IC — JORNADA_COMPRA_HOSPITALAR_BRASIL.md"
+  purchase_initiation:
+    engenharia_clinica: 60    # Identifica obsolescência e custos
+    equipe_medica: 25         # Demanda por nova tecnologia
+    administradores: 10       # Expansão estratégica
+    compras: 5                # Renovação vs substituição
+  content_allocation:
+    engenharia_clinica: 40    # Persona #1 — 40% do conteúdo direcionado
+    compras: 30               # Persona #2 — segundo decisor na cadeia
+    equipe_medica: 20         # Persona #3
+    administradores: 10       # Persona #4
 
 personas:
 
   # ═══════════════════════════════════════════════════════════
-  # PERSONA 1: Compras/Suprimentos
+  # PERSONA 1 (IC): Compras/Suprimentos — Content allocation: 30%
+  # Reordenado: era Persona 1 no sistema, agora Persona 2 pela IC
   # ═══════════════════════════════════════════════════════════
 
   compras:
+    priority_weight: 30
+    priority_rank: 2
     title: "Gerente/Analista de Compras/Suprimentos"
     also_known_as: ["Setor de Compras", "Comissão de Licitação", "Pregoeiro"]
     decision_role: "Decisor financeiro / Gate de aprovação"
@@ -45,10 +64,13 @@ personas:
       - "Solicite uma proposta personalizada"
 
   # ═══════════════════════════════════════════════════════════
-  # PERSONA 2: Engenharia Clínica
+  # PERSONA 2 (IC): Engenharia Clínica — Content allocation: 40% — PERSONA #1
+  # IC: Inicia 60% das compras. Prioridade máxima de conteúdo.
   # ═══════════════════════════════════════════════════════════
 
   engenharia_clinica:
+    priority_weight: 40
+    priority_rank: 1
     title: "Engenheiro(a) Clínico(a)"
     also_known_as: ["Engenharia Biomédica", "Departamento de Eng. Clínica"]
     decision_role: "Influenciador técnico / Especificador"
@@ -82,10 +104,13 @@ personas:
       - "Agende uma demonstração técnica gratuita"
 
   # ═══════════════════════════════════════════════════════════
-  # PERSONA 3: Equipe Médica / Cirurgiões
+  # PERSONA 3 (IC): Equipe Médica / Cirurgiões — Content allocation: 20%
+  # IC: Inicia 25% das compras (demanda por nova tecnologia)
   # ═══════════════════════════════════════════════════════════
 
   equipe_medica:
+    priority_weight: 20
+    priority_rank: 3
     title: "Cirurgião(ã) / Equipe Médica"
     also_known_as: ["Corpo Clínico", "Equipe Cirúrgica"]
     decision_role: "Influenciador de uso / Usuário final"
@@ -117,10 +142,13 @@ personas:
       - "Envie para seu engenheiro clínico"
 
   # ═══════════════════════════════════════════════════════════
-  # PERSONA 4: Administradores Hospitalares
+  # PERSONA 4 (IC): Administradores Hospitalares — Content allocation: 10%
+  # IC: Inicia 10% das compras (expansão estratégica)
   # ═══════════════════════════════════════════════════════════
 
   administradores:
+    priority_weight: 10
+    priority_rank: 4
     title: "Diretor(a) / Administrador(a) Hospitalar"
     also_known_as: ["Superintendência", "Gestão Hospitalar", "Diretoria Administrativa"]
     decision_role: "Decisor estratégico / Aprovador final"

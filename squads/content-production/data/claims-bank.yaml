@@ -4,8 +4,8 @@
 # REGRA: Todo conteúdo técnico DEVE usar EXCLUSIVAMENTE claims deste banco.
 # Nenhum claim pode ser inventado (Constitution Article IV — No Invention).
 
-version: "2.0"
-last_updated: "2026-03-25"
+version: "3.0"
+last_updated: "2026-04-07"
 review_cycle: "trimestral"
 owner: "Shield (compliance-guardian)"
 
@@ -200,6 +200,64 @@ focos_cirurgicos:
     allowed_formats: all
     notes: "Modelo M1LEC possui câmera integrada de fábrica"
 
+  # ── Claims IC — Diferenciais ausentes (Auditoria 2026-04-07) ──
+
+  - id: LEV-21
+    claim: "Profundidade de iluminação de 1.930 mm na cúpula 4LEV — ~2x a média de mercado"
+    accessible: "Luz que alcança cavidades profundas"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual LEV"
+    allowed_formats: all
+    notes: "Profundidade crítica para cirurgias abdominais profundas e torácicas"
+
+  - id: LEV-22
+    claim: "5 articulações no braço — vs 3-4 típico do mercado"
+    accessible: "Posicionamento preciso em qualquer ângulo"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual LEV"
+    allowed_formats: all
+    notes: "Mais graus de liberdade = melhor posicionamento sem comprometer esterilidade"
+
+  - id: LEV-23
+    claim: "Recarga de bateria em 2-4,5h — vs 12h da concorrência (até 6x mais rápido)"
+    accessible: "Pronto para a próxima emergência em tempo recorde"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Battlecard FOCOS vs KSS"
+    allowed_formats: all
+    restriction: "NÃO citar concorrente por nome — usar 'média de mercado' ou 'concorrência'"
+    notes: "KSS precisa de 12h para recarga completa. LEV em 2-4,5h dependendo do modelo"
+
+  - id: LEV-24
+    claim: "Vida útil do equipamento de 10 anos — 2x concorrentes (5 anos típico)"
+    accessible: "Investimento que dura o dobro"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC)"
+    allowed_formats: all
+    restriction: "NÃO citar concorrente por nome"
+    notes: "Impacto direto no TCO — cálculo de 10 anos vs 5 anos muda completamente a decisão de compra"
+
+  - id: LEV-25
+    claim: "Câmera integrada na manopla (M1LEC) — exclusivo no mercado nacional"
+    accessible: "Registro do procedimento direto do campo cirúrgico"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual LEV"
+    allowed_formats: all
+    notes: "Atualização do LEV-20 com contexto de exclusividade — nenhum concorrente nacional oferece"
+
+  - id: LEV-26
+    claim: "Peso da cúpula 4LEV: apenas 7,2 kg — leveza para posicionamento ágil"
+    accessible: "Leve como precisa ser, potente como deve ser"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+
+  - id: LEV-27
+    claim: "Controle de intensidade por toque capacitivo no painel frontal"
+    accessible: "Ajuste intuitivo sem botões mecânicos"
+    status: APROVADO
+    source: "Manual MM013-090070-R04 (Teto/Parede)"
+    allowed_formats: all
+
 # ═══════════════════════════════════════════════════════════════
 # KRATUS — Mesa Cirúrgica
 # ═══════════════════════════════════════════════════════════════
@@ -276,6 +334,72 @@ kratus:
     source: "Manual KRATUS"
     allowed_formats: all
 
+  # ── Claims IC — Diferenciais ausentes (Auditoria 2026-04-07) ──
+
+  - id: KR-11
+    claim: "Potência de 840 VA — 2,1x maior que qualquer mesa nacional"
+    accessible: "A mesa mais potente do mercado nacional"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual KRATUS"
+    allowed_formats: all
+    notes: "Argumento imbatível — nenhum concorrente nacional se aproxima. Diferencial crítico para ortopedia e bariátrica"
+
+  - id: KR-12
+    claim: "Área livre para arco C de 2.293 mm — a maior do mercado"
+    accessible: "Visibilidade radiológica completa durante a cirurgia"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual KRATUS"
+    allowed_formats: all
+    notes: "Ortopedistas compram por este diferencial — área livre permite posicionamento do arco C sem restrição"
+
+  - id: KR-13
+    claim: "7 seções radiotransparentes para visibilidade completa"
+    accessible: "Imagem sem obstáculos em qualquer posição"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual KRATUS"
+    allowed_formats: all
+    notes: "Radiotransparência completa durante procedimentos com fluoroscopia"
+
+  - id: KR-14
+    claim: "Sistema exclusivo de 3 baterias 36V — único no mercado"
+    accessible: "Segurança triplicada em emergências"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual KRATUS"
+    allowed_formats: all
+    notes: "Sistema redundante que garante operação mesmo com falha de 1 ou 2 baterias"
+
+  - id: KR-15
+    claim: "Rodízios auto-travantes com trava centralizada"
+    accessible: "Trava segura com um único acionamento"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual KRATUS"
+    allowed_formats: all
+    notes: "Segurança operacional — trava todas as rodas simultaneamente"
+
+  - id: KR-16
+    claim: "Estofamento PU antiestático — segurança com eletrocautério"
+    accessible: "Proteção contra descargas durante procedimentos"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual KRATUS"
+    allowed_formats: all
+    notes: "Compatível com uso de eletrocautério sem risco de descarga estática"
+
+  - id: KR-17
+    claim: "30+ acessórios compatíveis — portfólio mais completo do mercado"
+    accessible: "Acessório certo para cada especialidade"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Catálogo Salk"
+    allowed_formats: all
+    notes: "Inclui perneiras, apoios, suportes, estribos para todas as especialidades cirúrgicas"
+
+  - id: KR-18
+    claim: "Coluna telescópica com curso de elevação de 400mm"
+    accessible: "Altura ideal para qualquer cirurgião"
+    status: APROVADO
+    source: "Manual KRATUS"
+    allowed_formats: all
+    notes: "Ajuste de altura suave e preciso via sistema eletro-hidráulico"
+
 # ═══════════════════════════════════════════════════════════════
 # OSTUS — Serra Cirúrgica
 # ═══════════════════════════════════════════════════════════════
@@ -300,6 +424,62 @@ ostus:
     accessible: "Tecnologia brasileira"
     status: APROVADO
     source: "Documentação institucional"
+    allowed_formats: all
+
+  # ── Claims IC — Diferenciais OSTUS (Auditoria 2026-04-07) ──
+
+  - id: OS-04
+    claim: "Único fabricante nacional de serra para 3 áreas: ortopedia + esternal + craniotomia"
+    accessible: "Monopólio nacional — 3 aplicações em 1 equipamento"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + BATTLECARD_OSTUS_vs_STRYKER.md"
+    allowed_formats: all
+    notes: "Stryker (importado) é o único outro fabricante com 3 áreas. OSTUS é a alternativa nacional."
+
+  - id: OS-05
+    claim: "Rotação de 28.000 RPM em todos os cabeçotes — par com premium importado"
+    accessible: "Potência de corte equivalente ao líder mundial"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual OSTUS"
+    allowed_formats: all
+    notes: "Stryker System 8: 12.000-20.000 RPM. OSTUS 40-133% superior em RPM."
+
+  - id: OS-06
+    claim: "Potência constante de 750 VA — não degrada sob carga"
+    accessible: "Corte consistente do primeiro ao último procedimento"
+    status: APROVADO
+    source: "BATTLECARD_OSTUS_vs_STRYKER.md (IC) + Manual OSTUS"
+    allowed_formats: all
+    notes: "Cordless (Stryker) perde potência conforme bateria descarrega. OSTUS via rede = constante."
+
+  - id: OS-07
+    claim: "TCO 60-75% menor que importados em 5 anos"
+    accessible: "Economia de R$110-230K por unidade vs importado"
+    status: APROVADO
+    source: "BATTLECARD_OSTUS_vs_STRYKER.md (IC)"
+    restriction: "NÃO citar Stryker por nome — usar 'importados'"
+    notes: "OSTUS ~R$60-70K TCO 5 anos vs Stryker ~R$180-300K"
+
+  - id: OS-08
+    claim: "Pedal IPX8 submersível — funciona em qualquer condição do CC"
+    accessible: "Esterilização por imersão, sem restrições"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual OSTUS"
+    allowed_formats: all
+
+  - id: OS-09
+    claim: "Bateria removível com troca rápida em campo — zero downtime"
+    accessible: "Troca de bateria sem sair do CC"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC)"
+    allowed_formats: all
+    notes: "Importados: enviar para assistência técnica. OSTUS: hospital troca no CC."
+
+  - id: OS-10
+    claim: "Nível de ruído documentado: 90 dB — único fabricante que publica esse dado"
+    accessible: "Transparência técnica que concorrentes não oferecem"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + Manual MM015-090019 R04"
     allowed_formats: all
 
 # ═══════════════════════════════════════════════════════════════
@@ -327,6 +507,45 @@ kronus:
     status: APROVADO
     source: "Documentação institucional"
     allowed_formats: all
+
+  # ── Claims IC — Diferenciais KRONUS (Auditoria 2026-04-07) ──
+
+  - id: KN-04
+    claim: "Capacidade de até 300 kg — suporta qualquer configuração de CC"
+    accessible: "Carga para os equipamentos mais pesados"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) + BATTLECARD_KRONUS_vs_IMPORTADOS.md"
+    allowed_formats: all
+
+  - id: KN-05
+    claim: "Torre móvel com rodízios — EXCLUSIVO no mercado (nacional e importado)"
+    accessible: "Realoque todo o conjunto entre salas em minutos"
+    status: APROVADO
+    source: "BATTLECARD_KRONUS_vs_IMPORTADOS.md (IC)"
+    allowed_formats: all
+    notes: "Nenhum concorrente nacional ou importado oferece torre mid-premium móvel com gases+elétrica+vídeo"
+
+  - id: KN-06
+    claim: "8 modelos disponíveis (Torre/Mono/Bi/Torre Monitor × 150K/300K)"
+    accessible: "Configuração personalizada para qualquer CC"
+    status: APROVADO
+    source: "BATTLECARD_KRONUS_vs_IMPORTADOS.md (IC)"
+    allowed_formats: all
+    notes: "Concorrentes típicos: 2-4 modelos. KRONUS: portfólio mais completo."
+
+  - id: KN-07
+    claim: "Montagem em teto E parede — flexibilidade arquitetônica"
+    accessible: "Atende CCs sem pé-direito adequado"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC)"
+    allowed_formats: all
+
+  - id: KN-08
+    claim: "TCO 50-70% menor que importados (peças nacionais, assistência direta)"
+    accessible: "Investimento que custa metade do importado"
+    status: APROVADO
+    source: "BATTLECARD_KRONUS_vs_IMPORTADOS.md (IC)"
+    restriction: "NÃO citar Mindray ou Dräger por nome"
 
 # ═══════════════════════════════════════════════════════════════
 # COMMAND — Sistema Integrado
@@ -376,6 +595,60 @@ comparativos:
     source: "Benchmarking de mercado"
     restriction: "Verificar periodicamente — pode mudar"
 
+  # ── Claims Comparativos IC — Battlecards (Auditoria 2026-04-07) ──
+
+  - id: CMP-04
+    claim: "KRATUS 840 VA vs média de mercado ~400 VA — potência 2,1x superior"
+    accessible: "A mesa mais potente do mercado nacional"
+    status: APROVADO
+    source: "Battlecard KRATUS vs KSS + BARRFAB (IC)"
+    restriction: "NÃO citar concorrentes por nome — usar 'média de mercado'"
+    notes: "Baseado em specs públicas de fichas técnicas dos concorrentes"
+
+  - id: CMP-05
+    claim: "Área livre arco C KRATUS 2.293mm vs 1.800-2.000mm típico — 15-27% maior"
+    accessible: "A maior área de imagem do mercado"
+    status: APROVADO
+    source: "Battlecard KRATUS vs KSS (IC)"
+    restriction: "Incluir nota: *Baseado em dados públicos de fichas técnicas"
+
+  - id: CMP-06
+    claim: "Recarga LEV em 2-4,5h vs 12h da média — até 6x mais rápido"
+    accessible: "Pronto para emergência muito antes"
+    status: APROVADO
+    source: "Battlecard FOCOS vs KSS (IC)"
+    restriction: "NÃO citar concorrente por nome"
+    notes: "Impacto direto na rotatividade do centro cirúrgico"
+
+  - id: CMP-07
+    claim: "Profundidade de iluminação LEV 1.930mm vs ~1.000mm típico — ~2x maior"
+    accessible: "Alcança onde outros não chegam"
+    status: APROVADO
+    source: "Battlecard FOCOS vs KSS + MEDLIGHT (IC)"
+    restriction: "NÃO citar concorrente por nome"
+
+  - id: CMP-08
+    claim: "Vida útil LEV 10 anos vs 5 anos típico — TCO 50% menor por ano"
+    accessible: "O cálculo que muda a decisão"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC)"
+    restriction: "NÃO citar concorrente por nome"
+    notes: "Argumento de TCO devastador para Compras e Diretoria — R$/ano significativamente menor"
+
+  - id: CMP-09
+    claim: "KRATUS: único com 7 seções radiotransparentes vs 3-5 típico"
+    accessible: "Visibilidade radiológica superior em qualquer posição"
+    status: APROVADO
+    source: "Battlecard KRATUS vs BARRFAB (IC)"
+    restriction: "NÃO citar concorrente por nome"
+
+  - id: CMP-10
+    claim: "LEV com 5 articulações vs 3-4 padrão de mercado"
+    accessible: "Mais liberdade de posicionamento"
+    status: APROVADO
+    source: "Battlecard FOCOS (IC)"
+    restriction: "NÃO citar concorrente por nome"
+
 # ═══════════════════════════════════════════════════════════════
 # CLAIMS INSTITUCIONAIS
 # ═══════════════════════════════════════════════════════════════
@@ -405,3 +678,35 @@ institucional:
     status: APROVADO
     source: "docs/MAPEAMENTO_ORGANIZACIONAL.md"
     allowed_formats: all
+
+  # ── Claims IC — Diferenciais Transversais (Auditoria 2026-04-07) ──
+
+  - id: INST-05
+    claim: "Único fabricante nacional com portfólio completo de CC: foco + mesa + serra + suporte + integração"
+    accessible: "Um fornecedor, um contrato, uma assistência — o CC inteiro"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) — Diferenciais Transversais"
+    allowed_formats: all
+    notes: "Ecossistema 5/5 — nenhum concorrente nacional iguala. KSS=3/5, BARRFAB=2/5"
+
+  - id: INST-06
+    claim: "Margem de preferência de até 20% em licitações (Decreto 11.889 / Lei 14.133)"
+    accessible: "Vantagem legal em compras públicas"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) — Legislação vigente"
+    allowed_formats: all
+    notes: "Aplicável a todos os produtos Mendel como fabricante nacional"
+
+  - id: INST-07
+    claim: "Documentação técnica completa — publica dados que concorrentes omitem (ruído, irradiância, carga teste)"
+    accessible: "Transparência que gera confiança"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC)"
+    allowed_formats: all
+
+  - id: INST-08
+    claim: "Melhor custo-benefício em TODOS os produtos — specs de premium por preço de intermediário"
+    accessible: "Performance premium, investimento acessível"
+    status: APROVADO
+    source: "DIFERENCIAIS_POSITIVOS_MENDEL.md (IC) — Diferenciais Transversais"
+    restriction: "NÃO citar concorrentes por nome"

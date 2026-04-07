@@ -3,8 +3,8 @@
 # Estratégia escada: core (sempre) + produto (rotar) + nicho (complementar)
 # Instagram: 11 hashtags totais | LinkedIn: 3-5 totais
 
-version: "1.0"
-last_updated: "2026-03-16"
+version: "2.0"
+last_updated: "2026-04-07"
 
 # ═══════════════════════════════════════════════════════════════
 # SALK MEDICAL
@@ -59,6 +59,25 @@ salk_medical:
       - "#DispositivoMedico"
       - "#FabricacaoNacional"
 
+  youtube:
+    max: 15
+    tags:
+      - "foco cirurgico led"
+      - "mesa cirurgica eletrica"
+      - "equipamento medico"
+      - "centro cirurgico"
+      - "engenharia clinica"
+      - "iluminacao cirurgica"
+      - "salk medical"
+      - "LEV foco cirurgico"
+      - "KRATUS mesa cirurgica"
+      - "equipamento hospitalar"
+      - "dispositivo medico nacional"
+      - "demonstracao equipamento medico"
+      - "serra cirurgica"
+      - "sala cirurgica"
+      - "fabricante nacional saude"
+
 # ═══════════════════════════════════════════════════════════════
 # MENDEL MEDICAL
 # ═══════════════════════════════════════════════════════════════
@@ -100,6 +119,20 @@ mendel_medical:
       - "#EngenhariaClinica"
       - "#ANVISA"
       - "#InovacaoMedica"
+
+  youtube:
+    max: 15
+    tags:
+      - "mendel medical"
+      - "fabricante equipamento medico"
+      - "engenharia biomedica"
+      - "fabricacao nacional saude"
+      - "ANVISA equipamento medico"
+      - "NBR IEC 60601"
+      - "CNC usinagem medica"
+      - "controle qualidade hospitalar"
+      - "mesa cirurgica fabricacao"
+      - "foco cirurgico fabricacao"
 
 # ═══════════════════════════════════════════════════════════════
 # MANAGER GRUPO
@@ -173,7 +206,8 @@ rules:
     strategy: "Apenas core + 1-2 técnicos relevantes"
     placement: "Final do post"
   youtube:
-    note: "Tags no campo de tags do vídeo, não na descrição"
-  facebook:
-    total_max: 3
-    strategy: "Apenas core"
+    total_max: 15
+    strategy: "Tags no campo de tags do vídeo — core + produto + técnico"
+    placement: "Campo de tags (não na descrição)"
+    note: "YouTube é canal #3 IC — tags técnicas para SEO de vídeo"
+  # facebook: DESCONTINUADO (Story 14.3 — Score IC: 0)

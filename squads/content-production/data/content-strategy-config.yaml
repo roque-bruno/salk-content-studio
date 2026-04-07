@@ -1,14 +1,19 @@
 # Configuração de Estratégia de Conteúdo — Week Orchestrator
 # Editável via UI Recursos > Estratégia Conteúdo
 # Alimenta: week_orchestrator.py (WeekOrchestrator)
+# Recalibrado: 2026-04-07 — Auditoria IC (Story 14.2)
 
 pillar_weights:
   salk:
-    produto: 30
-    educacional: 25
-    cases: 20
-    command: 15
-    licitacoes: 10
+    # Pilares redesenhados para mapear 7 fases da jornada de compra hospitalar
+    # Fonte: AUDITORIA_CONTENT_STUDIO_vs_IC.md — ISSUE #3 + ISSUE #4
+    awareness_produto: 20       # Fase 1 (Identificação) — Hero shots, specs visuais
+    educacional_specs: 25       # Fases 2-3 (Planejamento/Especificação) — Datasheets, demos, comparativos
+    cases_social_proof: 20      # Fase 5 (Avaliação) — Instalações, depoimentos, referências
+    tco_roi_licitacao: 20       # Fases 4,6 (Cotação/Decisão) — TCO, ROI, docs licitação, comparativo financeiro
+    pos_venda_suporte: 10       # Fase 7 (Pós-compra) — Tutoriais, manuais, FAQ, contato AT
+    institucional: 5            # Transversal — Grupo, fabricação nacional, employer branding
+    # COMMAND reduzido de 15%→0% como pilar — absorvido por awareness_produto quando relevante
   mendel:
     produto_tecnico: 35
     engenharia: 30
@@ -35,31 +40,46 @@ active_products:
   dayho: []
 
 pillar_personas:
-  produto:
-    - eng_clinica
-    - compras
-    - equipe_medica
-  educacional:
-    - eng_clinica
-    - admin_hospitalar
-  cases:
-    - admin_hospitalar
-    - compras
-  command:
-    - eng_clinica
-    - equipe_medica
-  licitacoes:
-    - compras
-    - admin_hospitalar
+  # Salk — Pilares mapeados por jornada de compra (Story 14.2)
+  # Priorizacao IC: Eng.Clinica 40%, Compras 30%, Equipe Medica 20%, Admin 10% (Story 14.5)
+  awareness_produto:           # Fase 1 — Identificação de necessidade
+    primary: eng_clinica       # 60% das compras iniciam aqui
+    secondary:
+      - equipe_medica
+      - admin_hospitalar
+  educacional_specs:           # Fases 2-3 — Planejamento + Especificação técnica
+    primary: eng_clinica
+    secondary:
+      - compras
+  cases_social_proof:          # Fase 5 — Avaliação
+    primary: admin_hospitalar
+    secondary:
+      - compras
+      - eng_clinica
+  tco_roi_licitacao:           # Fases 4,6 — Cotação + Decisão
+    primary: compras
+    secondary:
+      - admin_hospitalar
+      - eng_clinica
+  pos_venda_suporte:           # Fase 7 — Pós-compra
+    primary: eng_clinica
+    secondary:
+      - equipe_medica
+  institucional:               # Transversal
+    primary: admin_hospitalar
+    secondary:
+      - compras
+  # Mendel — Mantém estrutura atual (fabricante/técnico)
   produto_tecnico:
-    - eng_clinica
+    primary: eng_clinica
   engenharia:
-    - eng_clinica
+    primary: eng_clinica
   certificacoes:
-    - eng_clinica
-    - compras
+    primary: eng_clinica
+    secondary:
+      - compras
   bastidores:
-    - eng_clinica
+    primary: eng_clinica
 
 product_techniques:
   lev:

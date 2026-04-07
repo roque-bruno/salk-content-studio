@@ -2,8 +2,8 @@
 # Derivado de: squad.yaml batch_schedule + docs/ESTRATEGIA-PRODUCAO-CONTEUDO.md
 # Uso: Atlas (content-strategist) preenche semanalmente
 
-version: "2.0"
-last_updated: "2026-03-25"
+version: "3.0"
+last_updated: "2026-04-07"
 
 # ═══════════════════════════════════════════════════════════════
 # ESTRUTURA DO CALENDÁRIO
@@ -19,69 +19,91 @@ calendar:
 # SLOTS POR DIA E PLATAFORMA — SALK MEDICAL (template)
 # ═══════════════════════════════════════════════════════════════
 
+# ═══════════════════════════════════════════════════════════════
+# SALK WEEKLY TEMPLATE — Fase 1 (Meses 1-3) — Story 14.3 + 14.6
+# LinkedIn-first (canal #4 IC), YouTube (#3), WhatsApp (#1), Instagram (#6)
+# Total: ~10 peças/semana (recalibrado pela IC)
+# Facebook DESCONTINUADO (Score IC: 0)
+# ═══════════════════════════════════════════════════════════════
+
 salk_weekly_template:
   segunda:
     production_focus: "Planejamento & Copywriting"
     slots:
-      - platform: "Instagram Feed"
-        format: "Carousel 4:5"
-        pilar: ""
-        produto: ""
-        brief_id: ""
-        horario: "11h-13h"
       - platform: "LinkedIn"
         format: "PDF Carousel"
         pilar: ""
         produto: ""
         brief_id: ""
         horario: "8h-10h"
-
-  terca:
-    production_focus: "Produção Visual"
-    slots:
-      - platform: "Instagram Reels"
-        format: "Reel 9:16 15-30s"
+        note: "Pilar educacional/specs — persona eng. clínica"
+      - platform: "WhatsApp"
+        format: "Sequência nurturing"
         pilar: ""
         produto: ""
         brief_id: ""
-        horario: "11h-13h"
+        horario: "10h"
+        note: "Broadcast segmentado por fase da jornada"
+
+  terca:
+    production_focus: "Produção Visual + Vídeo"
+    slots:
       - platform: "LinkedIn"
         format: "Texto longo + imagem"
         pilar: ""
         produto: ""
         brief_id: ""
         horario: "8h-10h"
-      - platform: "Facebook"
-        format: "Vídeo/Post"
+      - platform: "YouTube Long"
+        format: "Vídeo demo 10-20min"
         pilar: ""
         produto: ""
         brief_id: ""
-        horario: "12h-15h"
+        horario: "14h-16h"
+        note: "Demo técnica ou specs comparativas"
 
   quarta:
-    production_focus: "Atomização / Vídeo"
+    production_focus: "Atomização / Vídeo curto"
     slots:
-      - platform: "Instagram Reels"
-        format: "Reel 9:16 30-60s"
+      - platform: "LinkedIn"
+        format: "Vídeo nativo < 90s"
         pilar: ""
         produto: ""
         brief_id: ""
-        horario: "11h-13h"
+        horario: "8h-10h"
       - platform: "YouTube Shorts"
         format: "Short 9:16"
         pilar: ""
         produto: ""
         brief_id: ""
         horario: "14h-16h"
-      - platform: "LinkedIn"
-        format: "Texto longo"
+      - platform: "WhatsApp"
+        format: "Conteúdo técnico"
         pilar: ""
         produto: ""
         brief_id: ""
-        horario: "8h-10h"
+        horario: "10h"
+        note: "PDF ou link para vídeo técnico"
 
   quinta:
     production_focus: "Revisão & Aprovação"
+    slots:
+      - platform: "Instagram Feed"
+        format: "Reel 9:16"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "11h-13h"
+      - platform: "Email"
+        format: "Newsletter técnica"
+        pilar: ""
+        produto: ""
+        brief_id: ""
+        horario: "9h"
+        note: "Semanal — compilado de conteúdo da semana"
+
+  sexta:
+    production_focus: "Agendamento & Distribuição"
     slots:
       - platform: "Instagram Feed"
         format: "Carousel 4:5"
@@ -89,18 +111,6 @@ salk_weekly_template:
         produto: ""
         brief_id: ""
         horario: "11h-13h"
-      - platform: "LinkedIn"
-        format: "PDF Carousel"
-        pilar: ""
-        produto: ""
-        brief_id: ""
-        horario: "8h-10h"
-      - platform: "Facebook"
-        format: "Post"
-        pilar: ""
-        produto: ""
-        brief_id: ""
-        horario: "12h-15h"
       - platform: "YouTube Shorts"
         format: "Short 9:16"
         pilar: ""
@@ -108,32 +118,10 @@ salk_weekly_template:
         brief_id: ""
         horario: "14h-16h"
 
-  sexta:
-    production_focus: "Agendamento & Distribuição"
-    slots:
-      - platform: "Instagram Reels"
-        format: "Reel 9:16"
-        pilar: ""
-        produto: ""
-        brief_id: ""
-        horario: "11h-13h"
-      - platform: "LinkedIn"
-        format: "Vídeo nativo < 90s"
-        pilar: ""
-        produto: ""
-        brief_id: ""
-        horario: "8h-10h"
-      - platform: "Facebook"
-        format: "Vídeo"
-        pilar: ""
-        produto: ""
-        brief_id: ""
-        horario: "12h-15h"
-
   diario:
     - platform: "Instagram Stories"
       format: "Story 9:16"
-      note: "Enquetes, bastidores, CTAs — conteúdo leve e interativo"
+      note: "Enquetes, bastidores, CTAs — conteúdo leve e interativo (awareness)"
 
 # ═══════════════════════════════════════════════════════════════
 # VOLUME SEMANAL POR MARCA
@@ -144,71 +132,115 @@ salk_weekly_template:
 # ═══════════════════════════════════════════════════════════════
 
 weekly_targets_mvp:
-  note: "Meta MVP: 5 masters + 25-40 derivados/semana. Escalar baseado em dados reais."
+  note: "Meta Fase 1 (Meses 1-3): Recalibrado pela IC — Story 14.6"
   salk_medical:
     masters_week: 3
-    derivados_per_master: "5-8"
+    total_pieces_week: 10
+    derivados_per_master: "2-3"
     focus: "LEV + KRATUS (prioridade maxima)"
+    channel_split: "LinkedIn 3x + YouTube 2x + Instagram 2x + WhatsApp 2x + Email 1x"
   mendel_medical:
-    masters_week: 2
-    derivados_per_master: "5-8"
+    masters_week: 1
+    total_pieces_week: 4
+    derivados_per_master: "3"
     focus: "LEV tecnico + KRATUS tecnico"
+    channel_split: "LinkedIn 2x + YouTube 1x + Instagram 1x"
   manager_grupo:
     masters_week: 0
-    note: "Diferido para Epico 2"
+    note: "Diferido para Fase 2 (Meses 4-6)"
   dayho:
     masters_week: 0
-    note: "Diferido para Epico 2"
+    note: "Diferido para Fase 2 (Meses 4-6)"
 
 # ═══════════════════════════════════════════════════════════════
 # METAS REGIME (Meta estrategica — norte de longo prazo)
 # ═══════════════════════════════════════════════════════════════
 
 weekly_targets_regime:
-  note: "Meta de regime — atingir progressivamente apos calibracao MVP"
-  salk_medical:
-    ig_feed: "5 (3 Reels + 2 Carousels)"
-    ig_stories: "7 (diario)"
-    linkedin: "5 (2 PDF + 2 Texto + 1 Video)"
-    youtube_shorts: 3
-    facebook: 3
-    total: "~23/semana"
-  mendel_medical:
-    ig_feed: "4 (2 Reels + 2 Carousels)"
-    ig_stories: 4
-    linkedin: "4 (2 PDF + 1 Texto + 1 Video)"
-    youtube_shorts: 2
-    facebook: 2
-    total: "~16/semana"
-  manager_grupo:
-    ig_feed: "2 (1 Reel + 1 Post)"
-    ig_stories: 2
-    linkedin: "2 (1 Texto + 1 Imagem)"
-    facebook: 1
-    total: "~7/semana"
-  dayho:
-    ig_feed: 1
-    linkedin: 1
-    total: "~2/semana"
+  note: "Meta de regime recalibrada IC — 3 fases progressivas (Story 14.6)"
+
+  # FASE 1 — Meses 1-3 (atual)
+  fase_1:
+    periodo: "Meses 1-3"
+    salk_medical:
+      linkedin: "3x/semana (1 PDF + 1 Texto + 1 Vídeo)"
+      youtube: "2x/semana (1 Long demo + 1 Short)"
+      instagram: "2x/semana (1 Reel + 1 Carousel)"
+      whatsapp: "2x/semana (Sequência nurturing)"
+      email: "1x/semana (Newsletter técnica)"
+      total: "~10/semana"
+    mendel_medical:
+      linkedin: "2x/semana (1 PDF técnico + 1 Texto)"
+      youtube: "1x/semana (Demo técnica)"
+      instagram: "1x/semana (1 Carousel técnico)"
+      total: "~4/semana"
+    manager_grupo:
+      note: "Diferido para Fase 2"
+    dayho:
+      note: "Diferido para Fase 2"
+
+  # FASE 2 — Meses 4-6 (escala)
+  fase_2:
+    periodo: "Meses 4-6"
+    salk_medical:
+      linkedin: "4x/semana"
+      youtube: "3x/semana"
+      instagram: "3x/semana"
+      whatsapp: "3x/semana"
+      email: "1x/semana"
+      seo_blog: "1x/semana"
+      total: "~15/semana"
+    mendel_medical:
+      linkedin: "3x/semana"
+      youtube: "1x/semana"
+      instagram: "2x/semana"
+      total: "~6/semana"
+    manager_grupo:
+      linkedin: "2x/semana"
+      instagram: "1x/semana"
+      total: "~3/semana"
+
+  # FASE 3 — Meses 7+ (regime)
+  fase_3:
+    periodo: "Meses 7+"
+    note: "Avaliar métricas antes de escalar — ajustar baseado em dados reais"
+    meta_salk: "~20/semana"
+    meta_mendel: "~8/semana"
+    meta_manager: "~5/semana"
+    meta_dayho: "~2/semana"
 
 # ═══════════════════════════════════════════════════════════════
 # DISTRIBUIÇÃO DE PILARES POR SEMANA (SALK — EXEMPLO)
 # ═══════════════════════════════════════════════════════════════
 
 pilar_rotation_salk:
-  note: "Produto 30%, Educacional 25%, Cases 20%, COMMAND 15%, Licitações 10%"
+  note: "Awareness 20%, Educacional 25%, Cases 20%, TCO/ROI 20%, Pós-venda 10%, Institucional 5% — Story 14.2"
+  journey_phase_map:
+    awareness_produto: "Fase 1 — Identificação de necessidade"
+    educacional_specs: "Fases 2-3 — Planejamento + Especificação técnica"
+    cases_social_proof: "Fase 5 — Avaliação por comitê"
+    tco_roi_licitacao: "Fases 4,6 — Cotação/Consulta + Decisão"
+    pos_venda_suporte: "Fase 7 — Pós-compra (tutoriais, manuais, suporte)"
+    institucional: "Transversal — Grupo, fabricação, employer branding"
   weekly_suggestion:
-    produto: 2
-    educacional: 1
-    cases: 1
-    command: 1
-    licitacoes: "Quinzenal"
+    awareness_produto: 2
+    educacional_specs: 3
+    cases_social_proof: 2
+    tco_roi_licitacao: 2
+    pos_venda_suporte: 1
+    institucional: "Quinzenal"
 
 # ═══════════════════════════════════════════════════════════════
 # DATAS SAZONAIS (referência para planejamento)
 # ═══════════════════════════════════════════════════════════════
 
 seasonal_dates:
+  # Datas originais
+  - date: "Marco"
+    event: "Hospitalar Fair"
+    content: "Cobertura da principal feira do setor — stand, produtos, networking"
+    relevance: "ALTA — principal feira de equipamentos médicos do Brasil"
+    source: "Auditoria IC — Story 14.7"
   - date: "07/04"
     event: "Dia Mundial da Saúde"
     content: "Post institucional + dados do setor"
@@ -218,18 +250,66 @@ seasonal_dates:
   - date: "12/05"
     event: "Dia do Enfermeiro"
     content: "Homenagem + produto em contexto"
+  - date: "15/05"
+    event: "Dia do Engenheiro Biomédico"
+    content: "Conteúdo técnico Mendel + homenagem eng. clínica — Persona #1"
+    relevance: "ALTA — persona que inicia 60% das compras"
+    source: "Auditoria IC — Story 14.7"
   - date: "12/06"
     event: "Dia do Cirurgião"
     content: "Conteúdo LEV + homenagem"
   - date: "11/07"
     event: "Dia do Engenheiro"
     content: "Conteúdo Mendel + bastidores"
+  - date: "Agosto"
+    event: "SOBRACIL (Congresso Brasileiro de Cirurgia)"
+    content: "Awareness médico — conteúdo LEV/KRATUS para cirurgiões"
+    relevance: "MEDIA — awareness com corpo médico"
+    source: "Auditoria IC — Story 14.7"
   - date: "18/08"
     event: "Dia do Médico (Brasil)"
     content: "Social proof"
-  - date: "Novembro"
-    event: "Hospitalar (feira)"
-    content: "Cobertura do evento"
+  - date: "Outubro"
+    event: "CBEB (Congresso Brasileiro de Engenharia Biomédica)"
+    content: "Conteúdo técnico Mendel — specs, inovação, normas"
+    relevance: "ALTA — congresso da persona #1 (eng. clínica)"
+    source: "Auditoria IC — Story 14.7"
+  - date: "Nov/Dez"
+    event: "Temporada de Orçamento Hospitalar"
+    content: "Conteúdo TCO/ROI, documentação para licitação, CAPEX planning"
+    relevance: "CRITICA — período de decisão de compra para ano seguinte"
+    source: "Auditoria IC — Story 14.7"
   - date: "Dezembro"
     event: "Retrospectiva do ano"
     content: "Números, conquistas, agradecimento"
+
+# ═══════════════════════════════════════════════════════════════
+# CONTEÚDO PÓS-VENDA (Fase 7 da jornada) — Story 14.7
+# ═══════════════════════════════════════════════════════════════
+
+post_sale_content:
+  note: "Fase 7 — Pós-compra. Zero cobertura atual. Pilar novo: 10% do conteúdo Salk."
+  types:
+    - type: "Tutorial rápido de operação"
+      format: "Vídeo 2-3 min"
+      channel_primary: "YouTube"
+      channel_secondary: "WhatsApp"
+      products: ["LEV", "KRATUS"]
+    - type: "Guia de manutenção preventiva"
+      format: "PDF"
+      channel_primary: "Email"
+      channel_secondary: "WhatsApp"
+      products: ["LEV", "KRATUS", "OSTUS", "KRONUS"]
+    - type: "FAQ pós-instalação"
+      format: "Artigo"
+      channel_primary: "Blog/SEO"
+      channel_secondary: "WhatsApp"
+      products: ["LEV", "KRATUS", "OSTUS", "KRONUS"]
+    - type: "Contato direto AT"
+      format: "Template WhatsApp"
+      channel_primary: "WhatsApp"
+      products: ["LEV", "KRATUS", "OSTUS", "KRONUS"]
+    - type: "Checklist de instalação"
+      format: "PDF"
+      channel_primary: "Email"
+      products: ["LEV", "KRATUS"]
