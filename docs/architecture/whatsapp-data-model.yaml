@@ -3,12 +3,12 @@
 # Autor: @architect (Aria)
 # Data: 2026-04-07
 
-version: "1.0"
+version: "1.1"
 last_updated: "2026-04-07"
 
-# ═══════════════════════════════════════════════════════════════
-# SEQUÊNCIAS DE NURTURING
-# ═══════════════════════════════════════════════════════════════
+# ===================================================================
+# SEQUENCIAS DE NURTURING
+# ===================================================================
 
 sequences:
   schema:
@@ -19,25 +19,27 @@ sequences:
     journey_phase: "int — 1 a 7"
     trigger: "string — manual | crm_event | opt_in | phase_change"
     steps: "array — SequenceStep[]"
-    status: "string — draft | active | paused | completed"
+    status: "string — draft | active | paused | completed | archived"
+    max_enrollments: "int — limite de contatos simultaneos (0 = ilimitado)"
     created_at: "datetime"
     updated_at: "datetime"
     metrics_id: "string — ref Metric"
 
   examples:
     - id: "SEQ-LEV-ENG-F2"
-      name: "LEV Nurturing — Eng. Clínica — Fase 2 (Planejamento)"
+      name: "LEV Nurturing — Eng. Clinica — Fase 2 (Planejamento)"
       product: "LEV"
       persona: "eng_clinica"
       journey_phase: 2
       trigger: "crm_event"
       status: "draft"
+      max_enrollments: 0
       steps:
         - step: 1
           day: 0
           template_id: "MKT-001"
           content_type: "document"
-          subject: "Ficha técnica LEV completa"
+          subject: "Ficha tecnica LEV completa"
           wait_for_reply: false
         - step: 2
           day: 2
@@ -49,35 +51,36 @@ sequences:
           day: 5
           template_id: "MKT-001"
           content_type: "document"
-          subject: "Comparativo técnico vs média de mercado"
+          subject: "Comparativo tecnico vs media de mercado"
           wait_for_reply: false
         - step: 4
           day: 7
           template_id: "MKT-001"
           content_type: "text"
-          subject: "CTA — Agendar demonstração"
+          subject: "CTA — Agendar demonstracao"
           wait_for_reply: true
           on_reply: "route_to_sales"
 
     - id: "SEQ-KRA-COMP-F4"
-      name: "KRATUS Nurturing — Compras — Fase 4 (Cotação)"
+      name: "KRATUS Nurturing — Compras — Fase 4 (Cotacao)"
       product: "KRATUS"
       persona: "compras"
       journey_phase: 4
       trigger: "crm_event"
       status: "draft"
+      max_enrollments: 0
       steps:
         - step: 1
           day: 0
           template_id: "MKT-002"
           content_type: "document"
-          subject: "Proposta KRATUS + análise TCO"
+          subject: "Proposta KRATUS + analise TCO"
           wait_for_reply: false
         - step: 2
           day: 3
           template_id: "MKT-002"
           content_type: "document"
-          subject: "Documentação para licitação (pregão eletrônico)"
+          subject: "Documentacao para licitacao (pregao eletronico)"
           wait_for_reply: false
         - step: 3
           day: 5
@@ -89,121 +92,618 @@ sequences:
           day: 7
           template_id: "MKT-002"
           content_type: "text"
-          subject: "Margem de preferência 20% — como funciona"
+          subject: "Margem de preferencia 20% — como funciona"
           wait_for_reply: true
           on_reply: "route_to_sales"
 
-# ═══════════════════════════════════════════════════════════════
+    - id: "SEQ-OST-MED-F1"
+      name: "OSTUS Nurturing — Equipe Medica — Fase 1 (Identificacao)"
+      product: "OSTUS"
+      persona: "equipe_medica"
+      journey_phase: 1
+      trigger: "opt_in"
+      status: "draft"
+      max_enrollments: 0
+      steps:
+        - step: 1
+          day: 0
+          template_id: "MKT-007"
+          content_type: "image"
+          subject: "Seguranca do paciente — dados de eventos adversos"
+          wait_for_reply: false
+        - step: 2
+          day: 3
+          template_id: "MKT-005"
+          content_type: "text"
+          subject: "Case clinico — prevencao de quedas em UTI"
+          wait_for_reply: false
+        - step: 3
+          day: 6
+          template_id: "MKT-007"
+          content_type: "video_link"
+          subject: "Video: workflow de enfermagem otimizado com OSTUS"
+          wait_for_reply: false
+        - step: 4
+          day: 9
+          template_id: "MKT-007"
+          content_type: "text"
+          subject: "CTA — Agendar visita tecnica"
+          wait_for_reply: true
+          on_reply: "route_to_sales"
+
+    - id: "SEQ-KRO-ENG-F3"
+      name: "KRONUS Nurturing — Eng. Clinica — Fase 3 (Especificacao)"
+      product: "KRONUS"
+      persona: "eng_clinica"
+      journey_phase: 3
+      trigger: "crm_event"
+      status: "draft"
+      max_enrollments: 0
+      steps:
+        - step: 1
+          day: 0
+          template_id: "MKT-008"
+          content_type: "document"
+          subject: "Projeto customizado KRONUS — configuracao inicial"
+          wait_for_reply: false
+        - step: 2
+          day: 2
+          template_id: "UTL-002"
+          content_type: "document"
+          subject: "Datasheet tecnico completo — gases, eletrica, dados"
+          wait_for_reply: false
+        - step: 3
+          day: 5
+          template_id: "MKT-008"
+          content_type: "image"
+          subject: "Instalacao referencia — centro cirurgico 6 salas"
+          wait_for_reply: false
+        - step: 4
+          day: 7
+          template_id: "UTL-002"
+          content_type: "document"
+          subject: "Normas ANVISA/ABNT aplicaveis a pendentes"
+          wait_for_reply: false
+        - step: 5
+          day: 10
+          template_id: "MKT-008"
+          content_type: "text"
+          subject: "CTA — Agendar reuniao de projeto"
+          wait_for_reply: true
+          on_reply: "route_to_engineering"
+
+# ===================================================================
 # TEMPLATES HSM
-# ═══════════════════════════════════════════════════════════════
+# ===================================================================
 
 templates:
   schema:
-    id: "string — {categoria}-{número}"
+    id: "string — {categoria}-{numero}"
     name: "string — nome interno"
     category: "string — utility | marketing | authentication"
     language: "string — pt_BR"
     header:
       type: "string — text | image | video | document"
       content: "string — texto ou URL do media"
-    body: "string — texto com variáveis {{1}}, {{2}}, etc."
-    footer: "string — texto fixo"
+    body: "string — texto com variaveis {{1}}, {{2}}, etc. (max 1024 chars)"
+    footer: "string — texto fixo (max 60 chars)"
     buttons:
       - type: "string — quick_reply | url | phone"
-        text: "string — texto do botão"
+        text: "string — texto do botao"
         url: "string — URL (se type=url)"
+        phone: "string — numero (se type=phone)"
     status: "string — draft | submitted | approved | rejected"
-    meta_template_id: "string — ID retornado pela Meta após aprovação"
+    meta_template_id: "string — ID retornado pela Meta apos aprovacao"
+    version: "int — versao do template (imutavel apos aprovacao)"
     submitted_at: "datetime"
     approved_at: "datetime"
+    rejected_reason: "string — motivo da rejeicao (se rejected)"
 
-# ═══════════════════════════════════════════════════════════════
+  examples:
+    - id: "UTL-001"
+      name: "confirmacao_demo"
+      category: "utility"
+      language: "pt_BR"
+      header:
+        type: "text"
+        content: "Demonstracao Confirmada"
+      body: "Ola {{1}}, sua demonstracao do {{2}} esta confirmada para {{3}} as {{4}}. Nosso consultor {{5}} estara presente. Precisa reagendar? Responda esta mensagem."
+      footer: "Salk Medical"
+      buttons:
+        - type: "quick_reply"
+          text: "Confirmar presenca"
+        - type: "quick_reply"
+          text: "Reagendar"
+      status: "draft"
+      version: 1
+
+    - id: "UTL-002"
+      name: "envio_ficha_tecnica"
+      category: "utility"
+      language: "pt_BR"
+      header:
+        type: "document"
+        content: "{{media_url}}"
+      body: "{{1}}, aqui esta a ficha tecnica do {{2}} conforme solicitado. O documento inclui especificacoes completas, certificacoes e dimensoes. Qualquer duvida, estamos a disposicao."
+      footer: "Salk Medical — Equipamento Medico Nacional"
+      buttons:
+        - type: "quick_reply"
+          text: "Solicitar proposta"
+        - type: "quick_reply"
+          text: "Falar com consultor"
+      status: "draft"
+      version: 1
+
+    - id: "MKT-001"
+      name: "nurturing_specs_lev"
+      category: "marketing"
+      language: "pt_BR"
+      header:
+        type: "document"
+        content: "ficha-tecnica-lev.pdf"
+      body: |
+        Ola {{1}}, tudo bem?
+
+        Preparamos a ficha tecnica completa do foco cirurgico LEV com todas as especificacoes:
+        - Ra = 99 (fidelidade de cor maxima)
+        - Profundidade de 1.930mm
+        - 5 articulacoes independentes
+        - Recarga em 2-4,5h
+
+        {{2}}
+      footer: "Salk Medical — Equipamento Medico Nacional"
+      buttons:
+        - type: "quick_reply"
+          text: "Quero agendar demo"
+        - type: "quick_reply"
+          text: "Enviar para colega"
+        - type: "url"
+          text: "Ver no site"
+          url: "https://salkmedical.com.br/lev?utm_source=whatsapp&utm_medium=social&utm_campaign={{3}}"
+      status: "draft"
+      version: 1
+
+    - id: "MKT-002"
+      name: "nurturing_tco_kratus"
+      category: "marketing"
+      language: "pt_BR"
+      header:
+        type: "document"
+        content: "tco-kratus-analise.pdf"
+      body: |
+        {{1}}, sua equipe cirurgica trabalha com a mesa certa para cada procedimento?
+
+        O KRATUS oferece:
+        - Posicionamento multiarticulado para todas especialidades
+        - TCO 40% menor que solucoes importadas
+        - Margem de preferencia 20% em licitacoes
+
+        Calculamos o ROI especifico para o perfil do {{2}}.
+
+        {{3}}
+      footer: "Salk Medical — Equipamento Medico Nacional"
+      buttons:
+        - type: "quick_reply"
+          text: "Ver proposta completa"
+        - type: "quick_reply"
+          text: "Agendar visita tecnica"
+      status: "draft"
+      version: 1
+
+    - id: "MKT-007"
+      name: "nurturing_seguranca_ostus"
+      category: "marketing"
+      language: "pt_BR"
+      header:
+        type: "image"
+        content: "ostus-seguranca-paciente.jpg"
+      body: |
+        {{1}}, quedas de leito representam um dos eventos adversos mais frequentes.
+
+        O OSTUS foi projetado para prevencao ativa:
+        - Grades laterais com trava de seguranca
+        - Freio centralizado em todas as rodas
+        - Posicao Trendelenburg para emergencias
+
+        Veja como a UTI do Hospital {{2}} otimizou o workflow de enfermagem.
+      footer: "Salk Medical — Equipamento Medico Nacional"
+      buttons:
+        - type: "quick_reply"
+          text: "Ver caso completo"
+        - type: "url"
+          text: "Catalogo OSTUS"
+          url: "https://salkmedical.com.br/ostus?utm_source=whatsapp&utm_medium=social&utm_campaign={{3}}"
+      status: "draft"
+      version: 1
+
+    - id: "MKT-008"
+      name: "nurturing_integracao_kronus"
+      category: "marketing"
+      language: "pt_BR"
+      header:
+        type: "image"
+        content: "kronus-centro-cirurgico.jpg"
+      body: |
+        {{1}}, seu pendente cirurgico integra gases, eletrica e dados em um unico ponto?
+
+        O KRONUS centraliza toda a infraestrutura do centro cirurgico:
+        - Gases medicinais (O2, N2O, ar comprimido, vacuo)
+        - Tomadas eletricas e de rede
+        - Bracos articulados para monitores
+
+        Configuracao customizada para {{2}} salas.
+      footer: "Salk Medical — Equipamento Medico Nacional"
+      buttons:
+        - type: "quick_reply"
+          text: "Solicitar projeto"
+        - type: "quick_reply"
+          text: "Falar com engenheiro"
+      status: "draft"
+      version: 1
+
+    - id: "AUTH-001"
+      name: "opt_in_confirmacao"
+      category: "authentication"
+      language: "pt_BR"
+      header:
+        type: "text"
+        content: "Confirmacao de Cadastro"
+      body: "Ola {{1}}, voce solicitou receber conteudo tecnico da Salk Medical via WhatsApp. Para confirmar, responda SIM. Voce pode cancelar a qualquer momento respondendo SAIR. Seus dados sao protegidos conforme LGPD."
+      footer: "Salk Medical"
+      buttons:
+        - type: "quick_reply"
+          text: "SIM, quero receber"
+        - type: "quick_reply"
+          text: "Nao, obrigado"
+      status: "draft"
+      version: 1
+
+# ===================================================================
 # CONTATOS
-# ═══════════════════════════════════════════════════════════════
+# ===================================================================
 
 contacts:
   schema:
     id: "string — UUID"
     phone: "string — +55DDDNUMERO (E.164)"
-    name: "string"
+    name: "string — nome completo"
     company: "string — nome do hospital/empresa"
     persona: "string — eng_clinica | compras | equipe_medica | admin"
     journey_phase: "int — 1 a 7"
-    products_interest: "array — [LEV, KRATUS, ...]"
-    segments: "array — [prospect, cliente, licitacao, ...]"
+    products_interest: "array — [LEV, KRATUS, OSTUS, KRONUS]"
+    segments: "array — [prospect, cliente, licitacao, evento_femipa, evento_hospitalar, indicacao]"
     opt_in: "boolean — consentimento LGPD"
-    opt_in_date: "datetime"
-    source: "string — crm_import | manual | website | evento"
+    opt_in_date: "datetime — data do consentimento"
+    opt_out: "boolean — cancelou recebimento"
+    opt_out_date: "datetime — data do cancelamento"
+    source: "string — crm_import | manual | website | evento | indicacao"
     crm_id: "string — ID no Bitrix24"
-    last_interaction: "datetime"
+    last_interaction: "datetime — ultima mensagem enviada ou recebida"
     active_sequences: "array — [SEQ-LEV-ENG-F2, ...]"
-    tags: "array — strings livres"
-    region: "string — estado/cidade"
+    tags: "array — strings livres para segmentacao adicional"
+    region: "string — estado/cidade (ex: PR/Curitiba)"
+    session_window_expires: "datetime — quando a janela de 24h expira (null se nao ha janela)"
+    total_messages_sent: "int — contador de msgs enviadas"
+    total_messages_received: "int — contador de msgs recebidas"
+    quality_score: "float — score interno de engajamento (0-100)"
     created_at: "datetime"
+    updated_at: "datetime"
 
-# ═══════════════════════════════════════════════════════════════
+  examples:
+    - id: "c7a1b2c3-d4e5-f6a7-b8c9-d0e1f2a3b4c5"
+      phone: "+5541999887766"
+      name: "Carlos Eduardo Silva"
+      company: "Hospital Santa Cruz"
+      persona: "eng_clinica"
+      journey_phase: 3
+      products_interest: ["LEV", "KRONUS"]
+      segments: ["prospect", "evento_hospitalar"]
+      opt_in: true
+      opt_in_date: "2026-03-15T14:30:00Z"
+      opt_out: false
+      opt_out_date: null
+      source: "evento"
+      crm_id: "BX24-10045"
+      last_interaction: "2026-04-05T10:15:00Z"
+      active_sequences: ["SEQ-LEV-ENG-F3"]
+      tags: ["centro-cirurgico-6-salas", "licitacao-2026"]
+      region: "PR/Curitiba"
+      session_window_expires: "2026-04-06T10:15:00Z"
+      total_messages_sent: 12
+      total_messages_received: 5
+      quality_score: 78.5
+      created_at: "2026-03-15T14:30:00Z"
+      updated_at: "2026-04-05T10:15:00Z"
+
+# ===================================================================
 # MENSAGENS
-# ═══════════════════════════════════════════════════════════════
+# ===================================================================
 
 messages:
   schema:
     id: "string — UUID"
     sequence_id: "string — ref Sequence (null se avulsa)"
+    sequence_step: "int — numero do step na sequencia (null se avulsa)"
     template_id: "string — ref Template (null se session)"
     contact_id: "string — ref Contact"
     direction: "string — outbound | inbound"
     type: "string — template | session | reply"
-    content: "string — corpo da mensagem"
+    content: "string — corpo da mensagem (texto renderizado com variaveis)"
     media_url: "string — URL do anexo (se houver)"
-    status: "string — queued | sent | delivered | read | failed"
+    media_type: "string — image | video | document | audio (se houver)"
+    status: "string — queued | sent | delivered | read | failed | cancelled"
+    scheduled_at: "datetime — agendamento (null se imediato)"
     sent_at: "datetime"
     delivered_at: "datetime"
     read_at: "datetime"
-    replied_at: "datetime"
-    error_code: "string — código de erro Meta (se failed)"
-    utm_params: "object — {source, medium, campaign, content}"
-    meta_message_id: "string — ID retornado pela Meta"
+    replied_at: "datetime — se gerou resposta do contato"
+    error_code: "string — codigo de erro Meta (se failed)"
+    error_message: "string — descricao do erro (se failed)"
+    retry_count: "int — tentativas de reenvio"
+    utm_params:
+      source: "string — whatsapp"
+      medium: "string — social"
+      campaign: "string — identificador da campanha/sequencia"
+      content: "string — identificador do template/step"
+    meta_message_id: "string — WAMID retornado pela Meta"
+    cost_brl: "float — custo real da mensagem (0 se session)"
+    created_at: "datetime"
 
-# ═══════════════════════════════════════════════════════════════
-# MÉTRICAS
-# ═══════════════════════════════════════════════════════════════
+  examples:
+    - id: "m1a2b3c4-d5e6-f7a8-b9c0-d1e2f3a4b5c6"
+      sequence_id: "SEQ-LEV-ENG-F2"
+      sequence_step: 1
+      template_id: "MKT-001"
+      contact_id: "c7a1b2c3-d4e5-f6a7-b8c9-d0e1f2a3b4c5"
+      direction: "outbound"
+      type: "template"
+      content: "Ola Carlos Eduardo Silva, tudo bem? Preparamos a ficha tecnica completa do foco cirurgico LEV..."
+      media_url: "https://cdn.salkmedical.com.br/datasheets/lev-v4.pdf"
+      media_type: "document"
+      status: "read"
+      scheduled_at: null
+      sent_at: "2026-04-01T10:00:00Z"
+      delivered_at: "2026-04-01T10:00:03Z"
+      read_at: "2026-04-01T10:45:00Z"
+      replied_at: null
+      error_code: null
+      error_message: null
+      retry_count: 0
+      utm_params:
+        source: "whatsapp"
+        medium: "social"
+        campaign: "seq-lev-eng-f2"
+        content: "mkt-001-step1"
+      meta_message_id: "wamid.HBgNNTU0MTk5OTg4Nzc2NhUCABEYEjBFRTIxOEEzQTBBNTk5QkIA"
+      cost_brl: 0.30
+      created_at: "2026-04-01T09:55:00Z"
+
+    - id: "m2b3c4d5-e6f7-a8b9-c0d1-e2f3a4b5c6d7"
+      sequence_id: null
+      sequence_step: null
+      template_id: null
+      contact_id: "c7a1b2c3-d4e5-f6a7-b8c9-d0e1f2a3b4c5"
+      direction: "inbound"
+      type: "reply"
+      content: "Obrigado, recebi o PDF. Podem me enviar o comparativo com as normas ABNT?"
+      media_url: null
+      media_type: null
+      status: "delivered"
+      scheduled_at: null
+      sent_at: "2026-04-01T10:47:00Z"
+      delivered_at: "2026-04-01T10:47:00Z"
+      read_at: null
+      replied_at: null
+      error_code: null
+      error_message: null
+      retry_count: 0
+      utm_params: null
+      meta_message_id: "wamid.HBgNNTU0MTk5OTg4Nzc2NhUCABEYEjBFRTIxOEEzQTBBNTk5QkIB"
+      cost_brl: 0.00
+      created_at: "2026-04-01T10:47:00Z"
+
+# ===================================================================
+# METRICAS
+# ===================================================================
 
 metrics:
   schema:
     id: "string — UUID"
-    entity_type: "string — sequence | template | campaign"
+    entity_type: "string — sequence | template | campaign | broadcast"
     entity_id: "string — ref da entidade"
     period: "string — daily | weekly | monthly | total"
-    date: "date"
-    sent: "int"
-    delivered: "int"
-    read: "int"
-    replied: "int"
-    clicked: "int — cliques em links/botões"
-    opted_out: "int"
-    failed: "int"
-    conversion_events: "int — ações no CRM atribuídas"
+    date: "date — data de referencia"
+    sent: "int — mensagens enviadas"
+    delivered: "int — mensagens entregues"
+    read: "int — mensagens lidas"
+    replied: "int — mensagens que geraram resposta"
+    clicked: "int — cliques em links/botoes"
+    opted_out: "int — contatos que cancelaram"
+    failed: "int — falhas de envio"
+    conversion_events: "int — acoes no CRM atribuidas (demo agendada, proposta solicitada, etc)"
+    cost_brl: "float — custo total no periodo"
     delivery_rate: "float — delivered/sent"
     read_rate: "float — read/delivered"
     reply_rate: "float — replied/read"
     click_rate: "float — clicked/delivered"
     conversion_rate: "float — conversion_events/sent"
+    opt_out_rate: "float — opted_out/delivered"
 
-# ═══════════════════════════════════════════════════════════════
+  examples:
+    - id: "met-001"
+      entity_type: "sequence"
+      entity_id: "SEQ-LEV-ENG-F2"
+      period: "monthly"
+      date: "2026-04-01"
+      sent: 120
+      delivered: 115
+      read: 89
+      replied: 28
+      clicked: 34
+      opted_out: 1
+      failed: 5
+      conversion_events: 4
+      cost_brl: 36.00
+      delivery_rate: 0.958
+      read_rate: 0.774
+      reply_rate: 0.315
+      click_rate: 0.296
+      conversion_rate: 0.033
+      opt_out_rate: 0.009
+
+    - id: "met-002"
+      entity_type: "template"
+      entity_id: "MKT-001"
+      period: "monthly"
+      date: "2026-04-01"
+      sent: 350
+      delivered: 338
+      read: 241
+      replied: 67
+      clicked: 89
+      opted_out: 3
+      failed: 12
+      conversion_events: 8
+      cost_brl: 105.00
+      delivery_rate: 0.966
+      read_rate: 0.713
+      reply_rate: 0.278
+      click_rate: 0.263
+      conversion_rate: 0.023
+      opt_out_rate: 0.009
+
+# ===================================================================
+# SEQUENCE ENROLLMENTS
+# ===================================================================
+
+sequence_enrollments:
+  schema:
+    id: "string — UUID"
+    sequence_id: "string — ref Sequence"
+    contact_id: "string — ref Contact"
+    status: "string — active | paused | completed | cancelled"
+    current_step: "int — step atual na sequencia"
+    started_at: "datetime — inicio da sequencia"
+    paused_at: "datetime — quando foi pausada (null se nao pausada)"
+    completed_at: "datetime — quando terminou (null se em andamento)"
+    cancelled_at: "datetime — quando foi cancelada (null se nao cancelada)"
+    cancelled_reason: "string — opt_out | manual | phase_change | duplicate"
+    next_message_at: "datetime — proximo envio agendado"
+    messages_sent: "int — msgs ja enviadas nesta enrollment"
+    messages_replied: "int — respostas recebidas nesta enrollment"
+
+  examples:
+    - id: "enr-001"
+      sequence_id: "SEQ-LEV-ENG-F2"
+      contact_id: "c7a1b2c3-d4e5-f6a7-b8c9-d0e1f2a3b4c5"
+      status: "active"
+      current_step: 3
+      started_at: "2026-04-01T10:00:00Z"
+      paused_at: null
+      completed_at: null
+      cancelled_at: null
+      cancelled_reason: null
+      next_message_at: "2026-04-08T10:00:00Z"
+      messages_sent: 3
+      messages_replied: 1
+
+# ===================================================================
 # BROADCASTS
-# ═══════════════════════════════════════════════════════════════
+# ===================================================================
 
 broadcasts:
   schema:
     id: "string — UUID"
-    name: "string"
+    name: "string — nome descritivo do broadcast"
     template_id: "string — ref Template"
     segment_filter:
-      personas: "array — [eng_clinica, compras, ...]"
-      journey_phases: "array — [1, 2, 3, ...]"
-      products: "array — [LEV, KRATUS, ...]"
-      regions: "array — [PR, SP, ...]"
-    scheduled_at: "datetime"
+      personas: "array — [eng_clinica, compras, equipe_medica, admin]"
+      journey_phases: "array — [1, 2, 3, 4, 5, 6, 7]"
+      products: "array — [LEV, KRATUS, OSTUS, KRONUS]"
+      regions: "array — [PR, SP, MG, ...]"
+      tags: "array — tags de contato para filtro adicional"
+      opt_in_only: "boolean — true (sempre, obrigatorio por LGPD)"
+    parameters: "object — variaveis do template para interpolacao"
+    scheduled_at: "datetime — data/hora de envio"
     status: "string — draft | scheduled | sending | completed | cancelled"
-    total_recipients: "int"
+    total_recipients: "int — contatos que receberam"
     metrics_id: "string — ref Metric"
+    created_at: "datetime"
+    created_by: "string — usuario que criou"
+
+  examples:
+    - id: "brd-001"
+      name: "Convite HOSPITALAR 2026 — Eng. Clinica SP/PR"
+      template_id: "MKT-004"
+      segment_filter:
+        personas: ["eng_clinica"]
+        journey_phases: [1, 2, 3, 4, 5]
+        products: ["LEV", "KRATUS", "OSTUS", "KRONUS"]
+        regions: ["SP", "PR"]
+        tags: []
+        opt_in_only: true
+      parameters:
+        body: ["{{nome}}", "HOSPITALAR 2026", "21 a 24 de maio", "Expo Center Norte — SP"]
+      scheduled_at: "2026-05-10T10:00:00-03:00"
+      status: "draft"
+      total_recipients: 0
+      metrics_id: null
+      created_at: "2026-04-07T14:00:00Z"
+      created_by: "gestora"
+
+# ===================================================================
+# INDICES E CONSTRAINTS
+# ===================================================================
+
+database_notes:
+  engine: "PostgreSQL (ja em uso no Content Studio)"
+  queue: "Redis + Bull (ja disponivel na infra)"
+
+  indices:
+    - table: "contacts"
+      columns: ["phone"]
+      type: "unique"
+      note: "E.164 format, unico por conta"
+    - table: "contacts"
+      columns: ["persona", "journey_phase"]
+      type: "btree"
+      note: "Busca rapida por segmentacao"
+    - table: "contacts"
+      columns: ["crm_id"]
+      type: "btree"
+      note: "Lookup por ID do Bitrix24"
+    - table: "messages"
+      columns: ["contact_id", "sent_at"]
+      type: "btree"
+      note: "Historico de mensagens por contato"
+    - table: "messages"
+      columns: ["meta_message_id"]
+      type: "unique"
+      note: "Lookup por WAMID para webhook updates"
+    - table: "messages"
+      columns: ["sequence_id", "status"]
+      type: "btree"
+      note: "Metricas por sequencia"
+    - table: "messages"
+      columns: ["status", "scheduled_at"]
+      type: "btree"
+      note: "Fila de envio — mensagens agendadas"
+    - table: "sequence_enrollments"
+      columns: ["contact_id", "sequence_id"]
+      type: "unique"
+      note: "Um contato nao pode estar na mesma sequencia 2 vezes"
+    - table: "sequence_enrollments"
+      columns: ["status", "next_message_at"]
+      type: "btree"
+      note: "Worker de envio — proximas mensagens"
+    - table: "metrics"
+      columns: ["entity_type", "entity_id", "period", "date"]
+      type: "unique"
+      note: "Uma metrica por entidade por periodo por data"
+
+  constraints:
+    - "contacts.opt_in MUST be true antes de envio de templates marketing"
+    - "messages.cost_brl >= 0"
+    - "metrics rates between 0.0 and 1.0"
+    - "sequence_enrollments: max 1 enrollment ativa por contato por sequencia"
+    - "templates: status approved obrigatorio para envio"
