@@ -352,6 +352,10 @@ class StudioService:
                 self._buyer_personas_cache = data if isinstance(data, list) else []
         return self._buyer_personas_cache
 
+    def load_buyer_personas_full(self) -> dict:
+        """Retorna o YAML completo de buyer-personas (com chaves de persona)."""
+        return self._load_yaml("buyer-personas.yaml")
+
     def load_hashtag_bank(self) -> dict:
         if self._hashtag_bank_cache is None:
             self._hashtag_bank_cache = self._load_yaml("hashtag-bank.yaml")
@@ -400,6 +404,73 @@ class StudioService:
                     "tagline": bb.get("tagline", ""),
                 })
         return result
+
+    # =========================================================================
+    # SAVE YAML — Escrita + invalidação de cache
+    # =========================================================================
+
+    def _save_yaml(self, filename: str, data: dict | list) -> None:
+        """Salva dados em YAML no data dir e invalida cache correspondente."""
+        path = self._data_dir() / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            yaml.dump(data, default_flow_style=False, allow_unicode=True, sort_keys=False),
+            encoding="utf-8",
+        )
+        logger.info("YAML salvo: %s", path)
+
+    def invalidate_all_caches(self) -> None:
+        """Limpa todos os caches de dados YAML para forçar re-leitura."""
+        self._platform_specs_cache = None
+        self._buyer_personas_cache = None
+        self._hashtag_bank_cache = None
+        self._editorial_template_cache = None
+        self._prohibited_terms_cache = None
+        self._brand_guidelines_cache = None
+        self._brandbooks_cache.clear()
+        # Invalida cache do auto_prompt também
+        if hasattr(self, 'auto_prompt') and hasattr(self.auto_prompt, '_brand_context_cache'):
+            self.auto_prompt._brand_context_cache.clear()
+        logger.info("Todos os caches de dados YAML invalidados")
+
+    def save_platform_specs(self, data: dict) -> None:
+        self._save_yaml("platform-specs.yaml", data)
+        self._platform_specs_cache = None
+
+    def save_buyer_personas(self, data: dict) -> None:
+        self._save_yaml("buyer-personas.yaml", data)
+        self._buyer_personas_cache = None
+        # Invalida brand context cache pois personas alimentam prompts
+        if hasattr(self, 'auto_prompt') and hasattr(self.auto_prompt, '_brand_context_cache'):
+            self.auto_prompt._brand_context_cache.clear()
+
+    def save_hashtag_bank(self, data: dict) -> None:
+        self._save_yaml("hashtag-bank.yaml", data)
+        self._hashtag_bank_cache = None
+
+    def save_editorial_template(self, data: dict) -> None:
+        self._save_yaml("editorial-calendar-template.yaml", data)
+        self._editorial_template_cache = None
+
+    def save_prohibited_terms(self, data: dict) -> None:
+        self._save_yaml("prohibited-terms.yaml", data)
+        self._prohibited_terms_cache = None
+
+    def save_brand_guidelines(self, data: dict) -> None:
+        self._save_yaml("brand-guidelines.yaml", data)
+        self._brand_guidelines_cache = None
+
+    def save_brandbook(self, brand: str, data: dict) -> None:
+        self._save_yaml(f"brandbooks/{brand}.yaml", data)
+        self._brandbooks_cache.pop(brand, None)
+        # Invalida brand context cache
+        if hasattr(self, 'auto_prompt') and hasattr(self.auto_prompt, '_brand_context_cache'):
+            self.auto_prompt._brand_context_cache.pop(brand, None)
+
+    def save_claims_bank(self, data: dict) -> None:
+        self._save_yaml("claims-bank.yaml", data)
+        # claims não tem cache próprio (lê direto), mas invalida geral
+        logger.info("Claims bank atualizado")
 
     # =========================================================================
     # ASSETS — Imagens de produto, logos, claims

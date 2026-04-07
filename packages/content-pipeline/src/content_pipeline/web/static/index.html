@@ -700,6 +700,18 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 .kc-quick-btn { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-darker); color: var(--text-muted); cursor: pointer; transition: var(--transition); }
 .kc-quick-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
 
+/* === IMAGE CLICK-TO-ZOOM WRAPPER === */
+.img-click-wrap {
+  position: relative; cursor: pointer; display: inline-block; border-radius: 8px; overflow: hidden;
+}
+.img-click-wrap:hover img { filter: brightness(0.7); transition: filter 0.2s; }
+.img-click-overlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 0.85rem; font-weight: 600; opacity: 0; transition: opacity 0.2s;
+  background: rgba(0,0,0,0.3); border-radius: 8px;
+}
+.img-click-wrap:hover .img-click-overlay { opacity: 1; }
+
 /* === MODAL === */
 .modal-overlay {
   position: fixed;
@@ -3486,8 +3498,8 @@ body.zen-mode .tab-bar { display: none !important; }
     <h1>Content Studio</h1>
     <div class="subtitle">Producao Criativa de Conteudo</div>
     <form @submit.prevent="doLogin()">
-      <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username" x-ref="loginInput" x-init="$nextTick(() => { if (!$store || !localStorage.getItem('studio_token')) $refs.loginInput?.focus() })">
-      <input type="password" x-model="loginPass" placeholder="Senha" autocomplete="current-password">
+      <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username" @input="loginError = ''" x-ref="loginInput" x-init="$nextTick(() => { if (!$store || !localStorage.getItem('studio_token')) $refs.loginInput?.focus() })">
+      <input type="password" x-model="loginPass" placeholder="Senha" autocomplete="current-password" @input="loginError = ''">
       <button type="submit" class="btn-login" :disabled="loginLoading">
         <span x-show="!loginLoading">Entrar</span>
         <span x-show="loginLoading">Entrando...</span>
@@ -3608,7 +3620,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <span x-show="currentUser" style="font-size: 0.72rem; color: var(--text-secondary);" x-text="currentUser?.username || currentUser?.sub || 'Gestora'"></span>
     <button class="btn-logout" @click="logout()">Sair</button>
   </div>
-  <button class="sidebar-collapse-btn" @click="sidebarMini = !sidebarMini" :title="sidebarMini ? 'Expandir menu' : 'Recolher menu'" x-text="sidebarMini ? '&#9654;' : '&#9664;'"></button>
+  <button class="sidebar-collapse-btn" @click="sidebarMini = !sidebarMini; localStorage.setItem('studio_sidebar_mini', sidebarMini)" :title="sidebarMini ? 'Expandir menu' : 'Recolher menu'" x-text="sidebarMini ? '&#9654;' : '&#9664;'"></button>
 </aside>
 
 <!-- ============================================= -->
@@ -4247,9 +4259,8 @@ body.zen-mode .tab-bar { display: none !important; }
           <span class="count" x-text="piecesInStage(stage).length"></span>
         </div>
         <div class="kanban-body">
-          <div x-show="piecesInStage(stage).length === 0" style="text-align: center; padding: 24px 8px; color: var(--text-muted);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.25; margin-bottom: 4px;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            <div style="font-size: 0.72rem;">Vazio</div>
+          <div x-show="piecesInStage(stage).length === 0" style="padding: 24px 12px; text-align: center; color: var(--text-muted); font-size: 0.8rem; opacity: 0.6;">
+            Nenhuma peca neste estagio
           </div>
           <template x-for="piece in piecesInStage(stage)" :key="piece.id">
             <div class="kanban-card" draggable="true"
@@ -4461,10 +4472,12 @@ body.zen-mode .tab-bar { display: none !important; }
 
   <template x-if="calSlots.length === 0">
     <div class="empty-state-rich">
-      <div class="es-icon">&#128197;</div>
-      <div class="es-title">Calendario vazio</div>
-      <div class="es-desc">Informe a semana acima e gere o calendario automaticamente.</div>
-      <button class="btn btn-primary" @click="generateCalendar(); autoFillCalendar()">Gerar Calendario</button>
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+        <div style="font-size: 2rem; margin-bottom: 12px;">&#128197;</div>
+        <div style="font-size: 0.9rem; margin-bottom: 8px;">Calendario vazio</div>
+        <div style="font-size: 0.78rem; opacity: 0.7; margin-bottom: 16px;">Informe a semana acima (ex: 2026-W15) e clique "Nova Semana" para gerar slots automaticamente</div>
+        <button class="btn btn-primary" @click="generateCalendar(); autoFillCalendar()">Gerar Calendario</button>
+      </div>
     </div>
   </template>
 
@@ -7202,75 +7215,331 @@ body.zen-mode .tab-bar { display: none !important; }
 </div>
 
 <!-- ===================================================== -->
-<!-- TAB: BIBLIOTECA DE REFERENCIA -->
+<!-- TAB: RECURSOS — Dados Estrategicos Editaveis -->
 <!-- ===================================================== -->
 <div x-show="tab === 'reference'" class="tab-content">
-  <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
-    <template x-for="sec in [{key:'specs',label:'Specs Plataforma'},{key:'guidelines',label:'Diretrizes Marca'},{key:'brandbooks',label:'Brandbooks'},{key:'editorial',label:'Template Editorial'},{key:'prohibited',label:'Termos Proibidos'},{key:'hashbank',label:'Banco Hashtags'}]">
-      <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; loadRefSection(sec.key)" style="font-size: 0.75rem; padding: 6px 14px;" x-text="sec.label"></button>
-    </template>
+  <!-- Header com sub-tabs + botoes de acao -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <template x-for="sec in [{key:'brandbooks',label:'Brandbooks',icon:'book'},{key:'personas',label:'Buyer Personas',icon:'users'},{key:'prohibited',label:'Termos Proibidos',icon:'shield'},{key:'claims',label:'Claims Aprovados',icon:'check-circle'},{key:'hashbank',label:'Hashtags',icon:'hash'},{key:'guidelines',label:'Diretrizes',icon:'layout'},{key:'specs',label:'Specs Plataforma',icon:'monitor'},{key:'editorial',label:'Calendario Editorial',icon:'calendar'}]">
+        <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; refEditMode = false; loadRefSection(sec.key)" style="font-size: 0.72rem; padding: 5px 12px;" x-text="sec.label"></button>
+      </template>
+    </div>
+    <div style="display: flex; gap: 6px;" x-show="refData !== null && !refLoading">
+      <button class="btn btn-sm" x-show="!refEditMode" @click="refEditMode = true; refEditData = JSON.parse(JSON.stringify(refActiveSection === 'brandbooks' && refBrandbookDetail ? refBrandbookDetail : refData)); refEditJSON = JSON.stringify(refData, null, 2); refEditJSONError = '';" style="font-size: 0.72rem; padding: 5px 12px; background: var(--accent); color: white;">Editar</button>
+      <button class="btn btn-sm" x-show="refEditMode" @click="saveRefData()" :disabled="refSaving" style="font-size: 0.72rem; padding: 5px 12px; background: var(--success); color: white;" x-text="refSaving ? 'Salvando...' : 'Salvar'"></button>
+      <button class="btn btn-sm" x-show="refEditMode" @click="refEditMode = false; refEditData = null" style="font-size: 0.72rem; padding: 5px 12px;">Cancelar</button>
+    </div>
   </div>
 
-  <div class="card" style="min-height: 300px;">
-    <template x-if="refLoading">
-      <div style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</div>
-    </template>
-    <template x-if="!refLoading && refData !== null">
-      <div>
-        <!-- Object display -->
-        <template x-if="typeof refData === 'object' && !Array.isArray(refData)">
-          <div>
-            <template x-for="[key, val] in Object.entries(refData)">
-              <div style="margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
-                <div style="padding: 8px 12px; background: var(--bg-darker); font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; justify-content: space-between;" @click="refExpandedKeys[key] = !refExpandedKeys[key]" x-text="key">
-                </div>
-                <div x-show="refExpandedKeys[key]" x-transition style="padding: 10px 12px; font-size: 0.75rem; color: var(--text-secondary); max-height: 300px; overflow-y: auto;">
-                  <pre style="white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 0.72rem; line-height: 1.6;" x-text="typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)"></pre>
-                </div>
-              </div>
-            </template>
+  <!-- Loading -->
+  <template x-if="refLoading">
+    <div class="card" style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</div>
+  </template>
+
+  <!-- Empty -->
+  <template x-if="!refLoading && refData === null">
+    <div class="card" style="text-align: center; padding: 40px; color: var(--text-muted);">
+      Selecione uma categoria acima para visualizar e editar os dados estrategicos.<br>
+      <span style="font-size: 0.72rem;">Alteracoes aqui refletem diretamente na geracao de copy, imagens e briefings.</span>
+    </div>
+  </template>
+
+  <!-- ============ BRANDBOOKS ============ -->
+  <template x-if="!refLoading && refActiveSection === 'brandbooks' && refData !== null">
+    <div>
+      <!-- Brand selector -->
+      <div class="card" style="margin-bottom: 12px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <template x-for="bb in (Array.isArray(refData) ? refData : [])">
+            <button class="btn btn-sm" :class="refSelectedBrand === (bb.brand||bb.name) ? 'btn-primary' : ''" @click="refSelectedBrand = bb.brand||bb.name; loadBrandbook(bb.brand||bb.name); refEditMode = false;" style="font-size: 0.75rem; padding: 6px 14px;" x-text="(bb.full_name || bb.brand || bb.name)"></button>
+          </template>
+        </div>
+      </div>
+      <!-- Brandbook detail: View mode -->
+      <template x-if="refBrandbookDetail && !refEditMode">
+        <div class="card">
+          <div class="card-title" style="display: flex; justify-content: space-between;">
+            <span x-text="refBrandbookDetail.full_name || refSelectedBrand"></span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);" x-text="'Prioridade: ' + (refBrandbookDetail.priority || '-')"></span>
           </div>
-        </template>
-        <!-- Array display -->
-        <template x-if="Array.isArray(refData)">
-          <div>
-            <template x-for="(item, idx) in refData.slice(0, 50)" :key="idx">
-              <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.78rem;">
-                <template x-if="typeof item === 'object'">
-                  <div>
-                    <span style="font-weight: 600;" x-text="item.name || item.title || item.brand || ('Item ' + (idx+1))"></span>
-                    <span style="color: var(--text-muted); margin-left: 8px; font-size: 0.7rem;" x-text="item.description || item.value || ''"></span>
+          <!-- Identity -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <div><label class="form-label">Tagline</label><div style="font-size: 0.82rem; font-weight: 500;" x-text="refBrandbookDetail.tagline || '-'"></div></div>
+            <div><label class="form-label">Foco</label><div style="font-size: 0.82rem;" x-text="refBrandbookDetail.focus || '-'"></div></div>
+          </div>
+          <!-- Tone -->
+          <template x-if="refBrandbookDetail.tone_of_voice">
+            <div style="margin-bottom: 16px;">
+              <label class="form-label" style="font-weight: 600;">Tom de Voz</label>
+              <div style="font-size: 0.8rem; margin-bottom: 4px;" x-text="refBrandbookDetail.tone_of_voice.primary || ''"></div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+                <template x-for="adj in (refBrandbookDetail.tone_of_voice.adjectives || [])">
+                  <span style="background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.68rem;" x-text="adj"></span>
+                </template>
+              </div>
+              <div style="margin-top: 6px; font-size: 0.72rem; color: var(--text-muted);" x-show="refBrandbookDetail.tone_of_voice.prohibited">
+                <span style="color: var(--error);">Proibido:</span> <span x-text="(refBrandbookDetail.tone_of_voice.prohibited || []).join(', ')"></span>
+              </div>
+            </div>
+          </template>
+          <!-- Pillars -->
+          <template x-if="refBrandbookDetail.content_pillars">
+            <div style="margin-bottom: 16px;">
+              <label class="form-label" style="font-weight: 600;">Pilares de Conteudo</label>
+              <template x-for="p in refBrandbookDetail.content_pillars">
+                <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.78rem;">
+                  <div style="min-width: 40px; font-weight: 700; color: var(--accent);" x-text="p.percentage + '%'"></div>
+                  <div><span style="font-weight: 600;" x-text="p.name"></span> <span style="color: var(--text-muted); margin-left: 4px;" x-text="p.description || ''"></span></div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <!-- Products -->
+          <template x-if="refBrandbookDetail.products">
+            <div style="margin-bottom: 16px;">
+              <label class="form-label" style="font-weight: 600;">Produtos</label>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <template x-for="pr in refBrandbookDetail.products">
+                  <div style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.75rem; border: 1px solid var(--border);" :style="pr.status === 'ATIVO' ? 'border-color: var(--success)' : 'border-color: var(--error); opacity: 0.6'">
+                    <span style="font-weight: 600;" x-text="pr.name"></span>
+                    <span style="color: var(--text-muted); margin-left: 4px; font-size: 0.68rem;" x-text="pr.type || ''"></span>
+                    <span style="margin-left: 4px; font-size: 0.62rem; padding: 1px 6px; border-radius: 8px;" :style="pr.status === 'ATIVO' ? 'background: var(--success); color: white;' : 'background: var(--error); color: white;'" x-text="pr.status"></span>
                   </div>
                 </template>
-                <template x-if="typeof item !== 'object'">
-                  <span x-text="item"></span>
+              </div>
+            </div>
+          </template>
+          <!-- Visual Rules -->
+          <template x-if="refBrandbookDetail.visual_rules">
+            <div style="margin-bottom: 16px;">
+              <label class="form-label" style="font-weight: 600;">Regras Visuais</label>
+              <template x-for="[rk, rv] in Object.entries(refBrandbookDetail.visual_rules || {})">
+                <div style="font-size: 0.74rem; padding: 3px 0; border-bottom: 1px solid var(--border);">
+                  <span style="font-weight: 600; min-width: 140px; display: inline-block;" x-text="rk.replace(/_/g, ' ')"></span>
+                  <span style="color: var(--text-secondary);" x-text="rv"></span>
+                </div>
+              </template>
+            </div>
+          </template>
+          <!-- Personas -->
+          <template x-if="refBrandbookDetail.target_personas">
+            <div>
+              <label class="form-label" style="font-weight: 600;">Publico-Alvo</label>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+                <template x-for="tp in refBrandbookDetail.target_personas">
+                  <div style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.74rem;">
+                    <div style="font-weight: 600;" x-text="tp.name"></div>
+                    <div style="color: var(--text-muted); font-size: 0.68rem;" x-text="tp.role || ''"></div>
+                    <div style="color: var(--text-secondary); font-size: 0.66rem; margin-top: 4px;" x-text="(tp.concerns || []).join(', ')"></div>
+                  </div>
                 </template>
               </div>
-            </template>
+            </div>
+          </template>
+        </div>
+      </template>
+      <!-- Brandbook detail: Edit mode -->
+      <template x-if="refBrandbookDetail && refEditMode">
+        <div class="card">
+          <div class="card-title">Editando: <span x-text="refEditData.full_name || refSelectedBrand"></span></div>
+          <div style="display: grid; gap: 14px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+              <div><label class="form-label">Nome Completo</label><input class="form-input" x-model="refEditData.full_name" style="font-size: 0.8rem;"></div>
+              <div><label class="form-label">Tagline</label><input class="form-input" x-model="refEditData.tagline" style="font-size: 0.8rem;"></div>
+              <div><label class="form-label">Foco</label><input class="form-input" x-model="refEditData.focus" style="font-size: 0.8rem;"></div>
+            </div>
+            <!-- Tone of voice -->
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+              <label class="form-label" style="font-weight: 600;">Tom de Voz</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><label class="form-label" style="font-size: 0.68rem;">Tom Principal</label><input class="form-input" x-model="refEditData.tone_of_voice.primary" style="font-size: 0.78rem;"></div>
+                <div><label class="form-label" style="font-size: 0.68rem;">Nivel de Linguagem</label><input class="form-input" x-model="refEditData.tone_of_voice.language_level" style="font-size: 0.78rem;"></div>
+              </div>
+              <div style="margin-top: 8px;"><label class="form-label" style="font-size: 0.68rem;">Estilo de CTA</label><input class="form-input" x-model="refEditData.tone_of_voice.cta_style" style="font-size: 0.78rem;"></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
+                <div><label class="form-label" style="font-size: 0.68rem;">Adjetivos (separar por virgula)</label><input class="form-input" :value="(refEditData.tone_of_voice.adjectives||[]).join(', ')" @change="refEditData.tone_of_voice.adjectives = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.78rem;"></div>
+                <div><label class="form-label" style="font-size: 0.68rem; color: var(--error);">Tons Proibidos (separar por virgula)</label><input class="form-input" :value="(refEditData.tone_of_voice.prohibited||[]).join(', ')" @change="refEditData.tone_of_voice.prohibited = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.78rem;"></div>
+              </div>
+            </div>
+            <!-- Content Pillars -->
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+              <label class="form-label" style="font-weight: 600;">Pilares de Conteudo</label>
+              <template x-for="(p, pi) in (refEditData.content_pillars || [])" :key="pi">
+                <div style="display: grid; grid-template-columns: 2fr 60px 3fr 30px; gap: 6px; align-items: center; margin-bottom: 6px;">
+                  <input class="form-input" x-model="p.name" placeholder="Nome" style="font-size: 0.76rem;">
+                  <input class="form-input" type="number" x-model.number="p.percentage" min="0" max="100" style="font-size: 0.76rem; text-align: center;">
+                  <input class="form-input" x-model="p.description" placeholder="Descricao" style="font-size: 0.76rem;">
+                  <button class="btn btn-sm" @click="refEditData.content_pillars.splice(pi, 1)" style="color: var(--error); font-size: 0.7rem; padding: 2px 6px;">X</button>
+                </div>
+              </template>
+              <button class="btn btn-sm" @click="refEditData.content_pillars = [...(refEditData.content_pillars||[]), {name:'', percentage:0, description:''}]" style="font-size: 0.7rem; margin-top: 4px;">+ Pilar</button>
+            </div>
+            <!-- Products -->
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+              <label class="form-label" style="font-weight: 600;">Produtos</label>
+              <template x-for="(pr, pri) in (refEditData.products || [])" :key="pri">
+                <div style="display: grid; grid-template-columns: 80px 2fr 2fr 100px 30px; gap: 6px; align-items: center; margin-bottom: 6px;">
+                  <input class="form-input" x-model="pr.id" placeholder="ID" style="font-size: 0.74rem;">
+                  <input class="form-input" x-model="pr.name" placeholder="Nome" style="font-size: 0.74rem;">
+                  <input class="form-input" x-model="pr.type" placeholder="Tipo" style="font-size: 0.74rem;">
+                  <select class="form-input" x-model="pr.status" style="font-size: 0.74rem;">
+                    <option value="ATIVO">ATIVO</option><option value="BLOQUEADO">BLOQUEADO</option>
+                  </select>
+                  <button class="btn btn-sm" @click="refEditData.products.splice(pri, 1)" style="color: var(--error); font-size: 0.7rem; padding: 2px 6px;">X</button>
+                </div>
+              </template>
+              <button class="btn btn-sm" @click="refEditData.products = [...(refEditData.products||[]), {id:'', name:'', type:'', status:'ATIVO'}]" style="font-size: 0.7rem; margin-top: 4px;">+ Produto</button>
+            </div>
+            <!-- Visual Rules -->
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+              <label class="form-label" style="font-weight: 600;">Regras Visuais</label>
+              <template x-for="[rk, rv] in Object.entries(refEditData.visual_rules || {})" :key="rk">
+                <div style="display: grid; grid-template-columns: 160px 1fr; gap: 6px; align-items: center; margin-bottom: 4px;">
+                  <label style="font-size: 0.72rem; font-weight: 500;" x-text="rk.replace(/_/g, ' ')"></label>
+                  <input class="form-input" :value="rv" @change="refEditData.visual_rules[rk] = $event.target.value" style="font-size: 0.74rem;">
+                </div>
+              </template>
+            </div>
+            <!-- Target Personas -->
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+              <label class="form-label" style="font-weight: 600;">Publico-Alvo</label>
+              <template x-for="(tp, tpi) in (refEditData.target_personas || [])" :key="tpi">
+                <div style="display: grid; grid-template-columns: 80px 2fr 1fr 2fr 30px; gap: 6px; align-items: center; margin-bottom: 6px;">
+                  <input class="form-input" x-model="tp.id" placeholder="ID" style="font-size: 0.74rem;">
+                  <input class="form-input" x-model="tp.name" placeholder="Nome" style="font-size: 0.74rem;">
+                  <input class="form-input" x-model="tp.role" placeholder="Papel" style="font-size: 0.74rem;">
+                  <input class="form-input" :value="(tp.concerns||[]).join(', ')" @change="tp.concerns = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" placeholder="Preocupacoes (virgula)" style="font-size: 0.74rem;">
+                  <button class="btn btn-sm" @click="refEditData.target_personas.splice(tpi, 1)" style="color: var(--error); font-size: 0.7rem; padding: 2px 6px;">X</button>
+                </div>
+              </template>
+              <button class="btn btn-sm" @click="refEditData.target_personas = [...(refEditData.target_personas||[]), {id:'', name:'', role:'', concerns:[]}]" style="font-size: 0.7rem; margin-top: 4px;">+ Persona</button>
+            </div>
+            <!-- Prohibited Terms (from brandbook) -->
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+              <label class="form-label" style="font-weight: 600;">Termos Proibidos da Marca</label>
+              <input class="form-input" :value="(refEditData.prohibited_terms||[]).join(', ')" @change="refEditData.prohibited_terms = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" placeholder="Separar por virgula" style="font-size: 0.78rem;">
+            </div>
           </div>
-        </template>
-        <!-- String display -->
-        <template x-if="typeof refData === 'string'">
-          <pre style="white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 0.75rem; line-height: 1.6; color: var(--text-secondary);" x-text="refData"></pre>
-        </template>
-      </div>
-    </template>
-    <template x-if="!refLoading && refData === null">
-      <div style="text-align: center; padding: 40px; color: var(--text-muted);">Selecione uma secao acima para visualizar</div>
-    </template>
-  </div>
+        </div>
+      </template>
+    </div>
+  </template>
 
-  <!-- Brandbook detail -->
-  <template x-if="refActiveSection === 'brandbooks' && Array.isArray(refData) && refData.length > 0">
-    <div class="card" style="margin-top: 12px;">
-      <div class="card-title">Detalhe do Brandbook</div>
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-        <template x-for="bb in refData">
-          <button class="btn btn-sm" @click="loadBrandbook(bb.brand || bb.name || bb)" style="font-size: 0.72rem; padding: 4px 10px;" x-text="bb.brand || bb.name || bb"></button>
-        </template>
-      </div>
-      <template x-if="refBrandbookDetail">
-        <pre style="white-space: pre-wrap; font-family: var(--mono); font-size: 0.72rem; line-height: 1.6; color: var(--text-secondary); max-height: 400px; overflow-y: auto;" x-text="JSON.stringify(refBrandbookDetail, null, 2)"></pre>
+  <!-- ============ BUYER PERSONAS ============ -->
+  <template x-if="!refLoading && refActiveSection === 'personas' && refData !== null">
+    <div>
+      <!-- View mode -->
+      <template x-if="!refEditMode">
+        <div class="card">
+          <div class="card-title">Buyer Personas (ICP)</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px;">Estes dados alimentam TODOS os prompts de imagem, copy e briefings automaticamente.</div>
+          <template x-for="[pk, pv] in Object.entries(typeof refData === 'object' && !Array.isArray(refData) ? refData : {})">
+            <div style="margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px;">
+              <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 4px;" x-text="pv.title || pk"></div>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.74rem; margin-bottom: 8px;">
+                <span><strong>Papel:</strong> <span x-text="pv.decision_role || '-'"></span></span>
+                <span><strong>Funil:</strong> <span x-text="pv.funnel_stage || '-'"></span></span>
+                <span><strong>Tom:</strong> <span x-text="pv.tone || '-'"></span></span>
+              </div>
+              <div x-show="pv.keywords" style="margin-bottom: 6px;">
+                <div style="font-size: 0.7rem; font-weight: 600; margin-bottom: 3px;">Keywords</div>
+                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                  <template x-for="kw in (pv.keywords || [])">
+                    <span style="background: var(--bg-darker); padding: 2px 8px; border-radius: 10px; font-size: 0.66rem;" x-text="kw"></span>
+                  </template>
+                </div>
+              </div>
+              <div x-show="pv.pain_points" style="margin-bottom: 6px;">
+                <div style="font-size: 0.7rem; font-weight: 600; margin-bottom: 3px;">Dores</div>
+                <template x-for="pp in (pv.pain_points || [])">
+                  <div style="font-size: 0.72rem; color: var(--text-secondary); padding-left: 8px;" x-text="'- ' + pp"></div>
+                </template>
+              </div>
+              <div x-show="pv.best_platforms" style="font-size: 0.7rem; color: var(--text-muted);">
+                <strong>Plataformas:</strong> <span x-text="(pv.best_platforms || []).join(', ')"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+      <!-- Edit mode -->
+      <template x-if="refEditMode">
+        <div class="card">
+          <div class="card-title">Editando Buyer Personas</div>
+          <template x-for="[pk, pv] in Object.entries(refEditData || {})">
+            <div style="margin-bottom: 16px; border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 12px;">
+              <div style="font-weight: 700; font-size: 0.84rem; margin-bottom: 8px; color: var(--accent);" x-text="pk.replace(/_/g, ' ').toUpperCase()"></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                <div><label class="form-label" style="font-size: 0.66rem;">Titulo</label><input class="form-input" x-model="pv.title" style="font-size: 0.76rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Papel Decisorio</label><input class="form-input" x-model="pv.decision_role" style="font-size: 0.76rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">Estagio Funil</label><input class="form-input" x-model="pv.funnel_stage" style="font-size: 0.76rem;"></div>
+              </div>
+              <div style="margin-bottom: 8px;"><label class="form-label" style="font-size: 0.66rem;">Tom de Comunicacao</label><input class="form-input" x-model="pv.tone" style="font-size: 0.76rem;"></div>
+              <div style="margin-bottom: 8px;"><label class="form-label" style="font-size: 0.66rem;">Keywords (virgula)</label><input class="form-input" :value="(pv.keywords||[]).join(', ')" @change="pv.keywords = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.76rem;"></div>
+              <div style="margin-bottom: 8px;"><label class="form-label" style="font-size: 0.66rem;">Dores (uma por linha)</label><textarea class="form-input" rows="3" :value="(pv.pain_points||[]).join('\n')" @change="pv.pain_points = $event.target.value.split('\n').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.76rem; resize: vertical;"></textarea></div>
+              <div style="margin-bottom: 8px;"><label class="form-label" style="font-size: 0.66rem;">Exemplo de Copy</label><textarea class="form-input" rows="2" x-model="pv.copy_example" style="font-size: 0.76rem; resize: vertical;"></textarea></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div><label class="form-label" style="font-size: 0.66rem;">Plataformas (virgula)</label><input class="form-input" :value="(pv.best_platforms||[]).join(', ')" @change="pv.best_platforms = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.76rem;"></div>
+                <div><label class="form-label" style="font-size: 0.66rem;">CTAs (uma por linha)</label><textarea class="form-input" rows="2" :value="(pv.best_ctas||[]).join('\n')" @change="pv.best_ctas = $event.target.value.split('\n').map(s=>s.trim()).filter(Boolean)" style="font-size: 0.76rem; resize: vertical;"></textarea></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <!-- ============ GENERIC DATA (prohibited, guidelines, specs, editorial, hashbank, claims) ============ -->
+  <template x-if="!refLoading && refData !== null && !['brandbooks','personas'].includes(refActiveSection)">
+    <div class="card">
+      <div class="card-title" x-text="({prohibited:'Termos Proibidos',claims:'Claims Aprovados',hashbank:'Banco de Hashtags',guidelines:'Diretrizes de Marca',specs:'Specs de Plataforma',editorial:'Calendario Editorial'})[refActiveSection] || refActiveSection"></div>
+      <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 12px;" x-text="refEditMode ? 'Edite os dados abaixo. Formato JSON sera preservado.' : 'Clique em Editar para modificar estes dados.'"></div>
+      <!-- View mode: structured display -->
+      <template x-if="!refEditMode">
+        <div>
+          <template x-if="typeof refData === 'object' && !Array.isArray(refData)">
+            <div>
+              <template x-for="[key, val] in Object.entries(refData)">
+                <div style="margin-bottom: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
+                  <div style="padding: 8px 12px; background: var(--bg-darker); font-weight: 600; font-size: 0.78rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" @click="refExpandedKeys[key] = !refExpandedKeys[key]">
+                    <span x-text="key"></span>
+                    <span style="font-size: 0.65rem; color: var(--text-muted);" x-text="refExpandedKeys[key] ? 'fechar' : 'expandir'"></span>
+                  </div>
+                  <div x-show="refExpandedKeys[key]" x-transition style="padding: 10px 12px; max-height: 350px; overflow-y: auto;">
+                    <pre style="white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 0.72rem; line-height: 1.6; color: var(--text-secondary);" x-text="typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)"></pre>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <template x-if="Array.isArray(refData)">
+            <div>
+              <template x-for="(item, idx) in refData.slice(0, 80)" :key="idx">
+                <div style="padding: 6px 12px; border-bottom: 1px solid var(--border); font-size: 0.76rem;">
+                  <template x-if="typeof item === 'object'">
+                    <div>
+                      <span style="font-weight: 600;" x-text="item.name || item.title || item.brand || item.claim_id || ('Item ' + (idx+1))"></span>
+                      <span style="color: var(--text-muted); margin-left: 8px; font-size: 0.7rem;" x-text="item.description || item.texto || item.value || ''"></span>
+                      <span x-show="item.status" style="margin-left: 6px; font-size: 0.62rem; padding: 1px 6px; border-radius: 8px;" :style="item.status === 'APROVADO' ? 'background: var(--success); color: white;' : 'background: var(--warning); color: black;'" x-text="item.status"></span>
+                    </div>
+                  </template>
+                  <template x-if="typeof item !== 'object'"><span x-text="item"></span></template>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+      <!-- Edit mode: full JSON editor with textarea -->
+      <template x-if="refEditMode">
+        <div>
+          <textarea class="form-input" rows="25" style="font-family: var(--mono); font-size: 0.74rem; line-height: 1.5; resize: vertical; min-height: 300px; background: var(--bg-darker); color: var(--text-primary);" x-model="refEditJSON"></textarea>
+          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 6px;">
+            Edite o JSON acima. O formato sera validado antes de salvar.
+            <span x-show="refEditJSONError" style="color: var(--error); font-weight: 600;" x-text="refEditJSONError"></span>
+          </div>
+        </div>
       </template>
     </div>
   </template>
@@ -7785,7 +8054,7 @@ body.zen-mode .tab-bar { display: none !important; }
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" @click="showNewPiece = false">Cancelar</button>
+      <button class="btn" @click="showNewPiece = false; newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'post', persona_target: '' }">Cancelar</button>
       <button class="btn btn-primary" :disabled="!newPiece.title.trim()" @click="createNewPiece()">Criar Peca</button>
     </div>
   </div>
@@ -7793,8 +8062,8 @@ body.zen-mode .tab-bar { display: none !important; }
 
 <!-- Piece Detail Modal -->
 <!-- ===== DRAWER: Piece Production Panel ===== -->
-<div class="drawer-overlay" x-show="showPieceDetail" @click="showPieceDetail = false" x-cloak></div>
-<div class="drawer" x-show="showPieceDetail" @keydown.escape.window="showPieceDetail = false" x-cloak x-transition role="complementary" aria-label="Detalhes da peca">
+<div class="drawer-overlay" x-show="showPieceDetail" @click="showPieceDetail = false; drawerTab = 'resumo'" x-cloak></div>
+<div class="drawer" x-show="showPieceDetail" @keydown.escape.window="showPieceDetail = false; drawerTab = 'resumo'" x-cloak x-transition role="complementary" aria-label="Detalhes da peca">
   <div class="drawer-header">
     <div>
       <h3 x-text="selectedPiece?.title || selectedPiece?.id || 'Peca'"></h3>
@@ -7818,7 +8087,7 @@ body.zen-mode .tab-bar { display: none !important; }
           </div>
         </template>
       </div>
-    <button class="modal-close" @click="showPieceDetail = false">&times;</button>
+    <button class="modal-close" @click="showPieceDetail = false; drawerTab = 'resumo'">&times;</button>
   </div>
 
   <!-- Piece Progress -->
@@ -7879,7 +8148,11 @@ body.zen-mode .tab-bar { display: none !important; }
       <button class="btn btn-primary" style="white-space: nowrap; font-size: 0.78rem; background: var(--purple); border-color: var(--purple);"
               x-show="selectedPiece?.stage === 'visual' && parsePieceNotes(selectedPiece?.notes).nb2_prompt"
               @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
-        <span x-show="!pieceActionLoading">Gerar Imagem</span><span x-show="pieceActionLoading">Gerando...</span>
+        <span x-show="!pieceActionLoading">Gerar Imagem</span>
+        <span x-show="pieceActionLoading" style="display: inline-flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block;"></span>
+          Gerando...
+        </span>
       </button>
       <!-- Review: aprovar ou rejeitar -->
       <div x-show="selectedPiece?.stage === 'review'" style="display: flex; gap: 8px;">
@@ -7954,10 +8227,13 @@ body.zen-mode .tab-bar { display: none !important; }
 
       <!-- Preview: Image + Video side by side -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
+        <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
           <div class="card" style="margin-bottom: 0;">
             <div class="card-title" style="font-size: 0.75rem;">Imagem</div>
-            <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
+            <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
+              <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
+              <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+            </div>
           </div>
         </template>
         <template x-if="parsePieceNotes(selectedPiece?.notes).video_url">
@@ -8028,10 +8304,13 @@ body.zen-mode .tab-bar { display: none !important; }
       </template>
 
       <!-- Image -->
-      <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
+      <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
         <div class="card" style="margin-bottom: 12px;">
           <div class="card-title" style="font-size: 0.75rem;">Imagem Gerada</div>
-          <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+          <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
+            <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+            <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+          </div>
         </div>
       </template>
 
@@ -8071,7 +8350,10 @@ body.zen-mode .tab-bar { display: none !important; }
             &#127909; Animar Video
           </button>
         </div>
-        <span x-show="pieceActionLoading" style="display: block; font-size: 0.78rem; color: var(--amber); margin-top: 8px;">Processando...</span>
+        <div x-show="pieceActionLoading" style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--amber); margin-top: 8px;">
+          <div style="width: 16px; height: 16px; border: 2px solid var(--amber); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+          <span>Processando... isso pode levar 20-60 segundos</span>
+        </div>
       </div>
 
       <!-- Move Stage -->
@@ -8179,8 +8461,23 @@ body.zen-mode .tab-bar { display: none !important; }
           </select>
         </div>
         <div class="form-group">
-          <label>Produto</label>
-          <input class="form-input" x-model="quickProduce.product" placeholder="ex: LEV 4LEV">
+          <label>Produto <span style="font-size:0.65rem; color:var(--text-muted); font-weight:400;">(vazio = institucional)</span></label>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+            <template x-for="p in [{key:'lev', name:'LEV', emoji:''}, {key:'kratus', name:'KRATUS', emoji:''}, {key:'ostus', name:'OSTUS', emoji:''}, {key:'kronus', name:'KRONUS', emoji:''}]">
+              <div style="padding: 8px 4px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid var(--border); transition: all 0.15s; font-size: 0.75rem; font-weight: 600;"
+                   :style="quickProduce.product === p.key ? 'border-color: var(--accent); background: var(--accent-dim); color: var(--accent)' : 'background: var(--bg-darker)'"
+                   @click="quickProduce.product = (quickProduce.product === p.key ? '' : p.key)">
+                <span x-text="p.emoji" style="font-size: 1.1rem; display: block; margin-bottom: 2px;"></span>
+                <span x-text="p.name"></span>
+              </div>
+            </template>
+          </div>
+          <div x-show="quickProduce.product" style="font-size: 0.68rem; color: var(--accent); margin-top: 4px;">
+            Imagem usara NB2: produto real renderizado no cenario
+          </div>
+          <div x-show="!quickProduce.product" style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">
+            Sem produto = imagem institucional (cenario sem produto)
+          </div>
         </div>
       </div>
       <div class="form-row">
@@ -8217,10 +8514,10 @@ body.zen-mode .tab-bar { display: none !important; }
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" @click="showQuickProduce = false">Cancelar</button>
+      <button class="btn" @click="showQuickProduce = false; quickProduce = { brand: 'salk', product: '', platform: 'instagram', pillar: 'produto', format: 'post', objective: '' }">Cancelar</button>
       <button class="btn btn-primary" @click="runQuickProduce()" :disabled="quickProducing">
         <span x-show="!quickProducing">Produzir Tudo</span>
-        <span x-show="quickProducing">Processando (3 etapas)...</span>
+        <span x-show="quickProducing" x-text="quickProduce.product ? 'Gerando com NB2: ' + quickProduce.product.toUpperCase() + '...' : 'Gerando conteudo institucional...'"></span>
       </button>
     </div>
   </div>
@@ -8484,8 +8781,8 @@ body.zen-mode .tab-bar { display: none !important; }
   </div>
 </div>
 
-<!-- Image Modal -->
-<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" @keydown.escape.window="showImageModal = false" @keydown.left.window="navigateAsset(-1)" @keydown.right.window="navigateAsset(1)" x-cloak role="dialog" aria-modal="true" aria-label="Visualizar imagem">
+<!-- Image Modal (z-index 200 to appear ABOVE drawer which is z-index 101) -->
+<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" @keydown.escape.window="showImageModal = false" @keydown.left.window="navigateAsset(-1)" @keydown.right.window="navigateAsset(1)" x-cloak role="dialog" aria-modal="true" aria-label="Visualizar imagem" style="z-index: 200;">
   <div class="modal" style="max-width: 700px; position: relative;">
     <div class="modal-header">
       <h3 x-text="selectedImage?.name || ''"></h3>
@@ -8582,7 +8879,7 @@ function studioApp() {
 
     // UI state
     sidebarOpen: false,
-    sidebarMini: false,
+    sidebarMini: localStorage.getItem('studio_sidebar_mini') === 'true',
     dataLoading: true,
     autoRefresh: false,
     autoRefreshInterval: null,
@@ -8996,6 +9293,12 @@ function studioApp() {
     refLoading: false,
     refExpandedKeys: {},
     refBrandbookDetail: null,
+    refEditMode: false,
+    refEditData: null,
+    refEditJSON: '',
+    refEditJSONError: '',
+    refSaving: false,
+    refSelectedBrand: '',
 
     // Smart Automation extras
     copywritersList: [],
@@ -9227,9 +9530,19 @@ function studioApp() {
           if (res.status === 401) {
             localStorage.removeItem('studio_token');
             this.authenticated = false;
-            throw new Error('401');
+            throw new Error('Sessao expirada. Faca login novamente.');
           }
-          if (!res.ok && res.status !== 503) throw new Error(`${res.status}`);
+          if (!res.ok && res.status !== 503) {
+            const errorMessages = {
+              403: 'Sem permissao para esta acao.',
+              404: 'Recurso nao encontrado.',
+              429: 'Muitas requisicoes. Aguarde um momento.',
+              500: 'Erro interno do servidor.',
+              502: 'Servidor indisponivel.',
+              503: 'Servico temporariamente indisponivel.',
+            };
+            throw new Error(errorMessages[res.status] || `Erro ${res.status}`);
+          }
 
           const data = await res.json();
 
@@ -9241,7 +9554,7 @@ function studioApp() {
           return data;
         } catch(e) {
           lastError = e;
-          if (e.message === '401') { this.apiRetryCount = 0; throw e; }
+          if (e.message.includes('Sessao expirada')) { this.apiRetryCount = 0; throw e; }
           // Network failure (server unreachable) — retry makes sense
           if (e instanceof TypeError) {
             this.connectionOk = false;
@@ -9461,6 +9774,25 @@ function studioApp() {
       try { const r = JSON.parse(notes); return (r && typeof r === 'object') ? r : {}; } catch(e) { return {}; }
     },
 
+    openGeneratedImageModal(url, name) {
+      if (!url) return;
+      const img = { url, name: name || 'Imagem Gerada' };
+      this.selectedImage = img;
+      this.assetModalList = [img];
+      this.assetModalIndex = 0;
+      this.showImageModal = true;
+    },
+
+    async refreshSelectedPiece(pieceId) {
+      // Force Alpine re-render: null → nextTick → new object
+      const fresh = this.pieces.find(p => p.id === pieceId);
+      if (fresh) {
+        this.selectedPiece = null;
+        await this.$nextTick();
+        this.selectedPiece = fresh;
+      }
+    },
+
     async generateCopyForPiece(pieceId) {
       if (!pieceId) return;
       this.pieceActionLoading = true;
@@ -9472,7 +9804,7 @@ function studioApp() {
         const tags = (result.hashtags && result.hashtags.length) ? ` | ${result.hashtags.length} hashtags` : '';
         this.notify('Copy gerada por ' + (result.copywriter || 'IA') + hl + tags);
         await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+        await this.refreshSelectedPiece(pieceId);
         this.drawerTab = 'texto';
       } catch(e) { this.notify('Erro ao gerar copy: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
@@ -9487,7 +9819,7 @@ function studioApp() {
         });
         this.notify('Prompt NB2 gerado com sucesso');
         await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+        await this.refreshSelectedPiece(pieceId);
       } catch(e) { this.notify('Erro ao gerar prompt: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
     },
@@ -9501,11 +9833,14 @@ function studioApp() {
         });
         if (result.success) {
           this.notify('Imagem gerada com sucesso!');
+          await this.loadPieces();
+          await this.refreshSelectedPiece(pieceId);
+          this.drawerTab = 'visual';
+          this.showPieceDetail = true;
+          this.tab = 'board';
         } else {
           this.notify('Erro: ' + (result.error || 'falha na geracao'), 'error');
         }
-        await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
       } catch(e) { this.notify('Erro ao gerar imagem: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
     },
@@ -9519,11 +9854,12 @@ function studioApp() {
         });
         if (result.success) {
           this.notify('Video animado gerado!');
+          await this.loadPieces();
+          await this.refreshSelectedPiece(pieceId);
+          this.drawerTab = 'visual';
         } else {
           this.notify('Erro: ' + (result.error || 'falha na animacao'), 'error');
         }
-        await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
       } catch(e) { this.notify('Erro ao animar: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
     },
@@ -9631,27 +9967,28 @@ function studioApp() {
           pieceData.notes = JSON.stringify(notesObj);
         }
         delete pieceData.objective;
-        await this.api('/api/production/pieces', {
-          method: 'POST',
-          body: JSON.stringify(pieceData),
-        });
         const res = await this.api('/api/production/pieces', {
           method: 'POST',
           body: JSON.stringify(pieceData),
         });
-        await this.loadPieces();
         this.showNewPiece = false;
+        this.tab = 'board';
         this.newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'imagem', persona_target: '', objective: '', notes: '' };
         this.notify('Peca criada! Clique em "Gerar Texto" no painel.');
+        await this.loadPieces();
         // Auto-abrir drawer da peca recem-criada
         const newId = res?.id || res?.piece_id;
         if (newId) {
-          const newPiece = this.pieces.find(p => p.id === newId);
+          let newPiece = this.pieces.find(p => p.id === newId);
+          if (!newPiece) {
+            await new Promise(r => setTimeout(r, 500));
+            await this.loadPieces();
+            newPiece = this.pieces.find(p => p.id === newId);
+          }
           if (newPiece) {
             this.selectedPiece = newPiece;
             this.drawerTab = 'resumo';
             this.showPieceDetail = true;
-            this.tab = 'board';
           }
         }
       } catch (e) {
@@ -9659,12 +9996,19 @@ function studioApp() {
       }
     },
 
+    invalidatePiecesCache() {
+      const prefix = '/api/production/pieces';
+      Object.keys(this.dataCache).forEach(k => { if (k.startsWith(prefix)) delete this.dataCache[k]; });
+    },
+
     async loadPieces() {
       try {
+        this.invalidatePiecesCache();
         const url = '/api/production/pieces' + (this.boardBrandFilter ? '?brand=' + this.boardBrandFilter : '');
         this.pieces = await this.api(url);
       } catch(e) {
         console.error('Erro ao carregar pecas:', e);
+        this.notify('Erro ao carregar pecas: ' + e.message, 'error');
         this.pieces = [];
       }
     },
@@ -9675,8 +10019,15 @@ function studioApp() {
           method: 'PUT',
           body: JSON.stringify({ stage }),
         });
+        // Atualizar localmente para feedback instantaneo
+        const p = this.pieces.find(x => x.id === id);
+        if (p) p.stage = stage;
+        if (this.selectedPiece?.id === id) this.selectedPiece.stage = stage;
+        // Recarregar para garantir dados completos
         await this.loadPieces();
-        if (this.selectedPiece) this.selectedPiece.stage = stage;
+        if (this.selectedPiece?.id === id) {
+          await this.refreshSelectedPiece(id);
+        }
       } catch(e) { this.notify('Erro ao mover peca: ' + e.message, 'error'); }
     },
 
@@ -9685,6 +10036,7 @@ function studioApp() {
       if (!pcs.length) return;
       if (!confirm(`Mover ${pcs.length} pecas de "${this.stageLabels[fromStage]}" para "${this.stageLabels[toStage]}"?`)) return;
       let moved = 0;
+      let failed = 0;
       for (const p of pcs) {
         try {
           await this.api(`/api/production/pieces/${p.id}/stage`, {
@@ -9692,10 +10044,10 @@ function studioApp() {
             body: JSON.stringify({ stage: toStage }),
           });
           moved++;
-        } catch (e) { /* skip failed */ }
+        } catch (e) { failed++; }
       }
       await this.loadPieces();
-      this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}`);
+      this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}${failed ? `, ${failed} falharam` : ''}`);
     },
 
     async runQuickProduce() {
@@ -9706,23 +10058,35 @@ function studioApp() {
           body: JSON.stringify(this.quickProduce),
         });
         this.showQuickProduce = false;
-        await this.loadPieces();
+        this.tab = 'board';
         const steps = result.total_steps || 0;
-        const errors = (result.errors || []).length;
-        this.notify(`Peca produzida! ${steps} etapas OK${errors ? `, ${errors} erros` : ''}`);
-        if (errors) console.warn('Erros na producao:', result.errors);
-        // Auto-abrir o drawer da peca recem-criada
+        const errors = (result.errors || []);
+        if (errors.length > 0 && steps <= 1) {
+          this.notify('Erro na producao: ' + errors.join(' | '), 'error');
+        } else if (errors.length > 0) {
+          this.notify(`Peca criada com ${errors.length} erro(s): ${errors.join(' | ')}`, 'error');
+        } else {
+          this.notify(`Peca produzida! ${steps} etapas concluidas`);
+        }
+        if (errors.length) console.warn('Erros na producao:', errors);
+        // Recarregar pecas e abrir drawer da peca recem-criada
+        await this.loadPieces();
         if (result.piece_id) {
-          const newPiece = this.pieces.find(p => p.id === result.piece_id);
+          // Retry: se loadPieces nao trouxe a peca, tentar mais uma vez
+          let newPiece = this.pieces.find(p => p.id === result.piece_id);
+          if (!newPiece) {
+            await new Promise(r => setTimeout(r, 500));
+            await this.loadPieces();
+            newPiece = this.pieces.find(p => p.id === result.piece_id);
+          }
           if (newPiece) {
             this.selectedPiece = newPiece;
-            this.drawerTab = 'resumo';
+            this.drawerTab = newPiece.copy_text ? 'texto' : 'resumo';
             this.showPieceDetail = true;
-            this.tab = 'board';
           }
         }
       } catch(e) {
-        this.notify('Erro na producao express: ' + e.message, 'error');
+        this.notify('Erro na producao: ' + e.message, 'error');
       }
       this.quickProducing = false;
     },
@@ -9747,11 +10111,10 @@ function studioApp() {
     },
 
     async deletePiece(id) {
-      if (!confirm('Excluir esta peca permanentemente?')) return;
       try {
         await this.api(`/api/production/pieces/${id}`, { method: 'DELETE' });
         this.showPieceDetail = false;
-        await this.loadPieces();
+        this.pieces = this.pieces.filter(p => p.id !== id);
         this.notify('Peca excluida');
       } catch(e) { this.notify('Erro ao excluir: ' + e.message, 'error'); }
     },
@@ -11143,7 +11506,7 @@ function studioApp() {
         this.pieceNewNote = '';
         this.notify('Nota adicionada');
         await this.loadPieces();
-        this.selectedPiece = this.pieces.find(p => p.id === this.selectedPiece.id) || this.selectedPiece;
+        await this.refreshSelectedPiece(this.selectedPiece.id);
       } catch(e) { this.notify('Erro ao salvar nota: ' + e.message, 'error'); }
     },
 
@@ -11264,12 +11627,16 @@ function studioApp() {
       try { this.studioHistory = await this.api('/api/studio/history'); } catch(e) { this.studioHistory = []; }
     },
 
-    // === Reference Library ===
+    // === Reference Library (Recursos Editaveis) ===
     async loadRefSection(section) {
       this.refLoading = true;
       this.refData = null;
       this.refExpandedKeys = {};
       this.refBrandbookDetail = null;
+      this.refEditMode = false;
+      this.refEditData = null;
+      this.refEditJSON = '';
+      this.refEditJSONError = '';
       const endpoints = {
         specs: '/api/data/platform-specs',
         guidelines: '/api/data/brand-guidelines',
@@ -11277,6 +11644,8 @@ function studioApp() {
         editorial: '/api/data/editorial-template',
         prohibited: '/api/data/prohibited-terms',
         hashbank: '/api/data/hashtag-bank',
+        personas: '/api/data/buyer-personas',
+        claims: '/api/assets/claims',
       };
       try {
         this.refData = await this.api(endpoints[section]);
@@ -11287,7 +11656,74 @@ function studioApp() {
     async loadBrandbook(brand) {
       try {
         this.refBrandbookDetail = await this.api('/api/data/brandbook/' + encodeURIComponent(brand));
+        this.refEditData = null;
+        this.refEditMode = false;
       } catch(e) { this.notify('Erro brandbook: ' + e.message, 'error'); }
+    },
+
+    async saveRefData() {
+      this.refSaving = true;
+      this.refEditJSONError = '';
+      try {
+        const section = this.refActiveSection;
+        const saveEndpoints = {
+          specs: '/api/data/platform-specs',
+          guidelines: '/api/data/brand-guidelines',
+          editorial: '/api/data/editorial-template',
+          prohibited: '/api/data/prohibited-terms',
+          hashbank: '/api/data/hashtag-bank',
+          claims: '/api/data/claims-bank',
+        };
+
+        let payload, endpoint, method = 'PUT';
+
+        if (section === 'brandbooks') {
+          // Brandbook individual
+          endpoint = '/api/data/brandbook/' + encodeURIComponent(this.refSelectedBrand);
+          payload = this.refEditData;
+        } else if (section === 'personas') {
+          endpoint = '/api/data/buyer-personas';
+          // refEditData e o dict de personas; wrappa com metadata
+          payload = { version: '1.0', last_updated: new Date().toISOString().split('T')[0], personas: this.refEditData };
+        } else if (saveEndpoints[section]) {
+          endpoint = saveEndpoints[section];
+          // Para seções genéricas, parse do JSON editado
+          try {
+            payload = JSON.parse(this.refEditJSON);
+          } catch(parseErr) {
+            this.refEditJSONError = 'JSON invalido: ' + parseErr.message;
+            this.refSaving = false;
+            return;
+          }
+        } else {
+          this.notify('Salvamento nao suportado para esta secao', 'error');
+          this.refSaving = false;
+          return;
+        }
+
+        const resp = await fetch(endpoint, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload),
+        });
+        const result = await resp.json();
+        if (result.ok) {
+          this.notify(result.message || 'Dados salvos com sucesso!', 'success');
+          this.refEditMode = false;
+          this.refEditData = null;
+          this.refEditJSON = '';
+          // Reload fresh data
+          await this.loadRefSection(section);
+          if (section === 'brandbooks' && this.refSelectedBrand) {
+            await this.loadBrandbook(this.refSelectedBrand);
+          }
+        } else {
+          this.notify('Erro ao salvar: ' + (result.detail || result.message || 'erro desconhecido'), 'error');
+        }
+      } catch(e) {
+        this.notify('Erro ao salvar: ' + e.message, 'error');
+      }
+      this.refSaving = false;
     },
 
     // === Smart Automation Extras ===

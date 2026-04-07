@@ -760,7 +760,12 @@ async def get_platform_specs():
 
 @app.get("/api/data/buyer-personas")
 async def get_buyer_personas():
-    return get_service().load_buyer_personas()
+    """Retorna dict completo de personas (com chaves) para edição."""
+    svc = get_service()
+    full = svc.load_buyer_personas_full()
+    if isinstance(full, dict) and "personas" in full:
+        return full["personas"]
+    return svc.load_buyer_personas()
 
 
 @app.get("/api/data/hashtag-bank")
@@ -800,6 +805,72 @@ async def get_brandbook(brand: str):
     if bb is None:
         raise HTTPException(404, f"Brandbook não encontrado: {brand}")
     return bb
+
+
+# =========================================================================
+# DATA — Endpoints de ESCRITA (PUT) para edição via UI
+# =========================================================================
+
+@app.put("/api/data/platform-specs")
+async def save_platform_specs(request: Request):
+    data = await request.json()
+    get_service().save_platform_specs(data)
+    return {"ok": True, "message": "Platform specs atualizados"}
+
+
+@app.put("/api/data/buyer-personas")
+async def save_buyer_personas(request: Request):
+    data = await request.json()
+    get_service().save_buyer_personas(data)
+    return {"ok": True, "message": "Buyer personas atualizados — pipeline re-calibrado"}
+
+
+@app.put("/api/data/hashtag-bank")
+async def save_hashtag_bank(request: Request):
+    data = await request.json()
+    get_service().save_hashtag_bank(data)
+    return {"ok": True, "message": "Banco de hashtags atualizado"}
+
+
+@app.put("/api/data/editorial-template")
+async def save_editorial_template(request: Request):
+    data = await request.json()
+    get_service().save_editorial_template(data)
+    return {"ok": True, "message": "Template editorial atualizado"}
+
+
+@app.put("/api/data/prohibited-terms")
+async def save_prohibited_terms(request: Request):
+    data = await request.json()
+    get_service().save_prohibited_terms(data)
+    return {"ok": True, "message": "Termos proibidos atualizados — compliance re-calibrado"}
+
+
+@app.put("/api/data/brand-guidelines")
+async def save_brand_guidelines(request: Request):
+    data = await request.json()
+    get_service().save_brand_guidelines(data)
+    return {"ok": True, "message": "Diretrizes de marca atualizadas"}
+
+
+@app.put("/api/data/brandbook/{brand}")
+async def save_brandbook(brand: str, request: Request):
+    data = await request.json()
+    get_service().save_brandbook(brand, data)
+    return {"ok": True, "message": f"Brandbook '{brand}' atualizado — prompts re-calibrados"}
+
+
+@app.put("/api/data/claims-bank")
+async def save_claims_bank(request: Request):
+    data = await request.json()
+    get_service().save_claims_bank(data)
+    return {"ok": True, "message": "Claims bank atualizado"}
+
+
+@app.post("/api/data/invalidate-cache")
+async def invalidate_all_caches():
+    get_service().invalidate_all_caches()
+    return {"ok": True, "message": "Todos os caches invalidados — dados recarregados do disco"}
 
 
 # =========================================================================
