@@ -22,6 +22,7 @@ Regras inegociaveis:
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -393,11 +394,19 @@ INSTALAM e fazem MANUTENCAO de equipamentos em hospitais. Pense como o ICP ve o 
         elif not product:
             system += """
 === CONTEUDO INSTITUCIONAL (sem produto especifico) ===
-- A imagem deve refletir o TEMA/OBJETIVO do conteudo (ex: Dia da Engenharia, Dia do Medico, etc.)
-- Contexto HOSPITALAR ou de SAUDE, mas adaptado ao tema
-- Pode mostrar o AMBIENTE completo, perspectiva livre, pessoas desfocadas ao fundo se fizer sentido
-- Foco em transmitir profissionalismo, tecnologia, inovacao, humanidade
-- Se o tema for uma data comemorativa, capture a essencia dessa profissao/data no contexto hospitalar
+- A imagem DEVE estar em CONTEXTO HOSPITALAR/CIRURGICO — NUNCA outro ambiente
+- CENARIOS VALIDOS: centro cirurgico, sala de exames, UTI, sala de equipamentos, area tecnica do hospital
+- CENARIOS PROIBIDOS: corredor, elevador, lobby, recepcao, escritorio, sala de reuniao, estacionamento, area externa
+- A imagem deve contar uma HISTORIA relacionada ao TEMA/OBJETIVO
+- Pode incluir PESSOAS (profissionais de saude) desfocadas ou em silhueta se fizer sentido para o tema
+- Foco: profissionalismo, tecnologia, inovacao, humanidade
+
+=== REFERENCIAS POR TIPO DE DATA SAZONAL ===
+- Dia da Engenharia/Engenheiro Biomedico: engenheiro clinico de jaleco inspecionando painel tecnico em sala cirurgica, ferramentas de precisao, tablet com esquema tecnico, maos ajustando equipamento
+- Dia do Medico/Cirurgiao: equipe medica em sala cirurgica, atmosfera de concentracao, luz cirurgica acesa (vista de baixo), maos com luvas estereis
+- Dia do Enfermeiro: profissional organizando instrumental, cuidado com paciente, ambiente limpo e acolhedor
+- Hospitalar Fair/Congresso: sala de demonstracao com equipamentos, publico tecnico, ambiente de inovacao
+- Retrospectiva/Institucional: panorama de centro cirurgico moderno, multiplas salas, tecnologia integrada
 """
 
         # Contexto rico do briefing e objetivo
@@ -469,15 +478,42 @@ NEGATIVE: (prompt negativo em ingles)"""
             elif line_stripped.upper().startswith("NEGATIVE:"):
                 negative = line_stripped[9:].strip()
 
+        # --- FIX 3: Validacao pos-LLM — cenario hospitalar obrigatorio ---
+        positive, negative = self._validate_scene_context(positive, negative, product, objective)
+
         # Garantir qualidade fotorrealista, cores neutras e anti-texto no positivo
         quality_suffix = "professional DSLR photography, photorealistic, warm neutral tones, no text, no writing, no labels, no medical equipment, empty center composition"
         if positive and "no text" not in positive.lower():
             positive = positive.rstrip(".," ) + ", " + quality_suffix
         # Remover termos proibidos que o LLM pode ter incluido
-        for banned in ["surgical light", "operating light", "surgical lamp", "operating table",
-                       "surgical table", "medical monitor", "patient monitor", "pendant light",
-                       "ceiling mounted light", "overhead surgical"]:
+        # 1. Equipamentos medicos (NB2 insere o produto real depois)
+        banned_equipment = [
+            "surgical light", "operating light", "surgical lamp", "operating table",
+            "surgical table", "medical monitor", "patient monitor", "pendant light",
+            "ceiling mounted light", "overhead surgical", "surgical focus",
+            "LED light", "examination light", "surgical saw", "bone saw",
+        ]
+        # 2. Cenarios proibidos (geram imagens inutilizaveis)
+        banned_scenes = [
+            "hallway", "corridor", "elevator", "escalator", "passageway",
+            "lobby", "reception area", "waiting room", "break room",
+            "office space", "conference room", "meeting room",
+            "parking", "garage", "warehouse", "factory floor",
+            "street", "outdoor", "garden", "rooftop",
+            "bathroom", "restroom", "kitchen", "cafeteria",
+            "staircase", "stairwell", "entrance hall",
+        ]
+        for banned in banned_equipment:
             positive = positive.replace(banned, "").replace("  ", " ")
+        # Cenarios: substituir por contexto hospitalar se detectado
+        scene_replaced = False
+        for banned in banned_scenes:
+            if banned in positive.lower():
+                logger.warning("CENARIO PROIBIDO detectado: '%s' — substituindo por sala cirurgica", banned)
+                positive = re.sub(re.escape(banned), "modern surgical suite", positive, flags=re.IGNORECASE)
+                scene_replaced = True
+        if scene_replaced:
+            positive = positive.replace("  ", " ")
 
         # Garantir negatives obrigatorios mesmo que LLM esqueca
         mandatory_neg = (
@@ -498,6 +534,102 @@ NEGATIVE: (prompt negativo em ingles)"""
             "cost_usd": llm_result.get("cost_usd", 0),
             "warnings": [],
         }
+
+    # ------------------------------------------------------------------
+    # Validacao de cenario pos-LLM (Fix 3)
+    # ------------------------------------------------------------------
+
+    # Termos que indicam contexto hospitalar/cirurgico valido
+    _VALID_SCENE_TERMS = [
+        "surgical", "surgery", "operating room", "operating theatre",
+        "hospital", "clinical", "medical", "sterile", "OR suite",
+        "surgical suite", "ICU", "intensive care", "examination room",
+        "biomedical", "healthcare", "medical center", "clean room",
+        "stainless steel", "scrubs", "scalpel", "instruments",
+        "patient", "surgeon", "nurse", "anesthesia", "procedure",
+        "equipment room", "technical room", "maintenance bay",
+    ]
+
+    # Presets seguros por tipo de conteudo (fallback deterministico)
+    _SAFE_PRESETS = {
+        "engenharia": (
+            "clinical engineer in white lab coat inspecting technical panel "
+            "inside modern surgical suite, precision tools on stainless steel table, "
+            "tablet showing technical schematics, warm overhead lighting, "
+            "sterile environment, professional DSLR photography, Canon EOS R5, "
+            "24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing"
+        ),
+        "medico": (
+            "medical team in modern operating room, concentrated atmosphere, "
+            "surgical light seen from below, sterile gloved hands, "
+            "warm neutral tones, professional DSLR photography, Canon EOS R5, "
+            "photorealistic, no text, no writing"
+        ),
+        "enfermeiro": (
+            "healthcare professional organizing surgical instruments on stainless steel tray, "
+            "clean sterile environment, warm lighting, caring atmosphere, "
+            "modern hospital setting, professional DSLR photography, "
+            "photorealistic, warm neutral tones, no text, no writing"
+        ),
+        "institucional": (
+            "panoramic view of modern surgical suite with integrated technology, "
+            "stainless steel surfaces, warm overhead lighting, clean sterile atmosphere, "
+            "multiple procedure rooms visible, cutting-edge medical environment, "
+            "professional DSLR photography, Canon EOS R5, photorealistic, "
+            "warm neutral tones, no text, no writing"
+        ),
+    }
+
+    def _validate_scene_context(
+        self, positive: str, negative: str, product: str, objective: str = ""
+    ) -> tuple[str, str]:
+        """
+        Valida se o prompt gerado contem contexto hospitalar/cirurgico.
+
+        Para conteudo institucional (sem produto), e CRITICO que a cena seja
+        hospitalar. Se nao for, substitui por preset seguro.
+        Para conteudo com produto, e menos critico (NB2 ja insere o produto).
+        """
+        if not positive:
+            return positive, negative
+
+        positive_lower = positive.lower()
+        has_valid_scene = any(
+            term.lower() in positive_lower for term in self._VALID_SCENE_TERMS
+        )
+
+        if has_valid_scene:
+            return positive, negative
+
+        # Cenario invalido detectado
+        if product:
+            # Com produto: apenas injetar contexto hospitalar no prompt
+            logger.warning(
+                "VALIDACAO CENA: prompt com produto '%s' sem contexto hospitalar — injetando",
+                product,
+            )
+            positive = f"inside modern surgical suite, sterile hospital environment, {positive}"
+            return positive, negative
+
+        # Sem produto (institucional): fallback para preset seguro
+        logger.warning(
+            "VALIDACAO CENA: prompt institucional SEM contexto hospitalar — usando preset seguro. "
+            "Prompt original: %s",
+            positive[:200],
+        )
+
+        # Escolher preset baseado no objetivo
+        obj_lower = (objective or "").lower()
+        preset_key = "institucional"
+        if any(k in obj_lower for k in ["engenhar", "biomedic", "tecnic"]):
+            preset_key = "engenharia"
+        elif any(k in obj_lower for k in ["medic", "cirurgi", "doctor"]):
+            preset_key = "medico"
+        elif any(k in obj_lower for k in ["enfermeir", "nurse", "cuidado"]):
+            preset_key = "enfermeiro"
+
+        logger.info("VALIDACAO CENA: preset selecionado = '%s'", preset_key)
+        return self._SAFE_PRESETS[preset_key], negative
 
     @staticmethod
     def list_dimensions() -> dict:
