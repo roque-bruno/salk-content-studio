@@ -244,9 +244,19 @@ class FalImageGenerator:
             model_id = self.MODELS["nb2-generate"]  # fal-ai/nano-banana-2
             logger.info("NB2 prompt-only mode (no product image) — usando endpoint generate")
 
+        # NB2 aceita image_size como string predefinida ou dict {width, height}
+        # Strings predefinidas garantem proporcao correta sem snap-to-64
+        NB2_SIZE_MAP = {
+            (1080, 1350): "portrait_4_3",   # Instagram feed
+            (1080, 1080): "square",          # Instagram square
+            (1080, 1920): "portrait_16_9",   # Stories
+            (1920, 1080): "landscape_16_9",  # Landscape
+        }
+        image_size = NB2_SIZE_MAP.get((w, h), {"width": api_w, "height": api_h})
+
         payload = {
             "prompt": prompt,
-            "image_size": {"width": api_w, "height": api_h},
+            "image_size": image_size,
         }
         if img_url:
             payload["image_urls"] = [img_url]

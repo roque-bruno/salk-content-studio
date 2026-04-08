@@ -25,12 +25,19 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 logger = logging.getLogger(__name__)
 
-# Diretorio de logos (relativo ao data_dir do squad)
-LOGO_PATHS = {
-    "salk": "logomarcas/Salk Medical/LogSalkMedicalPNG - W.png",
-    "mendel": "logomarcas/Mendel/LogMendel-white.png",
-    "dayho": "logomarcas/Dayho/LogDayho-white.png",
-    "manager": "logomarcas/Manager Grupo/LogManager+logos_H-PTB-clean - white.png",
+# Diretorio de fontes embutidas (Montserrat, Google Fonts OFL)
+_FONTS_DIR = Path(__file__).parent / "fonts"
+
+# Logos embutidas no static (copiadas do docs_user/logomarcas/)
+_STATIC_IMG_DIR = Path(__file__).parent.parent / "web" / "static" / "img"
+
+# Mapeia marca → nome do arquivo de logo no static/img/
+LOGO_FILES = {
+    "salk": "logo-salk-white.png",
+    "manager": "logo-manager-white.png",
+    # Mendel e Dayho: fallback para salk (não tem versão branca PNG)
+    "mendel": "logo-salk-white.png",
+    "dayho": "logo-salk-white.png",
 }
 
 # Cores por marca
@@ -49,29 +56,40 @@ def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
 
 
 def _load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
-    """Carrega fonte. Tenta system fonts, fallback para default."""
-    font_names = [
-        "arial.ttf", "Arial.ttf",
-        "arialbd.ttf", "Arial Bold.ttf",
-        "segoeui.ttf", "Segoe UI.ttf",
-        "segoeuib.ttf", "Segoe UI Bold.ttf",
-        "calibri.ttf", "Calibri.ttf",
-        "calibrib.ttf", "Calibri Bold.ttf",
-    ]
-    if bold:
-        font_names = [f for f in font_names if "bd" in f.lower() or "bold" in f.lower()] + font_names
+    """Carrega fonte Montserrat embutida. Fallback para system fonts."""
+    # 1. Montserrat embutida (prioridade — funciona em qualquer ambiente)
+    bundled = _FONTS_DIR / ("Montserrat-Bold.ttf" if bold else "Montserrat-Regular.ttf")
+    if bundled.exists():
+        try:
+            return ImageFont.truetype(str(bundled), size)
+        except (OSError, IOError):
+            pass
 
-    for name in font_names:
+    # 2. Montserrat Light (para spec line)
+    if not bold:
+        light = _FONTS_DIR / "Montserrat-Light.ttf"
+        if light.exists():
+            try:
+                return ImageFont.truetype(str(light), size)
+            except (OSError, IOError):
+                pass
+
+    # 3. System fonts (Windows)
+    for name in ["arialbd.ttf", "arial.ttf", "segoeui.ttf", "calibri.ttf"]:
         try:
             return ImageFont.truetype(name, size)
         except (OSError, IOError):
             continue
 
-    # Fallback: PIL default font (bitmap, limited sizes)
-    try:
-        return ImageFont.truetype("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf", size)
-    except (OSError, IOError):
-        return ImageFont.load_default()
+    # 4. DejaVu (Linux containers)
+    for path in ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                 "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]:
+        try:
+            return ImageFont.truetype(path, size)
+        except (OSError, IOError):
+            continue
+
+    return ImageFont.load_default()
 
 
 def compose_post(
@@ -172,32 +190,32 @@ def compose_post(
 
     # ── Logo (canto superior direito) ───────────────────────────
     logo_placed = False
-    if logo_dir:
-        logo_rel = LOGO_PATHS.get(brand.lower(), LOGO_PATHS.get("salk", ""))
-        logo_path = logo_dir / logo_rel
-        if not logo_path.exists():
-            # Tenta fallback no static dir
-            alt_path = Path(__file__).parent.parent / "web" / "static" / "img" / "salk-logo-white.png"
-            if alt_path.exists():
-                logo_path = alt_path
-        if logo_path.exists():
-            try:
-                logo = Image.open(logo_path).convert("RGBA")
-                # Redimensionar logo para ~180px de largura
-                logo_target_w = 180
-                ratio = logo_target_w / logo.width
-                logo_h = int(logo.height * ratio)
-                logo = logo.resize((logo_target_w, logo_h), Image.LANCZOS)
-                # Posicionar no canto superior direito
-                logo_x = width - margin - logo_target_w
-                logo_y = margin
-                img.paste(logo, (logo_x, logo_y), logo)
-                logo_placed = True
-            except Exception as e:
-                logger.warning("Falha ao colocar logo: %s", e)
+    # 1. Tentar logo embutida no static/img/
+    logo_filename = LOGO_FILES.get(brand.lower(), LOGO_FILES.get("salk", "logo-salk-white.png"))
+    logo_path = _STATIC_IMG_DIR / logo_filename
+    # 2. Fallback: logo_dir externo (docs_user/logomarcas/) se fornecido
+    if not logo_path.exists() and logo_dir:
+        for candidate in ["LogSalkMedicalPNG - W.png", "LogSalk.png", "salk-logo-white.png"]:
+            alt = logo_dir / candidate
+            if alt.exists():
+                logo_path = alt
+                break
+    if logo_path.exists():
+        try:
+            logo = Image.open(logo_path).convert("RGBA")
+            logo_target_w = 180
+            ratio = logo_target_w / logo.width
+            logo_h = int(logo.height * ratio)
+            logo = logo.resize((logo_target_w, logo_h), Image.LANCZOS)
+            logo_x = width - margin - logo_target_w
+            logo_y = margin
+            img.paste(logo, (logo_x, logo_y), logo)
+            logo_placed = True
+        except Exception as e:
+            logger.warning("Falha ao colocar logo: %s", e)
 
     if not logo_placed:
-        logger.info("Logo não encontrada para brand=%s, compondo sem logo", brand)
+        logger.info("Logo nao encontrada para brand=%s em %s", brand, logo_path)
 
     # ── Salvar resultado ────────────────────────────────────────
     final = img.convert("RGB")
