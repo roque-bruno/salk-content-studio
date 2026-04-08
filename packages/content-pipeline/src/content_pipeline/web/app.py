@@ -1247,14 +1247,37 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
             context=piece_context,
         )
         briefing = br.get("briefing_text", "")
+    # Carregar claims aprovados e termos proibidos
+    brand = piece.get("brand", DEFAULT_BRAND)
+    product = piece.get("product", "")
+    prohibited = []
+    try:
+        bb = svc.load_brandbook(brand)
+        if bb:
+            prohibited = bb.get("prohibited_terms", [])
+    except Exception:
+        pass
+
+    claims_for_copy = []
+    try:
+        all_claims = svc.load_claims_bank()
+        if product:
+            claims_for_copy = [c for c in all_claims if product.lower() in c.get("produto", "").lower()][:15]
+        else:
+            claims_for_copy = all_claims[:10]
+    except Exception:
+        pass
+
     # Gerar copy
-    cw = BrandCopywriter(svc.llm_client, brand=piece.get("brand", DEFAULT_BRAND), brandbook_loader=svc.load_brandbook)
+    cw = BrandCopywriter(svc.llm_client, brand=brand, brandbook_loader=svc.load_brandbook)
     copy_result = await cw.write_copy(
         briefing=briefing,
         platform=piece.get("platform", DEFAULT_PLATFORM),
         format_type=piece.get("format", "post"),
-        product=piece.get("product", ""),
+        product=product,
         objective=piece_context,
+        prohibited_terms=prohibited,
+        approved_claims=claims_for_copy,
     )
     # Parsear copy para extrair headline, hashtags, CTA
     raw_copy = copy_result.get("copy_text", "")
@@ -2255,18 +2278,18 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         prohibited = []
         try:
             bb = svc.load_brandbook(brand)
-            prohibited = bb.get("prohibited_tones", []) + bb.get("visual_rules", {}).get("proibido", [])
+            if bb:
+                prohibited = bb.get("prohibited_terms", [])
         except Exception:
             pass
 
         claims_for_copy = []
         try:
-            cb = svc.load_claims_bank()
+            all_claims = svc.load_claims_bank()
             if product:
-                claims_for_copy = [c for c in cb.get("products", {}).get(product.lower(), {}).get("claims", []) if c.get("status") == "aprovado"]
+                claims_for_copy = [c for c in all_claims if product.lower() in c.get("produto", "").lower()][:15]
             else:
-                # Get institutional claims
-                claims_for_copy = cb.get("institutional", {}).get("claims", [])[:10]
+                claims_for_copy = all_claims[:10]
         except Exception:
             pass
 

@@ -158,9 +158,11 @@ class BrandCopywriter:
 
         claims_block = ""
         if approved_claims:
-            claims_block = f"\nCLAIMS APROVADOS (use SOMENTE estes dados tecnicos):\n"
+            claims_block = f"\nCLAIMS APROVADOS (use SOMENTE estes dados tecnicos — NAO invente nenhum dado):\n"
             for c in approved_claims[:15]:
-                claims_block += f"- [{c.get('id','')}] {c.get('claim','')}\n"
+                cid = c.get('id', '') or c.get('claim_id', '')
+                ctxt = c.get('claim', '') or c.get('texto', '')
+                claims_block += f"- [{cid}] {ctxt}\n"
 
         prompt = f"""Escreva o copy FINAL para {platform} ({format_type}).
 {brandbook_context}{product_note}{objective_note}{prohibited_block}{claims_block}
