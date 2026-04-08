@@ -3233,6 +3233,51 @@ async def get_activity_log(limit: int = 100, piece_id: str = None, action: str =
 
 
 # =========================================================================
+# DEPLOY — git pull via HTTP (substitui SSH quando porta bloqueada)
+# =========================================================================
+
+@app.post("/api/deploy")
+async def deploy_pull(user: dict = Depends(require_auth)):
+    """Executa git pull no repositório do servidor."""
+    import subprocess
+
+    # Detectar diretório do repo (container ou host)
+    repo_candidates = [
+        Path("/app"),                              # dentro do container Docker
+        Path("/opt/content-studio/repo-new"),      # host direto
+        Path(__file__).resolve().parents[5],       # relativo ao código
+    ]
+    repo_dir = None
+    for candidate in repo_candidates:
+        if (candidate / ".git").exists():
+            repo_dir = candidate
+            break
+
+    if not repo_dir:
+        raise HTTPException(status_code=500, detail="Repositório git não encontrado no servidor")
+
+    try:
+        result = subprocess.run(
+            ["git", "pull", "origin", "main"],
+            cwd=str(repo_dir),
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        return {
+            "status": "ok" if result.returncode == 0 else "error",
+            "returncode": result.returncode,
+            "stdout": result.stdout.strip(),
+            "stderr": result.stderr.strip(),
+            "repo_dir": str(repo_dir),
+        }
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=504, detail="git pull timeout (60s)")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================================================================
 # FRONTEND STATIC FILES — MUST be last (catch-all mount)
 # =========================================================================
 
