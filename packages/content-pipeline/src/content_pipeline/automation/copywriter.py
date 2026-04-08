@@ -142,7 +142,7 @@ class BrandCopywriter:
         # Enriquecer com brandbook
         brandbook_context = self._build_brandbook_context(product)
 
-        product_note = f"\nPRODUTO PRINCIPAL: {product} (mencione pelo nome no texto)\n" if product else ""
+        product_note = f"\nPRODUTO PRINCIPAL: {product} (mencione pelo nome no texto)\n" if product else "\nNENHUM PRODUTO SELECIONADO — conteudo INSTITUCIONAL. NAO mencione nenhum produto especifico.\n"
         objective_note = f"\nOBJETIVO/TEMA DA PECA: {objective}\nIMPORTANTE: o copy DEVE ser sobre este tema especifico. NAO ignore o objetivo.\n" if objective else ""
 
         # Merge prohibited terms do brandbook

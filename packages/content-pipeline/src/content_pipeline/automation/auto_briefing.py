@@ -150,7 +150,7 @@ class AutoBriefing:
 - Marca: {brand}
 - Plataforma: {platform}
 - Pilar: {pillar}
-- Produto: {product or 'a definir — escolha o produto MAIS RELEVANTE ao tema entre: LEV (foco cirurgico), KRATUS (mesa cirurgica), OSTUS (pendente), KRONUS (monitor). Justifique a escolha no campo produto_recomendado.'}
+- Produto: {product or 'NENHUM SELECIONADO — este conteudo e INSTITUCIONAL. NAO mencione nenhum produto especifico. Foque na marca, no pilar e no tema.'}
 - Persona-alvo: {persona or 'geral'}
 - Dia: {day}
 {f'- Contexto/Tema: {context}' if context else ''}
@@ -163,7 +163,8 @@ REGRAS OBRIGATORIAS:
 - Se uma data comemorativa foi informada no Contexto/Tema, conecte com o produto de forma natural.
 - NUNCA invente datas comemorativas, eventos ou efemérides que NAO foram explicitamente informados acima.
 - NUNCA invente dados tecnicos, especificacoes, numeros ou estatisticas — use SOMENTE os claims aprovados acima.
-- Se nao ha data comemorativa no contexto, foque em conteudo de PRODUTO ou EDUCATIVO do pilar informado.
+- Se nenhum produto foi selecionado, o conteudo DEVE ser institucional — NAO escolha um produto por conta propria.
+- Se nao ha data comemorativa no contexto, foque em conteudo EDUCATIVO ou INSTITUCIONAL do pilar informado.
 - Use claims reais do banco acima. Seja criativo mas preciso.
 
 Gere o briefing completo no formato YAML especificado."""
