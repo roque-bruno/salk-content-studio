@@ -210,16 +210,25 @@ class FalImageGenerator:
         height: int = 1350,
         format_preset: str = "",
     ) -> ImageResult:
-        """Gera imagem NB2: produto real + cenário via NanoBanana 2."""
+        """Gera imagem NB2 — sempre NB2, dois endpoints:
+        - Com produto: /edit (image_urls obrigatório)
+        - Sem produto: /generate (prompt-only, text-to-image)
+        """
         if not self.configured:
             return ImageResult(success=False, error="FAL_API_KEY não configurada")
 
-        # Resolver URL da imagem do produto (opcional — NB2 funciona só com prompt)
+        # Resolver URL da imagem do produto
         img_url = product_image_url or (await self._get_product_image_url(product) if product else None)
 
         start = time.time()
         w, h = self._get_dimensions(format_preset, width, height)
-        model_id = self.MODELS["nb2"]
+
+        # /edit exige image_urls — sem produto usa /generate (text-to-image)
+        if img_url:
+            model_id = self.MODELS["nb2"]  # fal-ai/nano-banana-2/edit
+        else:
+            model_id = self.MODELS["nb2-generate"]  # fal-ai/nano-banana-2
+            logger.info("NB2 prompt-only mode (no product image) — usando endpoint generate")
 
         payload = {
             "prompt": prompt,
@@ -227,8 +236,6 @@ class FalImageGenerator:
         }
         if img_url:
             payload["image_urls"] = [img_url]
-        else:
-            logger.info("NB2 prompt-only mode (no product image) — institutional/commemorative content")
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
 
