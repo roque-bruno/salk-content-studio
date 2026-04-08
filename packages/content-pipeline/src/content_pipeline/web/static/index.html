@@ -3815,7 +3815,7 @@ body.zen-mode .tab-bar { display: none !important; }
   <div class="card" style="padding:20px; margin-bottom:16px;" x-show="dashboardLayout.includes('pending')">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
       <h3 style="font-size:0.9rem; font-weight:700;">O que fazer agora?</h3>
-      <button class="btn btn-sm btn-primary" @click="showWizard = true; wizardCurrentStep = 0;">+ Nova Peca</button>
+      <button class="btn btn-sm btn-primary" @click="showNewPiece = true">+ Nova Peca</button>
     </div>
     <div class="pending-actions">
       <div class="pending-action-card" @click="tab = 'board'; boardFilter = 'briefing'">
