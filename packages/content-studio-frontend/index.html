@@ -3669,6 +3669,10 @@ body.zen-mode .tab-bar { display: none !important; }
       <input type="text" x-model="globalSearch" placeholder="Buscar pecas, produtos...">
     </div>
     <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'" data-tip="Criar nova peca de conteudo">+ Nova Peca</button>
+    <button class="btn btn-ab" @click="showABTest = true" x-show="tab === 'board'" :disabled="abTestRunning">
+      <span x-show="!abTestRunning">&#9878; Gerar Variacoes A/B</span>
+      <span x-show="abTestRunning">Gerando...</span>
+    </button>
     <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Nova Ficha</button>
     <div style="position: relative;">
       <button class="btn" @click="notifCenterOpen = !notifCenterOpen; if(notifCenterOpen) loadNotifications()" style="position: relative;">
@@ -3801,10 +3805,6 @@ body.zen-mode .tab-bar { display: none !important; }
       <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;">Acompanhe o fluxo de conteudo em tempo real</div>
     </div>
     <div style="display: flex; gap: 8px;">
-      <button class="btn btn-ab" @click="showABTest = true" :disabled="abTestRunning">
-        <span x-show="!abTestRunning">&#9878; Gerar Variacoes</span>
-        <span x-show="abTestRunning">Gerando...</span>
-      </button>
       <button class="btn" @click="openWeeklyReport()" title="Relatorio Semanal (visualizar)">&#128202; Relatorio</button>
       <button class="btn" @click="downloadWeeklyReport()" title="Baixar Relatorio HTML (salvar como PDF)">&#128229; Download</button>
       <button class="btn" @click="dashboardCustomizing = !dashboardCustomizing" :style="dashboardCustomizing ? 'border-color: var(--accent); color: var(--accent)' : ''" title="Personalizar widgets">&#9881; Personalizar</button>
@@ -3815,7 +3815,6 @@ body.zen-mode .tab-bar { display: none !important; }
   <div class="card" style="padding:20px; margin-bottom:16px;" x-show="dashboardLayout.includes('pending')">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
       <h3 style="font-size:0.9rem; font-weight:700;">O que fazer agora?</h3>
-      <button class="btn btn-sm btn-primary" @click="showNewPiece = true">+ Nova Peca</button>
     </div>
     <div class="pending-actions">
       <div class="pending-action-card" @click="tab = 'board'; boardFilter = 'briefing'">
