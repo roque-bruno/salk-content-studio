@@ -310,30 +310,26 @@ class FalImageGenerator:
         product: str = "",
         product_image_url: str = "",
     ) -> ImageResult:
-        """Gera imagem. NB2 para peças com produto, FLUX para institucional/sem produto.
+        """Gera imagem. NB2 SEMPRE como padrão (com ou sem produto). FLUX só como fallback.
 
-        NB2 /edit requer image_urls — só funciona com produto.
-        Sem produto (datas comemorativas, institucional) → FLUX text-to-image.
+        NB2 funciona em dois modos:
+        - Com produto: image-to-image (PNG do produto + prompt)
+        - Sem produto: prompt-only (datas comemorativas, institucional)
         """
-        # NB2 /edit requer imagem de referência — só usar quando há produto
-        if product or product_image_url:
-            result = await self.generate_nb2(
-                prompt=prompt,
-                product=product,
-                product_image_url=product_image_url,
-                negative_prompt=negative_prompt,
-                width=width,
-                height=height,
-                format_preset=format_preset,
-            )
-            if result.success:
-                return result
-            # NB2 falhou — fallback para FLUX
-            logger.warning("NB2 falhou (%s), tentando FLUX fallback", result.error)
-
-        # Sem produto ou NB2 falhou → FLUX text-to-image
-        if not product and not product_image_url:
-            logger.info("Sem produto — usando FLUX text-to-image (NB2 /edit requer imagem)")
+        # NB2 é sempre o padrão
+        result = await self.generate_nb2(
+            prompt=prompt,
+            product=product,
+            product_image_url=product_image_url,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            format_preset=format_preset,
+        )
+        if result.success:
+            return result
+        # NB2 falhou — fallback para FLUX
+        logger.warning("NB2 falhou (%s), tentando FLUX fallback", result.error)
         return await self.generate_flux_fallback(
             prompt=prompt,
             negative_prompt=negative_prompt,
