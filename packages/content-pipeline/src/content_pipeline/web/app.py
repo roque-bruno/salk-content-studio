@@ -7,6 +7,7 @@ Servidor web completo para a gestora de marketing planejar e produzir conteúdo.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import time
@@ -45,6 +46,27 @@ from content_pipeline.web.models import (
     VDPCreateRequest,
 )
 from content_pipeline.automation.copywriter import BrandCopywriter, PersonaClone
+from content_pipeline.constants import (
+    AB_TEST_VISUAL_CONCEPTS,
+    CTA_KEYWORDS,
+    DEFAULT_ATMOSPHERE,
+    DEFAULT_BRAND,
+    DEFAULT_COMPOSITION,
+    DEFAULT_FORMAT,
+    DEFAULT_FORMAT_PRESET,
+    DEFAULT_IMAGE_HEIGHT,
+    DEFAULT_IMAGE_MODEL,
+    DEFAULT_IMAGE_WIDTH,
+    DEFAULT_LIGHTING,
+    DEFAULT_NEGATIVE_PROMPT,
+    DEFAULT_PILLAR,
+    DEFAULT_PLATFORM,
+    DEFAULT_PRODUCT,
+    DEFAULT_SCENE,
+    DEFAULT_TECHNIQUE,
+    INSTITUTIONAL_PILLARS,
+)
+from content_pipeline.utils import parse_copy_components, parse_piece_notes
 from content_pipeline.web.services import StudioService
 
 # Logging configuration
@@ -750,13 +772,49 @@ async def dashboard(user: dict = Depends(require_auth)):
 
 
 # =========================================================================
-# DATA FILES — Referência YAML
+# DATA FILES — Referência YAML (Factory pattern)
 # =========================================================================
 
-@app.get("/api/data/platform-specs")
-async def get_platform_specs():
-    return get_service().load_platform_specs()
+# Registry: (route_suffix, load_method, save_method, save_message)
+_DATA_ENDPOINTS = [
+    ("platform-specs", "load_platform_specs", "save_platform_specs", "Platform specs atualizados"),
+    ("hashtag-bank", "load_hashtag_bank", "save_hashtag_bank", "Banco de hashtags atualizado"),
+    ("editorial-template", "load_editorial_template", "save_editorial_template", "Template editorial atualizado"),
+    ("prohibited-terms", "load_prohibited_terms", "save_prohibited_terms", "Termos proibidos atualizados — compliance re-calibrado"),
+    ("brand-guidelines", "load_brand_guidelines", "save_brand_guidelines", "Diretrizes de marca atualizadas"),
+    ("copywriter-config", "load_copywriter_config", "save_copywriter_config", "Copywriter config atualizado — prompts de copy re-calibrados"),
+    ("image-generation-config", "load_image_generation_config", "save_image_generation_config", "Image generation config atualizado — prompts NB2 re-calibrados"),
+    ("content-strategy-config", "load_content_strategy_config", "save_content_strategy_config", "Content strategy config atualizado — orquestrador re-calibrado"),
+    ("atomization-config", "load_atomization_config", "save_atomization_config", "Atomization config atualizado — derivativos re-calibrados"),
+    ("disaster-check-config", "load_disaster_check_config", "save_disaster_check_config", "Disaster check config atualizado — quality gate re-calibrado"),
+    ("briefing-config", "load_briefing_config", "save_briefing_config", "Briefing config atualizado — Atlas re-calibrado"),
+]
 
+
+def _register_data_endpoints(application: FastAPI) -> None:
+    """Register GET/PUT endpoint pairs from _DATA_ENDPOINTS registry."""
+    for suffix, load_method, save_method, save_msg in _DATA_ENDPOINTS:
+        route = f"/api/data/{suffix}"
+
+        def _make_getter(method_name: str):
+            async def _get():
+                return getattr(get_service(), method_name)()
+            return _get
+
+        def _make_setter(method_name: str, msg: str):
+            async def _put(request: Request):
+                data = await request.json()
+                getattr(get_service(), method_name)(data)
+                return {"ok": True, "message": msg}
+            return _put
+
+        application.add_api_route(route, _make_getter(load_method), methods=["GET"])
+        application.add_api_route(route, _make_setter(save_method, save_msg), methods=["PUT"])
+
+
+_register_data_endpoints(app)
+
+# --- Endpoints de dados com logica especial (nao cobertos pela factory) ---
 
 @app.get("/api/data/buyer-personas")
 async def get_buyer_personas():
@@ -768,29 +826,16 @@ async def get_buyer_personas():
     return svc.load_buyer_personas()
 
 
-@app.get("/api/data/hashtag-bank")
-async def get_hashtag_bank():
-    return get_service().load_hashtag_bank()
+@app.put("/api/data/buyer-personas")
+async def save_buyer_personas(request: Request):
+    data = await request.json()
+    get_service().save_buyer_personas(data)
+    return {"ok": True, "message": "Buyer personas atualizados — pipeline re-calibrado"}
 
 
 @app.get("/api/data/hashtags/{brand}")
-async def get_hashtags_for_brand(brand: str, platform: str = "instagram"):
+async def get_hashtags_for_brand(brand: str, platform: str = DEFAULT_PLATFORM):
     return get_service().get_hashtags_for_brand(brand, platform)
-
-
-@app.get("/api/data/editorial-template")
-async def get_editorial_template():
-    return get_service().load_editorial_template()
-
-
-@app.get("/api/data/prohibited-terms")
-async def get_prohibited_terms():
-    return get_service().load_prohibited_terms()
-
-
-@app.get("/api/data/brand-guidelines")
-async def get_brand_guidelines():
-    return get_service().load_brand_guidelines()
 
 
 @app.get("/api/data/brandbooks")
@@ -807,52 +852,6 @@ async def get_brandbook(brand: str):
     return bb
 
 
-# =========================================================================
-# DATA — Endpoints de ESCRITA (PUT) para edição via UI
-# =========================================================================
-
-@app.put("/api/data/platform-specs")
-async def save_platform_specs(request: Request):
-    data = await request.json()
-    get_service().save_platform_specs(data)
-    return {"ok": True, "message": "Platform specs atualizados"}
-
-
-@app.put("/api/data/buyer-personas")
-async def save_buyer_personas(request: Request):
-    data = await request.json()
-    get_service().save_buyer_personas(data)
-    return {"ok": True, "message": "Buyer personas atualizados — pipeline re-calibrado"}
-
-
-@app.put("/api/data/hashtag-bank")
-async def save_hashtag_bank(request: Request):
-    data = await request.json()
-    get_service().save_hashtag_bank(data)
-    return {"ok": True, "message": "Banco de hashtags atualizado"}
-
-
-@app.put("/api/data/editorial-template")
-async def save_editorial_template(request: Request):
-    data = await request.json()
-    get_service().save_editorial_template(data)
-    return {"ok": True, "message": "Template editorial atualizado"}
-
-
-@app.put("/api/data/prohibited-terms")
-async def save_prohibited_terms(request: Request):
-    data = await request.json()
-    get_service().save_prohibited_terms(data)
-    return {"ok": True, "message": "Termos proibidos atualizados — compliance re-calibrado"}
-
-
-@app.put("/api/data/brand-guidelines")
-async def save_brand_guidelines(request: Request):
-    data = await request.json()
-    get_service().save_brand_guidelines(data)
-    return {"ok": True, "message": "Diretrizes de marca atualizadas"}
-
-
 @app.put("/api/data/brandbook/{brand}")
 async def save_brandbook(brand: str, request: Request):
     data = await request.json()
@@ -865,78 +864,6 @@ async def save_claims_bank(request: Request):
     data = await request.json()
     get_service().save_claims_bank(data)
     return {"ok": True, "message": "Claims bank atualizado"}
-
-
-@app.get("/api/data/copywriter-config")
-async def get_copywriter_config():
-    return get_service().load_copywriter_config()
-
-
-@app.put("/api/data/copywriter-config")
-async def save_copywriter_config(request: Request):
-    data = await request.json()
-    get_service().save_copywriter_config(data)
-    return {"ok": True, "message": "Copywriter config atualizado — prompts de copy re-calibrados"}
-
-
-@app.get("/api/data/image-generation-config")
-async def get_image_generation_config():
-    return get_service().load_image_generation_config()
-
-
-@app.put("/api/data/image-generation-config")
-async def save_image_generation_config(request: Request):
-    data = await request.json()
-    get_service().save_image_generation_config(data)
-    return {"ok": True, "message": "Image generation config atualizado — prompts NB2 re-calibrados"}
-
-
-@app.get("/api/data/content-strategy-config")
-async def get_content_strategy_config():
-    return get_service().load_content_strategy_config()
-
-
-@app.put("/api/data/content-strategy-config")
-async def save_content_strategy_config(request: Request):
-    data = await request.json()
-    get_service().save_content_strategy_config(data)
-    return {"ok": True, "message": "Content strategy config atualizado — orquestrador re-calibrado"}
-
-
-@app.get("/api/data/atomization-config")
-async def get_atomization_config():
-    return get_service().load_atomization_config()
-
-
-@app.put("/api/data/atomization-config")
-async def save_atomization_config(request: Request):
-    data = await request.json()
-    get_service().save_atomization_config(data)
-    return {"ok": True, "message": "Atomization config atualizado — derivativos re-calibrados"}
-
-
-@app.get("/api/data/disaster-check-config")
-async def get_disaster_check_config():
-    return get_service().load_disaster_check_config()
-
-
-@app.put("/api/data/disaster-check-config")
-async def save_disaster_check_config(request: Request):
-    data = await request.json()
-    get_service().save_disaster_check_config(data)
-    return {"ok": True, "message": "Disaster check config atualizado — quality gate re-calibrado"}
-
-
-@app.get("/api/data/briefing-config")
-async def get_briefing_config():
-    return get_service().load_briefing_config()
-
-
-@app.put("/api/data/briefing-config")
-async def save_briefing_config(request: Request):
-    data = await request.json()
-    get_service().save_briefing_config(data)
-    return {"ok": True, "message": "Briefing config atualizado — Atlas re-calibrado"}
 
 
 @app.post("/api/data/invalidate-cache")
@@ -1299,14 +1226,8 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
     data = await request.json()
     briefing = data.get("briefing", "")
     # Extrair objetivo das notes ou do titulo
-    import json as _json
-    notes_raw = piece.get("notes", "")
-    objective = ""
-    try:
-        notes_obj = _json.loads(notes_raw) if notes_raw else {}
-        objective = notes_obj.get("objective", "")
-    except (ValueError, TypeError):
-        pass
+    notes_obj = parse_piece_notes(piece)
+    objective = notes_obj.get("objective", "")
     # Contexto = titulo + objetivo + notas do usuario
     context_parts = []
     if piece.get("title"):
@@ -1320,50 +1241,27 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
         ab = svc.auto_briefing
         br = await ab.generate(
             product=piece.get("product", ""),
-            brand=piece.get("brand", "salk"),
+            brand=piece.get("brand", DEFAULT_BRAND),
             pillar=piece.get("pillar", ""),
-            platform=piece.get("platform", "instagram"),
+            platform=piece.get("platform", DEFAULT_PLATFORM),
             context=piece_context,
         )
         briefing = br.get("briefing_text", "")
     # Gerar copy
-    cw = BrandCopywriter(svc.llm_client, brand=piece.get("brand", "salk"))
+    cw = BrandCopywriter(svc.llm_client, brand=piece.get("brand", DEFAULT_BRAND))
     copy_result = await cw.write_copy(
         briefing=briefing,
-        platform=piece.get("platform", "instagram"),
+        platform=piece.get("platform", DEFAULT_PLATFORM),
         format_type=piece.get("format", "post"),
         product=piece.get("product", ""),
         objective=piece_context,
     )
     # Parsear copy para extrair headline, hashtags, CTA
     raw_copy = copy_result.get("copy_text", "")
-    lines = [l for l in raw_copy.split("\n") if l.strip()]
-    headline = ""
-    hashtags = []
-    cta = ""
-    body_lines = []
-
-    for line in lines:
-        stripped = line.strip()
-        # Linha de hashtags (começa com # e tem várias)
-        if stripped.startswith("#") and stripped.count("#") >= 2 and not stripped.startswith("##"):
-            hashtags = [t.strip() for t in stripped.split() if t.startswith("#")]
-            continue
-        # Primeira linha curta = headline
-        if not headline and len(stripped) < 100 and not stripped.startswith("http"):
-            headline = stripped.lstrip("#").lstrip("*").rstrip("*").strip()
-            continue
-        body_lines.append(line)
-
-    # Tentar detectar CTA (última linha antes das hashtags que parece CTA)
-    cta_keywords = ["saiba mais", "converse", "consulte", "conheça", "fale com", "acesse", "solicite", "confira", "agende", "faca parte", "descubra"]
-    for bl in reversed(body_lines):
-        if any(kw in bl.lower() for kw in cta_keywords):
-            cta = bl.strip()
-            body_lines.remove(bl)
-            break
-
-    clean_copy = "\n".join(body_lines).strip()
+    parsed = parse_copy_components(raw_copy)
+    headline = parsed["headline"]
+    hashtags = parsed["hashtags"]
+    cta = parsed["cta"]
 
     # Salvar na peca e avancar stage
     update_data = {
@@ -1371,15 +1269,12 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
         "hashtags": hashtags if hashtags else [],
     }
     # Salvar headline e CTA no notes JSON
-    try:
-        notes_obj = _json.loads(piece.get("notes", "") or "{}") if piece.get("notes") else {}
-    except (ValueError, TypeError):
-        notes_obj = {}
+    notes_obj = parse_piece_notes(piece)
     if headline:
         notes_obj["headline"] = headline
     if cta:
         notes_obj["cta"] = cta
-    update_data["notes"] = _json.dumps(notes_obj)
+    update_data["notes"] = json.dumps(notes_obj)
 
     if piece.get("stage") == "briefing":
         update_data["stage"] = "copy"
@@ -1404,32 +1299,23 @@ async def generate_prompt_for_piece(piece_id: str, request: Request, user: dict 
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
     data = await request.json()
     # Extrair contexto do briefing e objetivo dos notes da peca
-    import json as _json_parse
-    _existing = piece.get("notes", "")
-    try:
-        _notes = _json_parse.loads(_existing) if _existing else {}
-    except (ValueError, TypeError):
-        _notes = {}
+    _notes = parse_piece_notes(piece)
     _briefing = _notes.get("briefing", "")
     _objective = _notes.get("objective", piece.get("title", ""))
     result = await svc.auto_prompt.generate_with_llm(
-        product=piece.get("product", "lev"),
-        brand=piece.get("brand", "salk"),
+        product=piece.get("product", DEFAULT_PRODUCT),
+        brand=piece.get("brand", DEFAULT_BRAND),
         concept=data.get("concept", ""),
         briefing=_briefing,
         objective=_objective,
     )
     # Salvar prompt em notes (JSON)
-    import json as _json
-    existing_notes = piece.get("notes", "")
-    try:
-        notes_data = _json.loads(existing_notes) if existing_notes else {}
-    except (ValueError, TypeError):
-        notes_data = {"original_notes": existing_notes}
+
+    notes_data = parse_piece_notes(piece)
     notes_data["nb2_prompt"] = result.get("positive_prompt", result.get("prompt", result.get("nb2_prompt", "")))
     if result.get("negative_prompt"):
         notes_data["nb2_negative"] = result.get("negative_prompt")
-    update_data = {"notes": _json.dumps(notes_data)}
+    update_data = {"notes": json.dumps(notes_data)}
     if piece.get("stage") in ("briefing", "copy"):
         update_data["stage"] = "visual"
     svc.update_piece(piece_id, update_data)
@@ -1449,7 +1335,7 @@ async def check_compliance(req: ComplianceCheckRequest):
 async def check_prompt_compliance(req: ComplianceCheckRequest):
     """Valida prompt NB2 contra brandbook (Design System como cabresto)."""
     svc = get_service()
-    brand = req.brand or "salk"
+    brand = req.brand or DEFAULT_BRAND
     result = svc.brand_enforcer.validate(req.text, brand, context="prompt")
     return result.to_dict()
 
@@ -1536,13 +1422,13 @@ async def save_calendar(week_id: str, data: CalendarWeek):
 
 
 @app.post("/api/calendar/{week_id}/generate")
-async def generate_calendar(week_id: str, brand: str = "salk"):
+async def generate_calendar(week_id: str, brand: str = DEFAULT_BRAND):
     svc = get_service()
     return svc.generate_calendar_from_template(week_id, brand)
 
 
 @app.post("/api/calendar/{week_id}/auto-fill")
-async def auto_fill_calendar(week_id: str, brand: str = "salk", user: dict = Depends(require_auth)):
+async def auto_fill_calendar(week_id: str, brand: str = DEFAULT_BRAND, user: dict = Depends(require_auth)):
     """Preenche slots do calendário automaticamente (pilares, produtos, personas)."""
     svc = get_service()
     return svc.auto_fill_calendar(week_id, brand)
@@ -1555,7 +1441,7 @@ async def produce_week(week_id: str, request: Request, user: dict = Depends(requ
     data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
     return await svc.produce_week(
         week_id=week_id,
-        brand=data.get("brand", "salk"),
+        brand=data.get("brand", DEFAULT_BRAND),
         generate_briefing=data.get("generate_briefing", True),
         generate_copy=data.get("generate_copy", True),
         generate_prompt=data.get("generate_prompt", True),
@@ -1564,7 +1450,7 @@ async def produce_week(week_id: str, request: Request, user: dict = Depends(requ
 
 
 @app.post("/api/calendar/{week_id}/generate-full")
-async def generate_full_week(week_id: str, brand: str = "salk", user: dict = Depends(require_auth)):
+async def generate_full_week(week_id: str, brand: str = DEFAULT_BRAND, user: dict = Depends(require_auth)):
     """Fluxo completo: gera calendário + auto-fill + produção de toda a semana."""
     svc = get_service()
     return await svc.generate_full_week(week_id, brand)
@@ -1895,7 +1781,7 @@ async def list_editor_audio(user: dict = Depends(require_auth)):
 @app.post("/api/video/editor/analyze")
 async def analyze_video(request: Request, user: dict = Depends(require_auth)):
     """Analisa video com ffprobe — retorna duracao, resolucao, codec, audio."""
-    import json as _json
+
     import shutil
     import subprocess as _sp
 
@@ -1914,7 +1800,7 @@ async def analyze_video(request: Request, user: dict = Depends(require_auth)):
              "-show_format", "-show_streams", video_path],
             capture_output=True, text=True, timeout=15,
         )
-        info = _json.loads(result.stdout)
+        info = json.loads(result.stdout)
         fmt = info.get("format", {})
         streams = info.get("streams", [])
 
@@ -1970,13 +1856,13 @@ async def execute_video_edit(request: Request, user: dict = Depends(require_auth
     video_info = ""
     if ffprobe:
         try:
-            import json as _json
+        
             probe = _sp.run(
                 [ffprobe, "-v", "quiet", "-print_format", "json",
                  "-show_format", "-show_streams", video_path],
                 capture_output=True, text=True, timeout=10,
             )
-            info = _json.loads(probe.stdout)
+            info = json.loads(probe.stdout)
             fmt = info.get("format", {})
             vs = next((s for s in info.get("streams", []) if s.get("codec_type") == "video"), {})
             video_info = (
@@ -2252,9 +2138,9 @@ async def generate_briefing(request: Request, user: dict = Depends(require_auth)
     svc = get_service()
     data = await request.json()
     result = await svc.auto_briefing.generate(
-        brand=data.get("brand", "salk"),
-        platform=data.get("platform", "instagram"),
-        pillar=data.get("pillar", "produto"),
+        brand=data.get("brand", DEFAULT_BRAND),
+        platform=data.get("platform", DEFAULT_PLATFORM),
+        pillar=data.get("pillar", DEFAULT_PILLAR),
         product=data.get("product", ""),
         persona=data.get("persona", ""),
         day=data.get("day", ""),
@@ -2280,9 +2166,9 @@ async def generate_smart_briefing(request: Request, user: dict = Depends(require
     svc = get_service()
     data = await request.json()
     result = await svc.generate_smart_briefing(
-        brand=data.get("brand", "salk"),
-        platform=data.get("platform", "instagram"),
-        pillar=data.get("pillar", "produto"),
+        brand=data.get("brand", DEFAULT_BRAND),
+        platform=data.get("platform", DEFAULT_PLATFORM),
+        pillar=data.get("pillar", DEFAULT_PILLAR),
         product=data.get("product", ""),
         persona=data.get("persona", ""),
         day=data.get("day", ""),
@@ -2300,27 +2186,26 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     """Pipeline completo: cria peca + briefing + copy + prompt NB2 em um clique."""
     svc = get_service()
     data = await request.json()
-    import json as _json
 
-    brand = data.get("brand", "salk")
+
+    brand = data.get("brand", DEFAULT_BRAND)
     product = data.get("product", "")
-    platform = data.get("platform", "instagram")
-    pillar = data.get("pillar", "produto")
+    platform = data.get("platform", DEFAULT_PLATFORM)
+    pillar = data.get("pillar", DEFAULT_PILLAR)
     format_type = data.get("format", "post")
     objective = data.get("objective", "")
 
     # Inferir produto se nao especificado (sugestao, nao obrigatorio)
     # Pilares institucionais NUNCA inferem produto — NB2 gera em modo prompt-only
     inferred_product = ""
-    institutional_pillars = ("datas_comemorativas", "institucional")
-    if not product and pillar not in institutional_pillars:
+    if not product and pillar not in INSTITUTIONAL_PILLARS:
         inferred_product = svc.auto_prompt.infer_product(
             objective=objective, pillar=pillar, title=data.get("title", ""),
         )
         if inferred_product:
             product = inferred_product
             logger.info("Product inferred from context: %s", product)
-    elif not product and pillar in institutional_pillars:
+    elif not product and pillar in INSTITUTIONAL_PILLARS:
         logger.info("Pillar '%s' is institutional — no product inference, NB2 prompt-only", pillar)
 
     logger.info(
@@ -2414,7 +2299,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         result["nb2_negative"] = nb2_negative
         result["steps"].append({"step": "nb2_prompt", "status": "ok"})
         notes_data = {"briefing": briefing_text, "nb2_prompt": nb2_prompt, "nb2_negative": nb2_negative, "objective": objective}
-        svc.update_piece(piece_id, {"notes": _json.dumps(notes_data), "stage": "visual"})
+        svc.update_piece(piece_id, {"notes": json.dumps(notes_data), "stage": "visual"})
     except Exception as e:
         logger.error("produce_single_piece nb2_prompt error: %s", e, exc_info=True)
         result["errors"].append(f"NB2 Prompt: {e}")
@@ -2437,7 +2322,7 @@ async def write_copy(request: Request, user: dict = Depends(require_auth)):
     """Gera copy com copywriter especializado da marca."""
     svc = get_service()
     data = await request.json()
-    brand = data.get("brand", "salk")
+    brand = data.get("brand", DEFAULT_BRAND)
     product = data.get("product", "")
     objective = data.get("objective", "")
     briefing = data.get("briefing", "")
@@ -2457,8 +2342,8 @@ async def write_copy(request: Request, user: dict = Depends(require_auth)):
         br = await ab.generate(
             product=product,
             brand=brand,
-            pillar=data.get("pillar", "produto"),
-            platform=data.get("platform", "instagram"),
+            pillar=data.get("pillar", DEFAULT_PILLAR),
+            platform=data.get("platform", DEFAULT_PLATFORM),
             context=piece_context,
         )
         briefing = br.get("briefing_text", "")
@@ -2466,7 +2351,7 @@ async def write_copy(request: Request, user: dict = Depends(require_auth)):
     cw = BrandCopywriter(svc.llm_client, brand=brand)
     result = await cw.write_copy(
         briefing=briefing,
-        platform=data.get("platform", "instagram"),
+        platform=data.get("platform", DEFAULT_PLATFORM),
         format_type=data.get("format_type", "post"),
         max_chars=data.get("max_chars", 2200),
         product=product,
@@ -2474,31 +2359,10 @@ async def write_copy(request: Request, user: dict = Depends(require_auth)):
     )
 
     # Parsear copy para extrair headline, hashtags, CTA
-    import json as _json
-    raw_copy = result.get("copy_text", "")
-    lines = [l for l in raw_copy.split("\n") if l.strip()]
-    headline = ""
-    hashtags = []
-    cta = ""
-
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("#") and stripped.count("#") >= 2 and not stripped.startswith("##"):
-            hashtags = [t.strip() for t in stripped.split() if t.startswith("#")]
-            continue
-        if not headline and len(stripped) < 100 and not stripped.startswith("http"):
-            headline = stripped.lstrip("#").lstrip("*").rstrip("*").strip()
-            continue
-
-    cta_keywords = ["saiba mais", "converse", "consulte", "conheça", "fale com", "acesse", "solicite", "confira", "agende", "faca parte", "descubra"]
-    for line in reversed(lines):
-        if any(kw in line.lower() for kw in cta_keywords):
-            cta = line.strip()
-            break
-
-    result["headline"] = headline
-    result["hashtags"] = hashtags
-    result["cta"] = cta
+    parsed = parse_copy_components(result.get("copy_text", ""))
+    result["headline"] = parsed["headline"]
+    result["hashtags"] = parsed["hashtags"]
+    result["cta"] = parsed["cta"]
     return result
 
 
@@ -2507,7 +2371,7 @@ async def rewrite_copy(req: Request, user: dict = Depends(require_auth)):
     """Reescreve copy com feedback."""
     svc = get_service()
     data = await req.json()
-    brand = data.get("brand", "salk")
+    brand = data.get("brand", DEFAULT_BRAND)
     cw = BrandCopywriter(svc.llm_client, brand=brand)
     result = await cw.rewrite(
         original=data.get("original", ""),
@@ -2536,7 +2400,7 @@ async def persona_evaluate(req: Request, user: dict = Depends(require_auth)):
     clone = PersonaClone(svc.llm_client, persona_id=persona_id)
     result = await clone.evaluate(
         copy_text=data.get("copy_text", ""),
-        brand=data.get("brand", "salk"),
+        brand=data.get("brand", DEFAULT_BRAND),
     )
     return result
 
@@ -2558,15 +2422,15 @@ async def generate_prompt(request: Request, user: dict = Depends(require_auth)):
     svc = get_service()
     data = await request.json()
     result = await svc.auto_prompt.generate_prompt(
-        product=data.get("product", "lev"),
-        brand=data.get("brand", "salk"),
+        product=data.get("product", DEFAULT_PRODUCT),
+        brand=data.get("brand", DEFAULT_BRAND),
         concept=data.get("concept", ""),
-        technique=data.get("technique", "dramatic_studio"),
-        lighting=data.get("lighting", "dramatic_rim"),
-        scene=data.get("scene", "studio_neutro"),
-        composition=data.get("composition", "central_hero"),
-        atmosphere=data.get("atmosphere", "premium_tech"),
-        format_type=data.get("format_type", "square_social"),
+        technique=data.get("technique", DEFAULT_TECHNIQUE),
+        lighting=data.get("lighting", DEFAULT_LIGHTING),
+        scene=data.get("scene", DEFAULT_SCENE),
+        composition=data.get("composition", DEFAULT_COMPOSITION),
+        atmosphere=data.get("atmosphere", DEFAULT_ATMOSPHERE),
+        format_type=data.get("format_type", DEFAULT_FORMAT_PRESET),
         custom_notes=data.get("custom_notes", ""),
     )
     return result
@@ -2578,10 +2442,10 @@ async def generate_creative_prompt(req: Request, user: dict = Depends(require_au
     svc = get_service()
     data = await req.json()
     result = await svc.auto_prompt.generate_with_llm(
-        product=data.get("product", "lev"),
-        brand=data.get("brand", "salk"),
+        product=data.get("product", DEFAULT_PRODUCT),
+        brand=data.get("brand", DEFAULT_BRAND),
         concept=data.get("concept", ""),
-        format_type=data.get("format_type", "square_social"),
+        format_type=data.get("format_type", DEFAULT_FORMAT_PRESET),
     )
     return result
 
@@ -2608,8 +2472,8 @@ async def disaster_check(req: Request, user: dict = Depends(require_auth)):
     result = await svc.disaster_check.check_image(
         image_path=data.get("image_path", ""),
         product=data.get("product", ""),
-        brand=data.get("brand", "salk"),
-        format_target=data.get("format_target", "square_social"),
+        brand=data.get("brand", DEFAULT_BRAND),
+        format_target=data.get("format_target", DEFAULT_FORMAT_PRESET),
         manual_overrides=data.get("manual_overrides"),
     )
     return result.to_dict()
@@ -2644,7 +2508,7 @@ async def atomize_content(req: Request, user: dict = Depends(require_auth)):
     result = await svc.atomizer.atomize(
         master_content=data.get("master_content", ""),
         master_type=data.get("master_type", "post_unico"),
-        brand=data.get("brand", "salk"),
+        brand=data.get("brand", DEFAULT_BRAND),
         target_platforms=data.get("target_platforms"),
         context=data.get("context", ""),
     )
@@ -2687,10 +2551,10 @@ async def generate_image(request: Request, user: dict = Depends(require_auth)):
     product = data.get("product", "") or data.get("product_type", "")
     result = await svc.image_generator.generate_image(
         prompt=data.get("prompt", ""),
-        width=data.get("width", 1080),
-        height=data.get("height", 1350),
-        negative_prompt=data.get("negative_prompt", "text, logo, watermark, blurry, low quality"),
-        model=data.get("model", "nb2"),
+        width=data.get("width", DEFAULT_IMAGE_WIDTH),
+        height=data.get("height", DEFAULT_IMAGE_HEIGHT),
+        negative_prompt=data.get("negative_prompt", DEFAULT_NEGATIVE_PROMPT),
+        model=data.get("model", DEFAULT_IMAGE_MODEL),
         format_preset=data.get("format_preset", ""),
         product=product,
     )
@@ -2704,7 +2568,7 @@ async def generate_image(request: Request, user: dict = Depends(require_auth)):
 @limiter.limit("10/minute")
 async def generate_image_for_piece(piece_id: str, request: Request, user: dict = Depends(require_auth)):
     """Gera imagem para uma peça existente usando o prompt NB2 salvo."""
-    import json as _json
+
     svc = get_service()
     if not svc.image_generator or not svc.image_generator.configured:
         raise HTTPException(400, "FAL_API_KEY não configurada. Vá em Configurações.")
@@ -2714,13 +2578,9 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
 
     data = await request.json()
     # Extrair prompt NB2 das notes da peça
-    notes = piece.get("notes", "")
-    try:
-        notes_data = _json.loads(notes) if notes else {}
-    except (ValueError, TypeError):
-        notes_data = {}
+    notes_data = parse_piece_notes(piece)
     prompt = data.get("prompt") or notes_data.get("nb2_prompt", "") or notes_data.get("positive_prompt", "")
-    negative = data.get("negative_prompt") or notes_data.get("nb2_negative", "") or "text, logo, watermark, blurry, low quality"
+    negative = data.get("negative_prompt") or notes_data.get("nb2_negative", "") or DEFAULT_NEGATIVE_PROMPT
     if not prompt:
         raise HTTPException(400, "Nenhum prompt NB2 disponível. Gere o prompt primeiro.")
 
@@ -2736,7 +2596,7 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
             logger.info("Image gen: product inferred as '%s' for piece %s", product, piece_id)
 
     # Determinar dimensões baseado na plataforma
-    platform = piece.get("platform", "instagram")
+    platform = piece.get("platform", DEFAULT_PLATFORM)
     fmt = piece.get("format", "post")
     format_preset = "feed"
     if "stories" in platform or "reels" in platform or fmt in ("reel", "story"):
@@ -2749,7 +2609,7 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
         format_preset=format_preset,
         negative_prompt=negative,
         product=product,  # usa inferido se peça não tinha
-        model=data.get("model", "nb2"),
+        model=data.get("model", DEFAULT_IMAGE_MODEL),
     )
 
     if result.success:
@@ -2757,7 +2617,7 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
         notes_data["image_url"] = result.image_url
         notes_data["image_path"] = result.image_path
         notes_data["image_cost_usd"] = result.cost_usd
-        update_data = {"notes": _json.dumps(notes_data)}
+        update_data = {"notes": json.dumps(notes_data)}
         if piece.get("stage") in ("briefing", "copy", "visual"):
             update_data["stage"] = "review"
         svc.update_piece(piece_id, update_data)
@@ -2790,7 +2650,7 @@ async def animate_image(request: Request, user: dict = Depends(require_auth)):
 @limiter.limit("5/minute")
 async def animate_piece_image(piece_id: str, request: Request, user: dict = Depends(require_auth)):
     """Anima a imagem de uma peça existente para vídeo."""
-    import json as _json
+
     svc = get_service()
     if not svc.video_animator or not svc.video_animator.configured:
         raise HTTPException(400, "Nenhum engine de vídeo configurado")
@@ -2798,11 +2658,7 @@ async def animate_piece_image(piece_id: str, request: Request, user: dict = Depe
     if not piece:
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
 
-    notes = piece.get("notes", "")
-    try:
-        notes_data = _json.loads(notes) if notes else {}
-    except (ValueError, TypeError):
-        notes_data = {}
+    notes_data = parse_piece_notes(piece)
 
     image_path = notes_data.get("image_path", "")
     if not image_path:
@@ -2821,7 +2677,7 @@ async def animate_piece_image(piece_id: str, request: Request, user: dict = Depe
         notes_data["video_path"] = result.video_path
         notes_data["video_cost_usd"] = result.cost_usd
         notes_data["video_engine"] = result.engine
-        svc.update_piece(piece_id, {"notes": _json.dumps(notes_data)})
+        svc.update_piece(piece_id, {"notes": json.dumps(notes_data)})
 
     return {**result.to_dict(), "piece_id": piece_id}
 
@@ -2844,34 +2700,23 @@ async def list_video_engines():
 @limiter.limit("2/minute")
 async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user: dict = Depends(require_auth)):
     """Pipeline A/B test: gera N variações completas (briefing+copy+prompt+imagem)."""
-    import json as _json
+
     svc = get_service()
     data = await request.json()
 
     product = data.get("product", "")
-    brand = data.get("brand", "salk")
+    brand = data.get("brand", DEFAULT_BRAND)
     num_variations = min(data.get("num_variations", 5), 20)
-    platforms = data.get("platforms", ["instagram"])
+    platforms = data.get("platforms", [DEFAULT_PLATFORM])
     concept = data.get("concept", "")
-    pillar = data.get("pillar", "produto")
+    pillar = data.get("pillar", DEFAULT_PILLAR)
     generate_images = data.get("generate_images", True) and svc.image_generator.configured
     generate_videos = data.get("generate_videos", False) and svc.video_animator.configured
-
-    # Conceitos visuais para variações
-    concepts = [
-        "dramatic_studio", "clinical_modern", "premium_clean",
-        "warm_ambient", "hero_closeup", "environment_wide",
-        "tech_detail", "action_use", "atmospheric_mood",
-        "minimalist_white", "dark_contrast", "golden_hour",
-        "architectural", "reflection_glass", "depth_of_field",
-        "symmetry", "silhouette_backlit", "macro_detail",
-        "editorial_spread", "brand_lifestyle",
-    ]
 
     results = {"piece_ids": [], "errors": [], "variations": [], "total_cost_usd": 0}
 
     for i in range(num_variations):
-        variation_concept = concepts[i % len(concepts)] if not concept else f"{concept}_v{i+1}"
+        variation_concept = AB_TEST_VISUAL_CONCEPTS[i % len(AB_TEST_VISUAL_CONCEPTS)] if not concept else f"{concept}_v{i+1}"
         platform = platforms[i % len(platforms)]
         variation = {"index": i + 1, "concept": variation_concept, "platform": platform, "steps": []}
 
@@ -2908,7 +2753,7 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
                 "platform": platform, "format": "post",
                 "stage": "visual" if not generate_images else "review",
                 "copy_text": copy_text,
-                "notes": _json.dumps({
+                "notes": json.dumps({
                     "briefing": briefing_text,
                     "nb2_prompt": nb2_prompt,
                     "ab_test": True,
@@ -2935,11 +2780,11 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
                     model="nb2",
                 )
                 if img_result.success:
-                    notes = _json.loads(piece_data["notes"])
+                    notes = parse_piece_notes(piece_data)
                     notes["image_url"] = img_result.image_url
                     notes["image_path"] = img_result.image_path
                     notes["image_cost_usd"] = img_result.cost_usd
-                    svc.update_piece(piece_id, {"notes": _json.dumps(notes), "stage": "review"})
+                    svc.update_piece(piece_id, {"notes": json.dumps(notes), "stage": "review"})
                     variation["steps"].append("image")
                     variation["image_url"] = img_result.image_url
                     results["total_cost_usd"] += img_result.cost_usd
@@ -2952,11 +2797,11 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
                     duration=6,
                 )
                 if vid_result.success:
-                    notes = _json.loads(svc.get_piece(piece_id).get("notes", "{}"))
+                    notes = parse_piece_notes(svc.get_piece(piece_id))
                     notes["video_url"] = vid_result.video_url
                     notes["video_path"] = vid_result.video_path
                     notes["video_cost_usd"] = vid_result.cost_usd
-                    svc.update_piece(piece_id, {"notes": _json.dumps(notes)})
+                    svc.update_piece(piece_id, {"notes": json.dumps(notes)})
                     variation["steps"].append("video")
                     results["total_cost_usd"] += vid_result.cost_usd
 

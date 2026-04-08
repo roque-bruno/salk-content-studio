@@ -4253,7 +4253,7 @@ body.zen-mode .tab-bar { display: none !important; }
       &#10005; Limpar Filtros
     </button>
     <div style="flex: 1;"></div>
-    <button class="btn btn-sm btn-primary" @click="batchGenerateCopy()" x-show="piecesInStage('briefing').length > 0" :disabled="batchProcessing" title="Gerar copy para todas as pecas em briefing">
+    <button class="btn btn-sm btn-primary" @click="batchGenerateCopyFromStage()" x-show="piecesInStage('briefing').length > 0" :disabled="batchProcessing" title="Gerar copy para todas as pecas em briefing">
       <span x-show="!batchProcessing">Gerar Copy p/ Briefings (<span x-text="piecesInStage('briefing').length"></span>)</span>
       <span x-show="batchProcessing">Processando...</span>
     </button>
@@ -10491,23 +10491,26 @@ function studioApp() {
       } catch(e) { this.notify('Erro ao mover peca: ' + e.message, 'error'); }
     },
 
+    // --- Batch operation helper (DRY: Epic 16) ---
+    async _batchApiLoop(pieceIds, apiFn, label) {
+      let done = 0, failed = 0;
+      for (const pid of pieceIds) {
+        try { await apiFn(pid); done++; } catch(e) { failed++; }
+      }
+      await this.loadPieces();
+      return { done, failed, msg: `${done} ${label}${failed ? `, ${failed} falharam` : ''}` };
+    },
+
     async batchMoveStage(fromStage, toStage) {
       const pcs = this.piecesInStage(fromStage);
       if (!pcs.length) return;
       if (!confirm(`Mover ${pcs.length} pecas de "${this.stageLabels[fromStage]}" para "${this.stageLabels[toStage]}"?`)) return;
-      let moved = 0;
-      let failed = 0;
-      for (const p of pcs) {
-        try {
-          await this.api(`/api/production/pieces/${p.id}/stage`, {
-            method: 'PUT',
-            body: JSON.stringify({ stage: toStage }),
-          });
-          moved++;
-        } catch (e) { failed++; }
-      }
-      await this.loadPieces();
-      this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}${failed ? `, ${failed} falharam` : ''}`);
+      const { msg } = await this._batchApiLoop(
+        pcs.map(p => p.id),
+        pid => this.api(`/api/production/pieces/${pid}/stage`, { method: 'PUT', body: JSON.stringify({ stage: toStage }) }),
+        `pecas movidas para ${this.stageLabels[toStage]}`,
+      );
+      this.notify(msg);
     },
 
     async runQuickProduce() {
@@ -10551,23 +10554,18 @@ function studioApp() {
       this.quickProducing = false;
     },
 
-    async batchGenerateCopy() {
+    async batchGenerateCopyFromStage() {
       const pcs = this.piecesInStage('briefing');
       if (!pcs.length) return;
       if (!confirm(`Gerar copy automatica para ${pcs.length} pecas em Briefing? Isso usara creditos de IA.`)) return;
       this.batchProcessing = true;
-      let done = 0, failed = 0;
-      for (const p of pcs) {
-        try {
-          await this.api(`/api/production/pieces/${p.id}/generate-copy`, {
-            method: 'POST', body: JSON.stringify({}),
-          });
-          done++;
-        } catch(e) { failed++; }
-      }
-      await this.loadPieces();
+      const { msg } = await this._batchApiLoop(
+        pcs.map(p => p.id),
+        pid => this.api(`/api/production/pieces/${pid}/generate-copy`, { method: 'POST', body: JSON.stringify({}) }),
+        'copies geradas',
+      );
       this.batchProcessing = false;
-      this.notify(`${done} copies geradas${failed ? `, ${failed} falharam` : ''}`);
+      this.notify(msg);
     },
 
     async deletePiece(id) {
@@ -12669,42 +12667,46 @@ function studioApp() {
     async batchChangeStage() {
       const stage = prompt('Novo estagio (briefing, copy, design, review, approved, published):');
       if (!stage) return;
-      for (const pid of this.selectedPieces) {
-        try { await this.api('/api/production/pieces/' + pid + '/stage', { method: 'PUT', body: JSON.stringify({ stage }) }); } catch(e) {}
-      }
+      const { msg } = await this._batchApiLoop(
+        this.selectedPieces,
+        pid => this.api('/api/production/pieces/' + pid + '/stage', { method: 'PUT', body: JSON.stringify({ stage }) }),
+        'pecas movidas para ' + stage,
+      );
       this.selectedPieces = [];
-      await this.loadPieces();
-      this.notify('Pecas movidas para ' + stage);
+      this.notify(msg);
     },
 
     async batchDelete() {
       if (!confirm('Excluir ' + this.selectedPieces.length + ' pecas?')) return;
-      for (const pid of this.selectedPieces) {
-        try { await this.api('/api/production/pieces/' + pid, { method: 'DELETE' }); } catch(e) {}
-      }
+      const { msg } = await this._batchApiLoop(
+        this.selectedPieces,
+        pid => this.api('/api/production/pieces/' + pid, { method: 'DELETE' }),
+        'pecas excluidas',
+      );
       this.selectedPieces = [];
-      await this.loadPieces();
-      this.notify('Pecas excluidas');
+      this.notify(msg);
     },
 
     async batchGenerateCopy() {
       this.notify('Gerando copy para ' + this.selectedPieces.length + ' pecas...');
-      for (const pid of this.selectedPieces) {
-        try { await this.api('/api/production/pieces/' + pid + '/generate-copy', { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
-      }
+      const { msg } = await this._batchApiLoop(
+        this.selectedPieces,
+        pid => this.api('/api/production/pieces/' + pid + '/generate-copy', { method: 'POST', body: JSON.stringify({}) }),
+        'copies geradas',
+      );
       this.selectedPieces = [];
-      await this.loadPieces();
-      this.notify('Copies geradas em batch');
+      this.notify(msg);
     },
 
     async batchGeneratePrompt() {
       this.notify('Gerando prompts para ' + this.selectedPieces.length + ' pecas...');
-      for (const pid of this.selectedPieces) {
-        try { await this.api('/api/production/pieces/' + pid + '/generate-prompt', { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
-      }
+      const { msg } = await this._batchApiLoop(
+        this.selectedPieces,
+        pid => this.api('/api/production/pieces/' + pid + '/generate-prompt', { method: 'POST', body: JSON.stringify({}) }),
+        'prompts gerados',
+      );
       this.selectedPieces = [];
-      await this.loadPieces();
-      this.notify('Prompts gerados em batch');
+      this.notify(msg);
     },
 
     formatNumber(n) {
