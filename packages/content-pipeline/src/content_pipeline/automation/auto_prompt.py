@@ -398,18 +398,19 @@ INSTALAM e fazem MANUTENCAO de equipamentos em hospitais. Pense como o ICP ve o 
             system += """
 === CONTEUDO INSTITUCIONAL (sem produto especifico) ===
 - ZERO EQUIPAMENTOS MEDICOS — a regra #1 se aplica ainda mais aqui
-- Imagem CONCEITUAL e ABSTRATA — representar a IDEIA, nao o equipamento
-- CENARIOS VALIDOS: texturas de aco inox, superficies limpas, luz e sombra em ambiente clean, detalhes arquitetonicos hospitalares (paineis, portas, pisos), maos com luvas trabalhando (sem equipamento visivel)
-- CENARIOS PROIBIDOS: sala cirurgica completa, qualquer equipamento medico visivel, sala de reuniao, escritorio, cenario stock
-- Pode incluir PESSOAS parciais (maos, silhuetas, perfil desfocado) — NUNCA rosto identificavel
-- Foco: conceito, profissionalismo, tecnologia como IDEIA
+- Imagem CONCEITUAL — representar a IDEIA, nao o equipamento
+- O AMBIENTE deve ser CLARAMENTE HOSPITALAR — nunca parecer fabrica, oficina ou laboratorio de eletronica
+- ELEMENTOS HOSPITALARES OBRIGATORIOS no cenario: paredes claras de centro cirurgico, piso epoxi, portas de aco inox hospitalares, paineis de gases medicinais, azulejos brancos, cortinas cirurgicas, iluminacao fluorescente de teto
+- CENARIOS PROIBIDOS: bancada de eletronica, oficina mecanica, fabrica, laboratorio industrial, sala de reuniao, escritorio, cenario stock generico, sala cirurgica completa com equipamentos
+- Pode incluir PESSOAS parciais (maos com luvas ESTEREIS brancas/azuis, jaleco branco, perfil desfocado) — NUNCA rosto identificavel
+- Foco: ambiente hospitalar premium, clean, profissional
 
 === ABORDAGEM VISUAL POR TEMA ===
-- Engenharia/Tecnico: maos com luvas sobre superficie de aco inox, ferramentas de precisao (chaves, multimetro), tablet com diagrama tecnico — SEM equipamento medico ao redor
-- Medico/Cirurgiao: maos com luvas estereis em close, luz dramatica, atmosfera de concentracao — SEM sala cirurgica completa
-- Enfermagem/Cuidado: maos cuidando, ambiente limpo e acolhedor, luz suave — SEM equipamento
-- Institucional/Marca: texturas premium (aco escovado, vidro, luz natural), composicao minimalista e elegante
-- REGRA: o fundo deve ser CLEAN e DESFOCADO — nunca uma sala completa com equipamentos visiveis
+- Engenharia/Tecnico: maos com luvas estereis brancas segurando tablet com checklist tecnico, fundo desfocado de corredor hospitalar clean com portas de aco inox, jaleco branco visivel parcialmente — NUNCA bancada de eletronica ou ferramentas industriais
+- Medico/Cirurgiao: maos com luvas estereis em close, fundo desfocado de centro cirurgico limpo (paredes claras, piso epoxi), luz dramatica — SEM equipamentos visiveis
+- Enfermagem/Cuidado: maos cuidando, ambiente hospitalar limpo e acolhedor, luz suave, paredes claras
+- Institucional/Marca: corredor hospitalar moderno e clean desfocado, texturas de aco inox hospitalar, vidro, luz natural entrando por janelas
+- REGRA: o fundo DEVE parecer HOSPITAL (paredes claras, piso epoxi, portas metalicas) — nunca fabrica ou oficina
 """
 
         # Contexto rico do briefing e objetivo
@@ -441,29 +442,30 @@ TERMINAR o prompt com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2
 Conceito: {concept or 'conteudo institucional premium'}
 Formato: {format_type}
 
-ABORDAGEM OBRIGATORIA: imagem CONCEITUAL e ABSTRATA.
-NAO e uma foto de sala cirurgica. NAO e uma foto stock de hospital.
-E uma imagem que REPRESENTA o conceito/tema de forma artistica e premium.
+ABORDAGEM OBRIGATORIA: imagem conceitual em AMBIENTE HOSPITALAR.
+A imagem deve ser CLARAMENTE de um hospital — nunca parecer fabrica, oficina ou laboratorio.
 
 EXEMPLOS DE ABORDAGEM CORRETA:
-- "Dia da Engenharia" → close-up de maos com luvas sobre superficie de aco inox escovado, ferramentas de precisao (chave torx, multimetro) ao lado, luz dramatica lateral, fundo completamente desfocado
-- "Dia do Medico" → close-up de maos com luvas estereis em gesto de precisao, luz quente vindo de cima, fundo escuro e limpo
-- "Inovacao" → textura de aco inox com reflexos de luz, composicao minimalista, abstrata
+- "Dia da Engenharia" → close-up de maos com luvas estereis brancas segurando tablet com checklist tecnico, pessoa de jaleco branco parcialmente visivel, fundo desfocado de corredor hospitalar com paredes claras e portas de aco inox, luz fluorescente suave
+- "Dia do Medico" → close-up de maos com luvas estereis azuis, fundo desfocado de paredes claras de centro cirurgico com piso epoxi brilhante, luz quente
+- "Inovacao" → corredor hospitalar moderno desfocado, portas automaticas de aco, piso epoxi claro refletindo luz, composicao minimalista
 
 EXEMPLOS DE ABORDAGEM PROIBIDA:
+- Bancada de eletronica com placas de circuito (parece fabrica, NAO hospital)
+- Oficina mecanica com ferramentas industriais
 - Sala cirurgica completa com equipamentos visiveis
 - Pessoa em jaleco em sala cheia de aparelhos
-- Panorama de hospital com mesas, focos, monitores
-- Cenario stock generico
+- Cenario stock generico sem identidade hospitalar
 
 REGRAS:
 - ZERO equipamentos medicos visiveis (foco, mesa, monitor, pendente) — NENHUM
-- Pode incluir MAOS ou SILHUETAS — NUNCA rosto identificavel
+- ZERO cenario industrial (bancada eletronica, ferramentas mecanicas, fabrica)
+- O fundo DEVE ter elementos hospitalares: paredes claras, piso epoxi, portas metalicas, corredores limpos
+- Pode incluir MAOS com luvas ESTEREIS (brancas ou azuis) ou SILHUETAS de jaleco — NUNCA rosto identificavel
 - Cores QUENTES e NEUTRAS — NUNCA azul monocromatico
-- Composicao CLOSE-UP ou MACRO — nunca plano aberto de sala
-- Fundo LIMPO, DESFOCADO ou ESCURO
+- Composicao CLOSE-UP ou MEDIO — nunca plano aberto de sala completa
 
-TERMINAR com: "professional DSLR photography, Canon EOS R5, 85mm f/1.4, photorealistic, warm neutral tones, shallow depth of field, no text, no writing, no labels, no medical equipment"
+TERMINAR com: "professional DSLR photography, Canon EOS R5, 85mm f/1.4, photorealistic, warm neutral tones, shallow depth of field, hospital environment, no text, no writing, no labels, no medical equipment, no electronics workbench, no factory, no industrial setting"
 """
 
         user_prompt += """
