@@ -62,11 +62,66 @@ def get_persona_clones() -> dict:
 class BrandCopywriter:
     """Copywriter especializado por marca."""
 
-    def __init__(self, llm_client, brand: str = "salk"):
+    def __init__(self, llm_client, brand: str = "salk", brandbook_loader=None):
         self.llm = llm_client
         self.brand = brand
         copywriters = get_brand_copywriters()
         self._config = copywriters.get(brand, copywriters.get("salk", {"name": "Copy", "system": ""}))
+        self._brandbook = None
+        if brandbook_loader:
+            try:
+                self._brandbook = brandbook_loader(brand)
+            except Exception:
+                pass
+
+    def _build_brandbook_context(self, product: str = "") -> str:
+        """Extrai contexto relevante do brandbook para enriquecer o prompt de copy."""
+        if not self._brandbook:
+            return ""
+        bb = self._brandbook
+        parts = []
+
+        # Tom de voz
+        tone = bb.get("tone_of_voice", {})
+        if tone:
+            parts.append(f"TOM DE VOZ DA MARCA: {tone.get('primary', '')}")
+            if tone.get("adjectives"):
+                parts.append(f"Adjetivos da marca: {', '.join(tone['adjectives'])}")
+            if tone.get("cta_style"):
+                parts.append(f"Estilo de CTA: {tone['cta_style']}")
+
+        # Tagline
+        if bb.get("tagline"):
+            parts.append(f"Tagline: {bb['tagline']}")
+
+        # Produto especifico
+        if product:
+            products = bb.get("products", [])
+            for p in products:
+                if p.get("id", "").lower() == product.lower() or p.get("name", "").lower() == product.lower():
+                    parts.append(f"PRODUTO {p['name']}: {p.get('type', '')}. Status: {p.get('status', 'ATIVO')}")
+                    if p.get("special_rules"):
+                        parts.append(f"Regras do produto: {'; '.join(p['special_rules'])}")
+                    break
+
+        # Personas-alvo
+        personas = bb.get("target_personas", [])
+        if personas:
+            persona_lines = []
+            for p in personas[:4]:
+                concerns = ", ".join(p.get("concerns", []))
+                persona_lines.append(f"  - {p.get('name', '')}: {p.get('role', '')} (preocupacoes: {concerns})")
+            parts.append("PUBLICO-ALVO:\n" + "\n".join(persona_lines))
+
+        # Pilares de conteudo
+        pillars = bb.get("content_pillars", [])
+        if pillars:
+            pillar_lines = [f"  - {p['name']} ({p.get('percentage', '')}%): {p.get('description', '')}" for p in pillars[:5]]
+            parts.append("PILARES DE CONTEUDO:\n" + "\n".join(pillar_lines))
+
+        if not parts:
+            return ""
+        return "\nCONTEXTO DA MARCA (brandbook):\n" + "\n".join(parts) + "\n"
 
     async def write_copy(
         self,
@@ -84,12 +139,22 @@ class BrandCopywriter:
             prohibited_terms = []
         if approved_claims is None:
             approved_claims = []
+        # Enriquecer com brandbook
+        brandbook_context = self._build_brandbook_context(product)
+
         product_note = f"\nPRODUTO PRINCIPAL: {product} (mencione pelo nome no texto)\n" if product else ""
         objective_note = f"\nOBJETIVO/TEMA DA PECA: {objective}\nIMPORTANTE: o copy DEVE ser sobre este tema especifico. NAO ignore o objetivo.\n" if objective else ""
 
+        # Merge prohibited terms do brandbook
+        all_prohibited = list(prohibited_terms or [])
+        if self._brandbook and self._brandbook.get("prohibited_terms"):
+            all_prohibited.extend(self._brandbook["prohibited_terms"])
+        # Deduplicate
+        all_prohibited = list(dict.fromkeys(all_prohibited))
+
         prohibited_block = ""
-        if prohibited_terms:
-            prohibited_block = f"\nTERMOS PROIBIDOS (NUNCA usar):\n{', '.join(prohibited_terms[:30])}\n"
+        if all_prohibited:
+            prohibited_block = f"\nTERMOS PROIBIDOS (NUNCA usar):\n{', '.join(all_prohibited[:40])}\n"
 
         claims_block = ""
         if approved_claims:
@@ -98,7 +163,7 @@ class BrandCopywriter:
                 claims_block += f"- [{c.get('id','')}] {c.get('claim','')}\n"
 
         prompt = f"""Escreva o copy FINAL para {platform} ({format_type}).
-{product_note}{objective_note}{prohibited_block}{claims_block}
+{brandbook_context}{product_note}{objective_note}{prohibited_block}{claims_block}
 BRIEFING:
 {briefing}
 

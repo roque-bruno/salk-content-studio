@@ -15,7 +15,21 @@ DEFAULT_PILLAR = "produto"
 # ---------------------------------------------------------------------------
 # Image Generation defaults
 # ---------------------------------------------------------------------------
-DEFAULT_NEGATIVE_PROMPT = "text, logo, watermark, blurry, low quality"
+DEFAULT_NEGATIVE_PROMPT = (
+    "text, logo, watermark, blurry, low quality, distorted, deformed, "
+    "cartoon, illustration, painting, sketch, "
+    # Anti-equipamento concorrente (CRITICO: nunca mostrar produtos que nao sao Mendel/Salk)
+    "surgical light, operating light, ceiling mounted light, surgical lamp, "
+    "operating table, surgical table, examination table, "
+    "medical monitor, patient monitor, display screen, "
+    "pendant, ceiling mount arm, articulating arm, "
+    "medical equipment, hospital equipment, medical device, "
+    "competing medical equipment, other brand equipment, "
+    # Anti-pessoas e conteudo sensivel
+    "people faces, identifiable patients, blood, graphic medical content, "
+    # Anti-color cast (NB2 tende a blue shift)
+    "blue monochrome, cyan tint, teal color, neon blue, blue cast"
+)
 DEFAULT_IMAGE_MODEL = "nb2"
 DEFAULT_IMAGE_WIDTH = 1080
 DEFAULT_IMAGE_HEIGHT = 1350

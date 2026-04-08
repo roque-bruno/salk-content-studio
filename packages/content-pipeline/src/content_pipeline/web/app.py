@@ -1248,7 +1248,7 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
         )
         briefing = br.get("briefing_text", "")
     # Gerar copy
-    cw = BrandCopywriter(svc.llm_client, brand=piece.get("brand", DEFAULT_BRAND))
+    cw = BrandCopywriter(svc.llm_client, brand=piece.get("brand", DEFAULT_BRAND), brandbook_loader=svc.load_brandbook)
     copy_result = await cw.write_copy(
         briefing=briefing,
         platform=piece.get("platform", DEFAULT_PLATFORM),
@@ -2270,7 +2270,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         except Exception:
             pass
 
-        cw = BrandCopywriter(svc.llm_client, brand=brand)
+        cw = BrandCopywriter(svc.llm_client, brand=brand, brandbook_loader=svc.load_brandbook)
         copy_result = await cw.write_copy(
             briefing=briefing_text, platform=platform, format_type=format_type,
             product=product, objective=piece_context,
@@ -2348,7 +2348,7 @@ async def write_copy(request: Request, user: dict = Depends(require_auth)):
         )
         briefing = br.get("briefing_text", "")
 
-    cw = BrandCopywriter(svc.llm_client, brand=brand)
+    cw = BrandCopywriter(svc.llm_client, brand=brand, brandbook_loader=svc.load_brandbook)
     result = await cw.write_copy(
         briefing=briefing,
         platform=data.get("platform", DEFAULT_PLATFORM),
@@ -2372,7 +2372,7 @@ async def rewrite_copy(req: Request, user: dict = Depends(require_auth)):
     svc = get_service()
     data = await req.json()
     brand = data.get("brand", DEFAULT_BRAND)
-    cw = BrandCopywriter(svc.llm_client, brand=brand)
+    cw = BrandCopywriter(svc.llm_client, brand=brand, brandbook_loader=svc.load_brandbook)
     result = await cw.rewrite(
         original=data.get("original", ""),
         feedback=data.get("feedback", ""),
@@ -2729,7 +2729,7 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
             variation["steps"].append("briefing")
 
             # Step 2: Copy
-            cw = BrandCopywriter(svc.llm_client, brand=brand)
+            cw = BrandCopywriter(svc.llm_client, brand=brand, brandbook_loader=svc.load_brandbook)
             copy_result = await cw.write_copy(
                 briefing=briefing_text, platform=platform, format_type="post",
             )
