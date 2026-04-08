@@ -7988,10 +7988,6 @@ body.zen-mode .tab-bar { display: none !important; }
         <button class="btn btn-sm" @click="exportSettingsJSON()" style="white-space: nowrap;" title="Exportar configuracoes como JSON">
           &#128229; Exportar Config
         </button>
-        <button class="btn btn-sm" @click="deployPull()" :disabled="deploying" style="white-space: nowrap; background: var(--green); color: white;" title="Git pull no servidor (atualizar sistema)">
-          <span x-show="!deploying">&#9650; Deploy</span>
-          <span x-show="deploying">Atualizando...</span>
-        </button>
       </div>
     </div>
     <!-- Connection Health Bar -->
@@ -9748,7 +9744,6 @@ function studioApp() {
     settingsGroups: [],
     settingsGroupOpen: {},
     connectionTestResult: null,
-    deploying: false,
     settingsUser: '',
     settingsPass: '',
     // Integrations (Story 7.3-7.5)
@@ -11021,20 +11016,6 @@ function studioApp() {
       try {
         this.connectionTestResult = await this.api('/api/settings/test') || {};
       } catch(e) { this.notify('Erro ao testar conexoes: ' + e.message, 'error'); }
-    },
-
-    async deployPull() {
-      if (this.deploying) return;
-      this.deploying = true;
-      try {
-        const res = await this.api('/api/deploy', { method: 'POST' });
-        if (res.status === 'ok') {
-          this.notify('Deploy OK: ' + (res.stdout || 'Already up to date'), 'success');
-        } else {
-          this.notify('Deploy com erro: ' + (res.stderr || res.stdout || 'Erro desconhecido'), 'error');
-        }
-      } catch(e) { this.notify('Falha no deploy: ' + e.message, 'error'); }
-      finally { this.deploying = false; }
     },
 
     // Integrations CRUD (Story 7.3-7.5)
