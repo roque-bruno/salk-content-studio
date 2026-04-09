@@ -1,21 +1,22 @@
 """
-Post Composer — Compoe post final para Instagram/social media.
+Post Composer — Layout editorial para Instagram (Salk Medical / Manager Grupo).
 
-Layout profissional inspirado em advertising hospitalar real:
-- Logo top-right em zona reservada (sem texto invadindo)
-- Faixa horizontal de cor da marca (separador visual)
-- Headline DOMINANTE bottom-left, fonte ExtraBold/Black, multilinha
-- Subline (descricao curta) abaixo do headline em peso lighter
-- CTA box (opcional) com cor da marca
-- Spec line bottom-center pequena
-- ANVISA badge bottom-right pequeno
-- Gradiente bottom escuro para legibilidade do headline
+Direcao criativa (Apex/Visual Designer):
+Estilo The Economist cover / Apple keynote / Bloomberg Businessweek.
+Foto protagonista, uma unica sentenca tipograficamente forte no terco
+inferior, muito espaco negativo. CTA tipo link, sem box. Headline two-tier
+(eyebrow menor + titulo grande) quando a copy tem ":".
+
+Principios:
+- Subtracao > adicao
+- 60% foto, 30% headline, 10% UI
+- Eyebrow ACIMA do headline (kicker)
+- CTA link-style, nao botao
 """
 
 from __future__ import annotations
 
 import logging
-import textwrap
 from pathlib import Path
 from typing import Optional
 
@@ -23,10 +24,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger(__name__)
 
-# Diretorio de fontes embutidas (Montserrat, Google Fonts OFL)
 _FONTS_DIR = Path(__file__).parent / "fonts"
-
-# Logos embutidas no static
 _STATIC_IMG_DIR = Path(__file__).parent.parent / "web" / "static" / "img"
 
 LOGO_FILES = {
@@ -36,33 +34,32 @@ LOGO_FILES = {
     "dayho": "logo-salk-white.png",
 }
 
-# Cores por marca (primary usado em faixas e CTAs)
+# Cores por marca: accent usado em CTA link e detalhes
 BRAND_COLORS = {
-    "salk":    {"primary": (0, 51, 102),     "accent": (0, 102, 204)},
-    "manager": {"primary": (0, 51, 102),     "accent": (0, 102, 204)},
-    "mendel":  {"primary": (26, 26, 46),     "accent": (22, 33, 62)},
-    "dayho":   {"primary": (45, 45, 45),     "accent": (68, 68, 68)},
+    "salk":    {"primary": (0, 51, 102),  "accent": (102, 178, 255)},
+    "manager": {"primary": (0, 51, 102),  "accent": (102, 178, 255)},
+    "mendel":  {"primary": (26, 26, 46),  "accent": (130, 150, 200)},
+    "dayho":   {"primary": (45, 45, 45),  "accent": (200, 200, 200)},
 }
+
+CTA_FALLBACK = "SAIBA MAIS →"
+CTA_MAX_WORDS = 5
 
 
 def _load_font(size: int, weight: str = "regular") -> ImageFont.FreeTypeFont:
-    """Carrega Montserrat embutida. weight: regular | bold | black | light."""
+    """Carrega Montserrat embutida. weight: regular | bold | light."""
     weight_map = {
         "regular": "Montserrat-Regular.ttf",
-        "bold": "Montserrat-Bold.ttf",
-        "black": "Montserrat-Bold.ttf",  # Usamos Bold como fallback se Black nao existir
-        "light": "Montserrat-Light.ttf",
+        "bold":    "Montserrat-Bold.ttf",
+        "black":   "Montserrat-Bold.ttf",  # Usamos Bold como Black
+        "light":   "Montserrat-Light.ttf",
     }
-    fname = weight_map.get(weight, "Montserrat-Regular.ttf")
-    bundled = _FONTS_DIR / fname
-
+    bundled = _FONTS_DIR / weight_map.get(weight, "Montserrat-Regular.ttf")
     if bundled.exists():
         try:
             return ImageFont.truetype(str(bundled), size)
         except (OSError, IOError):
             pass
-
-    # Fallback Linux
     for path in [
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
@@ -93,7 +90,11 @@ def _wrap_text(text: str, font: ImageFont.FreeTypeFont, max_width: int) -> list[
     return lines
 
 
-def _measure_lines(lines: list[str], font: ImageFont.FreeTypeFont, line_spacing: float = 1.1) -> tuple[int, int, int]:
+def _measure_lines(
+    lines: list[str],
+    font: ImageFont.FreeTypeFont,
+    line_spacing: float = 1.0,
+) -> tuple[int, int, int]:
     """Retorna (largura_max, altura_total, line_height)."""
     if not lines:
         return (0, 0, 0)
@@ -108,8 +109,45 @@ def _measure_lines(lines: list[str], font: ImageFont.FreeTypeFont, line_spacing:
         if h > line_h:
             line_h = h
     line_h_spaced = int(line_h * line_spacing)
-    total_h = line_h_spaced * len(lines)
-    return (max_w, total_h, line_h_spaced)
+    return (max_w, line_h_spaced * len(lines), line_h_spaced)
+
+
+def _split_two_tier(headline: str) -> tuple[str, str]:
+    """Quebra headline em (eyebrow_kicker, main_title) usando ':' como pivot.
+    Se nao tem ':', retorna ('', headline).
+    """
+    if ":" in headline:
+        a, b = headline.split(":", 1)
+        return (a.strip(), b.strip())
+    return ("", headline.strip())
+
+
+def _truncate_cta(cta: str) -> str:
+    """CTA so passa se tiver <= CTA_MAX_WORDS palavras. Senao usa fallback."""
+    if not cta:
+        return ""
+    clean = cta.strip().lstrip(">>").lstrip("→").lstrip("➤").strip().rstrip(".")
+    words = clean.split()
+    if len(words) <= CTA_MAX_WORDS:
+        return clean.upper() + " →"
+    return CTA_FALLBACK
+
+
+def _draw_text_with_blur_shadow(
+    draw: ImageDraw.ImageDraw,
+    pos: tuple[int, int],
+    text: str,
+    font: ImageFont.FreeTypeFont,
+    fill: tuple[int, int, int, int],
+) -> None:
+    """Texto com sombra simulando blur (2 passadas em offsets diferentes)."""
+    x, y = pos
+    # Passada 1: offset maior, alpha menor (blur largo)
+    draw.text((x + 2, y + 4), text, font=font, fill=(0, 0, 0, 90))
+    # Passada 2: offset menor, alpha maior (core da sombra)
+    draw.text((x + 1, y + 2), text, font=font, fill=(0, 0, 0, 130))
+    # Texto principal
+    draw.text((x, y), text, font=font, fill=fill)
 
 
 def compose_post(
@@ -124,25 +162,22 @@ def compose_post(
     output_path: Optional[Path] = None,
     target_size: tuple[int, int] = (1080, 1350),
 ) -> Path:
-    """Compoe post final com layout profissional.
+    """Compoe post final com layout editorial.
 
     Args:
-        image_path: Caminho da imagem de fundo (ja em portrait)
-        headline: Texto principal (max ~6 palavras, vai grande)
-        subline: Texto secundario (descricao curta)
-        cta: Call-to-action (vai num box colorido)
-        brand: Marca (salk, mendel, dayho, manager)
-        spec_line: Linha tecnica do rodape
-        anvisa_badge: Badge ANVISA (canto inferior direito)
-        target_size: Dimensoes finais (1080x1350 default)
-
-    Returns:
-        Path do arquivo composto
+        image_path: Foto de fundo (ja em portrait)
+        headline: Titulo principal. Se contem ':', vira two-tier.
+        subline: Eyebrow/kicker — vai ACIMA do headline, pequeno.
+        cta: Call-to-action curto. Se >5 palavras, vira "SAIBA MAIS →".
+        brand: salk | manager | mendel | dayho
+        spec_line: Linha tecnica rodape
+        anvisa_badge: Badge ANVISA rodape direita
+        target_size: Dimensoes finais (1080x1350 default = Instagram feed 4:5)
     """
     img = Image.open(image_path).convert("RGBA")
 
+    # Crop centralizado + scale (sem distorcao)
     if img.size != target_size:
-        # Crop centralizado para preservar aspecto, depois resize
         tw, th = target_size
         sw, sh = img.size
         src_ratio = sw / sh
@@ -159,40 +194,37 @@ def compose_post(
         img = img.resize(target_size, Image.LANCZOS)
 
     width, height = target_size
-    margin = int(width * 0.06)  # ~65px em 1080
+    margin = int(width * 0.075)  # 7.5% (~81px) — premium
     brand_color = BRAND_COLORS.get(brand.lower(), BRAND_COLORS["salk"])
 
     # ════════════════════════════════════════════════════════════
-    # 1. GRADIENTE BOTTOM (fundo escuro para legibilidade do headline)
+    # 1. GRADIENTE BOTTOM (so a partir de 65%, curva ** 1.8)
+    #    A foto e protagonista. Gradiente so escurece o terco inferior.
     # ════════════════════════════════════════════════════════════
     grad = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw_grad = ImageDraw.Draw(grad)
-    grad_start = int(height * 0.42)  # 42% do topo (deixa imagem livre na parte de cima)
+    grad_start = int(height * 0.55)  # comeca no terco inferior
     for y in range(grad_start, height):
         progress = (y - grad_start) / (height - grad_start)
-        # Curva suave: comeca transparente, termina 88% preto
-        alpha = int(225 * (progress ** 1.4))
+        alpha = int(210 * (progress ** 1.8))
         draw_grad.line([(0, y), (width, y)], fill=(0, 0, 0, alpha))
     img = Image.alpha_composite(img, grad)
 
     # ════════════════════════════════════════════════════════════
-    # 2. GRADIENTE TOP suave (para logo nao ficar perdida em fundo claro)
+    # 2. GRADIENTE TOP suave (so para destacar logo em fundos claros)
     # ════════════════════════════════════════════════════════════
     grad_top = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw_gt = ImageDraw.Draw(grad_top)
-    top_h = int(height * 0.20)
+    top_h = int(height * 0.12)  # 12%
     for y in range(top_h):
-        alpha = int(120 * (1 - y / top_h) ** 1.2)
+        alpha = int(95 * (1 - y / top_h) ** 1.3)
         draw_gt.line([(0, y), (width, y)], fill=(0, 0, 0, alpha))
     img = Image.alpha_composite(img, grad_top)
 
     # ════════════════════════════════════════════════════════════
-    # 3. LOGO TOP-RIGHT (zona reservada com fundo escuro translucido)
-    # A logo Salk e branca — sem fundo escuro fica invisivel em
-    # imagens claras. Adicionamos uma faixa escura atras.
+    # 3. LOGO TOP-RIGHT (170px, sem badge — gradiente top resolve)
     # ════════════════════════════════════════════════════════════
-    logo_w_target = 220
-    logo_h_actual = 0
+    logo_w_target = 170
     logo_filename = LOGO_FILES.get(brand.lower(), "logo-salk-white.png")
     logo_path = _STATIC_IMG_DIR / logo_filename
     if not logo_path.exists() and logo_dir:
@@ -209,28 +241,9 @@ def compose_post(
             logo = logo.resize((logo_w_target, logo_h), Image.LANCZOS)
             logo_x = width - margin - logo_w_target
             logo_y = margin
-
-            # Faixa escura translucida atras da logo (garante contraste)
-            pad_x = 24
-            pad_y = 16
-            badge_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-            badge_draw = ImageDraw.Draw(badge_layer)
-            badge_draw.rectangle(
-                [
-                    (logo_x - pad_x, logo_y - pad_y),
-                    (logo_x + logo_w_target + pad_x, logo_y + logo_h + pad_y),
-                ],
-                fill=(0, 0, 0, 140),
-            )
-            img = Image.alpha_composite(img, badge_layer)
-
             img.paste(logo, (logo_x, logo_y), logo)
-            logo_h_actual = logo_h
         except Exception as e:
             logger.warning("Falha ao colocar logo: %s", e)
-
-    # Zona reservada da logo
-    logo_zone_bottom = margin + logo_h_actual + 36
 
     # ════════════════════════════════════════════════════════════
     # 4. CAMADA DE TEXTO
@@ -238,188 +251,140 @@ def compose_post(
     txt_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(txt_layer)
 
-    # Area util para textos (descontando margens)
     text_max_w = width - 2 * margin
 
     # ────────────────────────────────────────────────────────────
-    # HEADLINE (bottom-left, fonte grande Bold, multilinha)
+    # HEADLINE two-tier (split em ':' se houver)
     # ────────────────────────────────────────────────────────────
-    headline_lines: list[str] = []
-    headline_total_h = 0
-    headline_line_h = 0
-    if headline:
-        # Tamanho dinamico: comeca em 78pt, reduz se nao couber em 3 linhas
-        for size in (82, 76, 70, 64, 58, 52):
-            font_h = _load_font(size, weight="bold")
-            lines = _wrap_text(headline.upper(), font_h, text_max_w)
+    eyebrow_from_split, main_title = _split_two_tier(headline) if headline else ("", "")
+
+    # Eyebrow vem do split do headline OU do parametro subline (mas split tem prioridade)
+    eyebrow_text = eyebrow_from_split if eyebrow_from_split else (subline.strip() if subline else "")
+
+    # Main title: tenta tamanhos decrescentes ate caber em max 3 linhas
+    main_lines: list[str] = []
+    main_total_h = 0
+    main_line_h = 0
+    font_main = None
+    if main_title:
+        for size in (64, 58, 52, 46):
+            font_main = _load_font(size, weight="black")
+            lines = _wrap_text(main_title.upper(), font_main, text_max_w)
             if len(lines) <= 3:
-                headline_lines = lines
-                _, headline_total_h, headline_line_h = _measure_lines(lines, font_h, line_spacing=1.05)
-                font_headline = font_h
+                main_lines = lines
+                _, main_total_h, main_line_h = _measure_lines(lines, font_main, line_spacing=0.98)
                 break
         else:
-            font_headline = _load_font(52, weight="bold")
-            headline_lines = _wrap_text(headline.upper(), font_headline, text_max_w)[:3]
-            _, headline_total_h, headline_line_h = _measure_lines(headline_lines, font_headline, line_spacing=1.05)
+            font_main = _load_font(46, weight="black")
+            main_lines = _wrap_text(main_title.upper(), font_main, text_max_w)[:3]
+            _, main_total_h, main_line_h = _measure_lines(main_lines, font_main, line_spacing=0.98)
 
-    # ────────────────────────────────────────────────────────────
-    # SUBLINE (texto secundario abaixo do headline)
-    # ────────────────────────────────────────────────────────────
-    subline_lines: list[str] = []
-    subline_total_h = 0
-    subline_line_h = 0
-    font_subline = None
-    if subline:
-        font_subline = _load_font(28, weight="regular")
-        subline_lines = _wrap_text(subline, font_subline, text_max_w)[:2]
-        _, subline_total_h, subline_line_h = _measure_lines(subline_lines, font_subline, line_spacing=1.25)
+    # Eyebrow: 22pt regular, sem caps, cor cinza claro
+    eyebrow_lines: list[str] = []
+    eyebrow_total_h = 0
+    eyebrow_line_h = 0
+    font_eyebrow = None
+    if eyebrow_text:
+        font_eyebrow = _load_font(22, weight="regular")
+        eyebrow_lines = _wrap_text(eyebrow_text, font_eyebrow, text_max_w)[:2]
+        _, eyebrow_total_h, eyebrow_line_h = _measure_lines(eyebrow_lines, font_eyebrow, line_spacing=1.25)
 
-    # ────────────────────────────────────────────────────────────
-    # CTA box (wrap em ate 2 linhas; box ajusta ao texto)
-    # ────────────────────────────────────────────────────────────
-    cta_h = 0
-    cta_w = 0
-    cta_lines: list[str] = []
-    cta_line_h = 0
+    # CTA link-style
+    cta_text = _truncate_cta(cta)
     font_cta = None
-    cta_padding_x = 28
-    cta_padding_y = 16
-    if cta:
-        # Limpar CTA: remove emojis e prefixos comuns
-        cta_clean = cta.strip().lstrip(">>").lstrip("→").lstrip("➤").strip()
-        # Tentar varios tamanhos: prefere 24pt em 1 linha, senao 20pt em 2 linhas
-        cta_max_w = int(text_max_w * 0.85)
-        for size in (24, 22, 20, 18):
-            font_cta = _load_font(size, weight="bold")
-            lines = _wrap_text(cta_clean.upper(), font_cta, cta_max_w)
-            if len(lines) <= 2:
-                cta_lines = lines
-                break
-        else:
-            # Fallback: trunca em 1 linha com elipse
-            font_cta = _load_font(20, weight="bold")
-            cta_clean_short = cta_clean.upper()
-            while font_cta.getbbox(cta_clean_short + "...")[2] > cta_max_w and len(cta_clean_short) > 5:
-                cta_clean_short = cta_clean_short[:-1]
-            cta_lines = [cta_clean_short + "..."]
-
-        max_w, total_h, line_h = _measure_lines(cta_lines, font_cta, line_spacing=1.2)
-        cta_line_h = line_h
-        cta_w = max_w + 2 * cta_padding_x
-        cta_h = total_h + 2 * cta_padding_y
+    cta_w_px = 0
+    cta_h_px = 0
+    if cta_text:
+        font_cta = _load_font(18, weight="bold")
+        bbox = font_cta.getbbox(cta_text)
+        cta_w_px = bbox[2] - bbox[0]
+        cta_h_px = bbox[3] - bbox[1]
 
     # ────────────────────────────────────────────────────────────
-    # Footer reservado (spec line + anvisa)
+    # POSICIONAMENTO (de cima para baixo, ancorado em 82% altura)
+    # eyebrow → gap 16px → headline → gap 32px → CTA
     # ────────────────────────────────────────────────────────────
-    footer_h = 0
-    if spec_line or anvisa_badge:
-        footer_h = 50
+    # Footer: spec_line + anvisa
+    footer_reserve = 50 if (spec_line or anvisa_badge) else 20
+    footer_y = height - margin - footer_reserve
 
-    # ────────────────────────────────────────────────────────────
-    # Calcular posicoes (de baixo para cima)
-    # ────────────────────────────────────────────────────────────
-    cursor_y = height - margin - footer_h
+    # Bloco de texto: posicionado em ~78% e estendendo para baixo
+    # Ancora: baseline do main_title em 82% da altura
+    block_baseline = int(height * 0.82)
 
-    # CTA (acima do footer)
-    cta_y = 0
-    if cta:
-        cursor_y -= cta_h + 25
-        cta_y = cursor_y
+    # Y do main_title (topo)
+    main_y = block_baseline - main_total_h
 
-    # Subline (acima do CTA)
-    subline_y = 0
-    if subline_lines:
-        cursor_y -= subline_total_h + 18
-        subline_y = cursor_y
+    # Y do eyebrow (acima do main, com gap 16)
+    eyebrow_y = main_y - eyebrow_total_h - 16 if eyebrow_lines else 0
 
-    # Headline (acima da subline) — espacamento generoso
-    headline_y = 0
-    if headline_lines:
-        cursor_y -= headline_total_h + 8
-        headline_y = cursor_y
+    # Y do CTA (abaixo do main, com gap 32)
+    cta_y = block_baseline + 32
 
-    # Faixa de marca (linha horizontal acima do headline)
-    brand_bar_y = headline_y - 28
+    # Garantir que CTA nao colide com footer
+    if cta_text and (cta_y + cta_h_px > footer_y - 10):
+        cta_y = footer_y - cta_h_px - 10
 
     # ────────────────────────────────────────────────────────────
-    # DESENHAR: faixa de marca
+    # DESENHAR: eyebrow (cinza claro, sem caps)
     # ────────────────────────────────────────────────────────────
-    if headline_lines:
-        bar_w = 80
-        bar_h = 6
-        draw.rectangle(
-            [(margin, brand_bar_y), (margin + bar_w, brand_bar_y + bar_h)],
-            fill=brand_color["accent"] + (255,),
+    if eyebrow_lines and font_eyebrow:
+        y = eyebrow_y
+        for line in eyebrow_lines:
+            _draw_text_with_blur_shadow(
+                draw, (margin, y), line, font_eyebrow, (220, 220, 220, 240)
+            )
+            y += eyebrow_line_h
+
+    # ────────────────────────────────────────────────────────────
+    # DESENHAR: main title (branco, peso black, tight spacing)
+    # ────────────────────────────────────────────────────────────
+    if main_lines and font_main:
+        y = main_y
+        for line in main_lines:
+            _draw_text_with_blur_shadow(
+                draw, (margin, y), line, font_main, (255, 255, 255, 255)
+            )
+            y += main_line_h
+
+    # ────────────────────────────────────────────────────────────
+    # DESENHAR: CTA link-style (sem box, accent color)
+    # ────────────────────────────────────────────────────────────
+    if cta_text and font_cta:
+        accent_rgb = brand_color["accent"]
+        _draw_text_with_blur_shadow(
+            draw,
+            (margin, cta_y),
+            cta_text,
+            font_cta,
+            accent_rgb + (255,),
         )
 
     # ────────────────────────────────────────────────────────────
-    # DESENHAR: headline (com sombra suave)
-    # ────────────────────────────────────────────────────────────
-    if headline_lines:
-        y = headline_y
-        for line in headline_lines:
-            # Sombra
-            draw.text((margin + 2, y + 2), line, font=font_headline, fill=(0, 0, 0, 200))
-            # Texto principal
-            draw.text((margin, y), line, font=font_headline, fill=(255, 255, 255, 255))
-            y += headline_line_h
-
-    # ────────────────────────────────────────────────────────────
-    # DESENHAR: subline
-    # ────────────────────────────────────────────────────────────
-    if subline_lines and font_subline:
-        y = subline_y
-        for line in subline_lines:
-            draw.text((margin + 1, y + 1), line, font=font_subline, fill=(0, 0, 0, 180))
-            draw.text((margin, y), line, font=font_subline, fill=(255, 255, 255, 230))
-            y += subline_line_h
-
-    # ────────────────────────────────────────────────────────────
-    # DESENHAR: CTA box
-    # ────────────────────────────────────────────────────────────
-    if cta_lines and font_cta:
-        cta_x = margin
-        # Fundo do CTA com cor de destaque da marca
-        draw.rectangle(
-            [(cta_x, cta_y), (cta_x + cta_w, cta_y + cta_h)],
-            fill=brand_color["accent"] + (255,),
-        )
-        # Linhas do CTA centralizadas dentro do box
-        ty = cta_y + cta_padding_y
-        for line in cta_lines:
-            bbox = font_cta.getbbox(line)
-            lw = bbox[2] - bbox[0]
-            tx = cta_x + (cta_w - lw) // 2
-            draw.text((tx, ty - bbox[1]), line, font=font_cta, fill=(255, 255, 255, 255))
-            ty += cta_line_h
-
-    # ────────────────────────────────────────────────────────────
-    # DESENHAR: spec line (rodape centralizado)
+    # DESENHAR: spec line (rodape centralizado, dentro da margem)
     # ────────────────────────────────────────────────────────────
     if spec_line:
-        font_spec = _load_font(18, weight="light")
+        font_spec = _load_font(16, weight="light")
         bbox = font_spec.getbbox(spec_line)
         sw_ = bbox[2] - bbox[0]
         sx = (width - sw_) // 2
-        sy = height - margin - 25
-        draw.text((sx, sy), spec_line, font=font_spec, fill=(255, 255, 255, 180))
+        sy = height - margin - 22
+        draw.text((sx, sy), spec_line, font=font_spec, fill=(255, 255, 255, 160))
 
     # ────────────────────────────────────────────────────────────
     # DESENHAR: ANVISA badge (rodape direita)
     # ────────────────────────────────────────────────────────────
     if anvisa_badge:
-        font_badge = _load_font(13, weight="light")
+        font_badge = _load_font(12, weight="light")
         bbox = font_badge.getbbox(anvisa_badge)
         bw = bbox[2] - bbox[0]
         bx = width - margin - bw
-        by = height - margin - 12
-        draw.text((bx, by), anvisa_badge, font=font_badge, fill=(255, 255, 255, 140))
+        by = height - margin - 10
+        draw.text((bx, by), anvisa_badge, font=font_badge, fill=(255, 255, 255, 130))
 
     img = Image.alpha_composite(img, txt_layer)
 
-    # ════════════════════════════════════════════════════════════
     # Salvar
-    # ════════════════════════════════════════════════════════════
     final = img.convert("RGB")
     if output_path is None:
         p = Path(image_path)
