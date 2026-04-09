@@ -281,14 +281,13 @@ def compose_post(
             main_lines = _wrap_text(main_title.upper(), font_main, text_max_w)[:3]
             _, main_total_h, main_line_h = _measure_lines(main_lines, font_main, line_spacing=0.92)
 
-    # Eyebrow: Apex prescreveu 28pt BOLD UPPERCASE accent color (era 22 regular cinza)
-    # Kicker editorial precisa gritar a categoria, nao sussurrar
+    # Eyebrow: 34pt BOLD UPPERCASE accent (Apex round 2: kicker mais presente)
     eyebrow_lines: list[str] = []
     eyebrow_total_h = 0
     eyebrow_line_h = 0
     font_eyebrow = None
     if eyebrow_text:
-        font_eyebrow = _load_font(28, weight="bold")
+        font_eyebrow = _load_font(34, weight="bold")
         eyebrow_text = eyebrow_text.upper()
         eyebrow_lines = _wrap_text(eyebrow_text, font_eyebrow, text_max_w)[:2]
         _, eyebrow_total_h, eyebrow_line_h = _measure_lines(eyebrow_lines, font_eyebrow, line_spacing=1.25)
@@ -312,9 +311,10 @@ def compose_post(
     footer_reserve = 50 if (spec_line or anvisa_badge) else 20
     footer_y = height - margin - footer_reserve
 
-    # Bloco de texto: ancora baseline do main_title em 74% (era 82%)
-    # Libera respiro inferior — terco inferior classico editorial
-    block_baseline = int(height * 0.74)
+    # Bloco de texto: ancora baseline do main_title em 80%
+    # Compromisso: 82% era cramped, 74% deixou ~25% de espaco morto na base.
+    # 80% mantem terco inferior real sem desperdicar real estate
+    block_baseline = int(height * 0.80)
 
     # Y do main_title (topo)
     main_y = block_baseline - main_total_h
@@ -360,12 +360,12 @@ def compose_post(
     # ────────────────────────────────────────────────────────────
     if cta_text and font_cta:
         accent_rgb = brand_color["accent"]
-        # Regua horizontal 40px / 2px stroke / 12px acima do texto
-        rule_y = cta_y - 12
+        # Regua horizontal 90px / 3px stroke / 14px acima do texto
+        rule_y = cta_y - 14
         draw.line(
-            [(margin, rule_y), (margin + 40, rule_y)],
+            [(margin, rule_y), (margin + 90, rule_y)],
             fill=accent_rgb + (255,),
-            width=2,
+            width=3,
         )
         _draw_text_with_blur_shadow(
             draw,
