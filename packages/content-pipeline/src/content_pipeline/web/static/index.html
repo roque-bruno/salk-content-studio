@@ -8763,8 +8763,8 @@ body.zen-mode .tab-bar { display: none !important; }
           <template x-if="parsePieceNotes(selectedPiece?.notes).composed_url">
             <div class="card" style="margin: 0; border-left: 3px solid var(--accent-green);">
               <div class="card-title" style="font-size: 0.75rem; color: var(--accent-green);">Post Composto</div>
-              <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url, selectedPiece?.title + ' (composto)')">
-                <img :src="parsePieceNotes(selectedPiece?.notes).composed_url" style="width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+              <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url + '?v=' + imageBust, selectedPiece?.title + ' (composto)')">
+                <img :src="parsePieceNotes(selectedPiece?.notes).composed_url + '?v=' + imageBust" style="width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
                 <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
               </div>
               <button class="btn btn-sm" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green); width: 100%; margin-top: 10px;" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading">
@@ -8778,8 +8778,8 @@ body.zen-mode .tab-bar { display: none !important; }
           <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
             <div class="card" style="margin: 0;">
               <div class="card-title" style="font-size: 0.75rem;">Imagem Original</div>
-              <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
-                <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+              <div class="img-click-wrap" @click="openGeneratedImageModal((parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url) + '?v=' + imageBust, selectedPiece?.title)">
+                <img :src="(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url) + '?v=' + imageBust" style="width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
                 <div class="img-click-overlay">&#128269; Ver original</div>
               </div>
               <button class="btn btn-sm" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple); width: 100%; margin-top: 10px;" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
@@ -9407,6 +9407,7 @@ function studioApp() {
     showPieceDetail: false,
     drawerTab: 'resumo',
     pieceActionLoading: false,
+    imageBust: Date.now(),
     batchProcessing: false,
     showQuickProduce: false,
     quickProducing: false,
@@ -10277,6 +10278,7 @@ function studioApp() {
         this.notify('Imagem gerada com sucesso!');
         await this.loadPieces();
         await this.refreshSelectedPiece(pieceId);
+        this.imageBust = Date.now();
         this.drawerTab = 'visual';
         this.showPieceDetail = true;
         this.tab = 'board';
@@ -10295,6 +10297,7 @@ function studioApp() {
           this.notify('Post composto com sucesso!');
           await this.loadPieces();
           await this.refreshSelectedPiece(pieceId);
+          this.imageBust = Date.now();
           this.drawerTab = 'visual';
         } else {
           this.notify('Erro ao compor post', 'error');
