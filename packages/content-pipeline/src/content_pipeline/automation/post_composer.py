@@ -187,7 +187,9 @@ def compose_post(
     img = Image.alpha_composite(img, grad_top)
 
     # ════════════════════════════════════════════════════════════
-    # 3. LOGO TOP-RIGHT (zona reservada — texto NUNCA invade)
+    # 3. LOGO TOP-RIGHT (zona reservada com fundo escuro translucido)
+    # A logo Salk e branca — sem fundo escuro fica invisivel em
+    # imagens claras. Adicionamos uma faixa escura atras.
     # ════════════════════════════════════════════════════════════
     logo_w_target = 220
     logo_h_actual = 0
@@ -207,13 +209,28 @@ def compose_post(
             logo = logo.resize((logo_w_target, logo_h), Image.LANCZOS)
             logo_x = width - margin - logo_w_target
             logo_y = margin
+
+            # Faixa escura translucida atras da logo (garante contraste)
+            pad_x = 24
+            pad_y = 16
+            badge_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+            badge_draw = ImageDraw.Draw(badge_layer)
+            badge_draw.rectangle(
+                [
+                    (logo_x - pad_x, logo_y - pad_y),
+                    (logo_x + logo_w_target + pad_x, logo_y + logo_h + pad_y),
+                ],
+                fill=(0, 0, 0, 140),
+            )
+            img = Image.alpha_composite(img, badge_layer)
+
             img.paste(logo, (logo_x, logo_y), logo)
             logo_h_actual = logo_h
         except Exception as e:
             logger.warning("Falha ao colocar logo: %s", e)
 
-    # Zona reservada da logo: top-right ate logo_y + logo_h + padding
-    logo_zone_bottom = margin + logo_h_actual + 20
+    # Zona reservada da logo
+    logo_zone_bottom = margin + logo_h_actual + 36
 
     # ════════════════════════════════════════════════════════════
     # 4. CAMADA DE TEXTO
@@ -258,20 +275,38 @@ def compose_post(
         _, subline_total_h, subline_line_h = _measure_lines(subline_lines, font_subline, line_spacing=1.25)
 
     # ────────────────────────────────────────────────────────────
-    # CTA box
+    # CTA box (wrap em ate 2 linhas; box ajusta ao texto)
     # ────────────────────────────────────────────────────────────
     cta_h = 0
     cta_w = 0
+    cta_lines: list[str] = []
+    cta_line_h = 0
     font_cta = None
+    cta_padding_x = 28
+    cta_padding_y = 16
     if cta:
-        font_cta = _load_font(24, weight="bold")
-        bbox = font_cta.getbbox(cta.upper())
-        cta_text_w = bbox[2] - bbox[0]
-        cta_text_h = bbox[3] - bbox[1]
-        cta_padding_x = 28
-        cta_padding_y = 16
-        cta_w = cta_text_w + 2 * cta_padding_x
-        cta_h = cta_text_h + 2 * cta_padding_y
+        # Limpar CTA: remove emojis e prefixos comuns
+        cta_clean = cta.strip().lstrip(">>").lstrip("→").lstrip("➤").strip()
+        # Tentar varios tamanhos: prefere 24pt em 1 linha, senao 20pt em 2 linhas
+        cta_max_w = int(text_max_w * 0.85)
+        for size in (24, 22, 20, 18):
+            font_cta = _load_font(size, weight="bold")
+            lines = _wrap_text(cta_clean.upper(), font_cta, cta_max_w)
+            if len(lines) <= 2:
+                cta_lines = lines
+                break
+        else:
+            # Fallback: trunca em 1 linha com elipse
+            font_cta = _load_font(20, weight="bold")
+            cta_clean_short = cta_clean.upper()
+            while font_cta.getbbox(cta_clean_short + "...")[2] > cta_max_w and len(cta_clean_short) > 5:
+                cta_clean_short = cta_clean_short[:-1]
+            cta_lines = [cta_clean_short + "..."]
+
+        max_w, total_h, line_h = _measure_lines(cta_lines, font_cta, line_spacing=1.2)
+        cta_line_h = line_h
+        cta_w = max_w + 2 * cta_padding_x
+        cta_h = total_h + 2 * cta_padding_y
 
     # ────────────────────────────────────────────────────────────
     # Footer reservado (spec line + anvisa)
@@ -342,21 +377,21 @@ def compose_post(
     # ────────────────────────────────────────────────────────────
     # DESENHAR: CTA box
     # ────────────────────────────────────────────────────────────
-    if cta and font_cta:
+    if cta_lines and font_cta:
         cta_x = margin
-        # Fundo do CTA com cor da marca
+        # Fundo do CTA com cor de destaque da marca
         draw.rectangle(
             [(cta_x, cta_y), (cta_x + cta_w, cta_y + cta_h)],
             fill=brand_color["accent"] + (255,),
         )
-        # Texto centralizado no box
-        cta_text = cta.upper()
-        bbox = font_cta.getbbox(cta_text)
-        tw = bbox[2] - bbox[0]
-        th = bbox[3] - bbox[1]
-        text_x = cta_x + (cta_w - tw) // 2
-        text_y = cta_y + (cta_h - th) // 2 - bbox[1]
-        draw.text((text_x, text_y), cta_text, font=font_cta, fill=(255, 255, 255, 255))
+        # Linhas do CTA centralizadas dentro do box
+        ty = cta_y + cta_padding_y
+        for line in cta_lines:
+            bbox = font_cta.getbbox(line)
+            lw = bbox[2] - bbox[0]
+            tx = cta_x + (cta_w - lw) // 2
+            draw.text((tx, ty - bbox[1]), line, font=font_cta, fill=(255, 255, 255, 255))
+            ty += cta_line_h
 
     # ────────────────────────────────────────────────────────────
     # DESENHAR: spec line (rodape centralizado)

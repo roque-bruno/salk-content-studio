@@ -2660,7 +2660,11 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
                 # Subline = primeira frase curta do body (max ~110 chars)
                 if body:
                     first = body.split("\n")[0].strip()
-                    subline = first[:110] if len(first) > 110 else first
+                    # Trunca por palavras se for muito longo (composer fara o wrap em 2 linhas)
+                    if len(first) > 140:
+                        words = first[:140].split()
+                        first = " ".join(words[:-1]) + "..."
+                    subline = first
             brand = piece.get("brand", DEFAULT_BRAND)
             logo_dir = svc.config.assets_dir / "logomarcas"
             target_w, target_h = (1080, 1350)
@@ -2762,7 +2766,10 @@ async def compose_piece_post(piece_id: str, request: Request, user: dict = Depen
         body = parsed.get("body", "")
         if body:
             first = body.split("\n")[0].strip()
-            subline = first[:110] if len(first) > 110 else first
+            if len(first) > 140:
+                words = first[:140].split()
+                first = " ".join(words[:-1]) + "..."
+            subline = first
     brand = piece.get("brand", DEFAULT_BRAND)
     platform = piece.get("platform", DEFAULT_PLATFORM)
     fmt = piece.get("format", "post")
