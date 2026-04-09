@@ -244,18 +244,18 @@ class FalImageGenerator:
             model_id = self.MODELS["nb2-generate"]  # fal-ai/nano-banana-2
             logger.info("NB2 prompt-only mode (no product image) — usando endpoint generate")
 
-        # NB2 (Google Gemini Imagen) usa aspect_ratio, NAO image_size.
-        # Aspect ratios suportados: "1:1", "3:4", "4:3", "9:16", "16:9"
-        # Instagram feed 1080x1350 = 4:5, mais proximo suportado = 3:4 (0.75 vs 0.8)
+        # NB2 (Google Gemini Imagen) usa aspect_ratio + resolution.
+        # Aspect ratios suportados (oficial fal.ai docs):
+        # auto, 21:9, 16:9, 3:2, 4:3, 5:4, 1:1, 4:5, 3:4, 2:3, 9:16, 4:1, 1:4, 8:1, 1:8
+        # Instagram feed 1080x1350 = 4:5 EXATO (0.8)
+        # Resolution: 0.5K, 1K, 2K, 4K. Usamos 2K para qualidade alta (1K = 1024px max).
         def _aspect_for(w_: int, h_: int) -> str:
             ratio = w_ / h_
-            # Mapeia para o aspect ratio suportado mais proximo
             candidates = {
+                "21:9": 21/9, "16:9": 16/9, "3:2": 3/2, "4:3": 4/3, "5:4": 5/4,
                 "1:1": 1.0,
-                "3:4": 0.75,
-                "4:3": 4/3,
-                "9:16": 9/16,
-                "16:9": 16/9,
+                "4:5": 4/5, "3:4": 3/4, "2:3": 2/3, "9:16": 9/16,
+                "4:1": 4.0, "1:4": 0.25, "8:1": 8.0, "1:8": 0.125,
             }
             return min(candidates.items(), key=lambda kv: abs(kv[1] - ratio))[0]
 
@@ -264,7 +264,9 @@ class FalImageGenerator:
         payload = {
             "prompt": prompt,
             "aspect_ratio": aspect_ratio,
+            "resolution": "2K",
             "num_images": 1,
+            "output_format": "png",
         }
         if img_url:
             payload["image_urls"] = [img_url]
