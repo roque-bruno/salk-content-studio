@@ -8755,33 +8755,40 @@ body.zen-mode .tab-bar { display: none !important; }
         </div>
       </template>
 
-      <!-- Composed Post (prioridade se existir) -->
-      <template x-if="parsePieceNotes(selectedPiece?.notes).composed_url">
-        <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--accent-green);">
-          <div class="card-title" style="font-size: 0.75rem; color: var(--accent-green);">Post Composto (pronto para publicar)</div>
-          <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url, selectedPiece?.title + ' (composto)')">
-            <img :src="parsePieceNotes(selectedPiece?.notes).composed_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
-            <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
-          </div>
-          <button class="btn btn-sm" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green); width: 100%; margin-top: 10px;" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading">
-            <span x-show="!pieceActionLoading">&#128259; Gerar nova composicao</span>
-            <span x-show="pieceActionLoading">Compondo...</span>
-          </button>
-        </div>
-      </template>
+      <!-- Imagens (Composta + Original) lado a lado -->
+      <template x-if="parsePieceNotes(selectedPiece?.notes).composed_url || parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px;">
 
-      <!-- Image raw -->
-      <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
-        <div class="card" style="margin-bottom: 12px;">
-          <div class="card-title" style="font-size: 0.75rem;">Imagem Original (sem composicao)</div>
-          <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
-            <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
-            <div class="img-click-overlay">&#128269; Ver original</div>
-          </div>
-          <button class="btn btn-sm" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple); width: 100%; margin-top: 10px;" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
-            <span x-show="!pieceActionLoading">&#128260; Gerar nova imagem IA</span>
-            <span x-show="pieceActionLoading">Gerando...</span>
-          </button>
+          <!-- Post Composto -->
+          <template x-if="parsePieceNotes(selectedPiece?.notes).composed_url">
+            <div class="card" style="margin: 0; border-left: 3px solid var(--accent-green);">
+              <div class="card-title" style="font-size: 0.75rem; color: var(--accent-green);">Post Composto</div>
+              <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url, selectedPiece?.title + ' (composto)')">
+                <img :src="parsePieceNotes(selectedPiece?.notes).composed_url" style="width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+                <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+              </div>
+              <button class="btn btn-sm" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green); width: 100%; margin-top: 10px;" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading">
+                <span x-show="!pieceActionLoading">&#128259; Gerar nova composicao</span>
+                <span x-show="pieceActionLoading">Compondo...</span>
+              </button>
+            </div>
+          </template>
+
+          <!-- Imagem Original -->
+          <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
+            <div class="card" style="margin: 0;">
+              <div class="card-title" style="font-size: 0.75rem;">Imagem Original</div>
+              <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
+                <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+                <div class="img-click-overlay">&#128269; Ver original</div>
+              </div>
+              <button class="btn btn-sm" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple); width: 100%; margin-top: 10px;" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
+                <span x-show="!pieceActionLoading">&#128260; Gerar nova imagem IA</span>
+                <span x-show="pieceActionLoading">Gerando...</span>
+              </button>
+            </div>
+          </template>
+
         </div>
       </template>
 
